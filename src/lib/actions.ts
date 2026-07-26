@@ -41,6 +41,7 @@ import {
   upsertViewing,
   markNotificationsRead,
 } from "./db";
+import { alertSeekersAboutHome, alertSellersAboutBrief } from "./alerts";
 import { clearSession, currentUser, setSessionUser } from "./session";
 import {
   CONTRACT_VERSIONS,
@@ -213,6 +214,8 @@ export async function signSeekerContract(formData: FormData) {
   brief.contract = await makeSignature(typedName, CONTRACT_VERSIONS.seeker);
   brief.updatedAt = new Date().toISOString();
   upsertBrief(brief);
+  // The brief just went live on the Matchlist: tell matching sellers.
+  alertSellersAboutBrief(brief);
   refresh();
   redirect("/dashboard?signed=seeker");
 }
@@ -722,6 +725,18 @@ export async function markAllNotificationsRead() {
   refresh();
 }
 
+/** Dashboard setting: the % a NEW pairing must hit before we shout. */
+export async function saveAlertPref(formData: FormData) {
+  const user = await requireUser();
+  const pct = Number(formData.get("matchAlertPct"));
+  const allowed = new Set([0, 50, 70, 80, 90, 95]);
+  if (allowed.has(pct)) {
+    user.matchAlertPct = pct; // store user object is live in-memory
+  }
+  refresh();
+  redirect("/dashboard?saved=alerts");
+}
+
 // ---- Admin ----------------------------------------------------------------
 
 export async function adminVerifyReport(formData: FormData) {
@@ -742,6 +757,8 @@ export async function adminVerifyReport(formData: FormData) {
     body: `${home.headline} — Home Report verified. The Matchlist is already looking.`,
     href: "/dashboard",
   });
+  // The home just went live: tell every Quiet Seeker it matches.
+  alertSeekersAboutHome(home);
   refresh();
   redirect("/admin/reports");
 }

@@ -28,6 +28,7 @@ import type {
   Lawyer,
   MatchWeights,
   Offer,
+  OutboxEmail,
   SavedHome,
   SeekerBrief,
   SeenMatch,
@@ -49,6 +50,10 @@ interface Store {
   notifications: AppNotification[];
   introductions: Introduction[];
   seenMatches: SeenMatch[];
+  /** Simulated outbound email log (newest last). */
+  emails: OutboxEmail[];
+  /** Dedupe for "possible match" alerts: one per user per pairing key. */
+  sentAlerts: { userId: string; key: string; sentAt: string }[];
   weights: MatchWeights;
   counter: number;
 }
@@ -68,6 +73,8 @@ function seed(): Store {
     notifications: sampleNotifications,
     introductions: sampleIntroductions,
     seenMatches: [] as SeenMatch[],
+    emails: [] as OutboxEmail[],
+    sentAlerts: [] as { userId: string; key: string; sentAt: string }[],
     weights: DEFAULT_WEIGHTS,
     counter: 1000,
   });
@@ -349,6 +356,31 @@ export function markNotificationsRead(userId: string): void {
   for (const n of store().notifications) {
     if (n.userId === userId && !n.readAt) n.readAt = now;
   }
+}
+
+// ---- Email outbox (simulated sends) ---------------------------------------
+
+export function recordEmail(email: Omit<OutboxEmail, "id" | "createdAt">): void {
+  store().emails.push({
+    ...email,
+    id: newId("mail"),
+    createdAt: new Date().toISOString(),
+  });
+}
+
+export function allEmails(): OutboxEmail[] {
+  return [...store().emails].reverse(); // newest first
+}
+
+// ---- "Possible match" alert dedupe ---------------------------------------
+
+export function hasAlerted(userId: string, key: string): boolean {
+  return store().sentAlerts.some((a) => a.userId === userId && a.key === key);
+}
+
+export function recordAlert(userId: string, key: string): void {
+  if (hasAlerted(userId, key)) return;
+  store().sentAlerts.push({ userId, key, sentAt: new Date().toISOString() });
 }
 
 // ---- Seen matches (no repeat "It's a match" fanfare) ----------------------

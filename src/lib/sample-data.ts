@@ -37,6 +37,7 @@ export const sampleUsers: User[] = [
   { id: "u-elspeth", email: "elspeth@demo.matchlisted.com", name: "Elspeth Wallace", createdAt: "2026-07-03T10:00:00Z" },
   { id: "u-kirsty", email: "kirsty@demo.matchlisted.com", name: "Kirsty Muir", createdAt: "2026-06-10T10:00:00Z" },
   { id: "u-sandy", email: "sandy@demo.matchlisted.com", name: "Sandy Lindsay", createdAt: "2026-07-14T10:00:00Z" },
+  { id: "u-tam", email: "tam@demo.matchlisted.com", name: "Tam Buchanan", createdAt: "2026-07-20T10:00:00Z" },
   { id: "u-fenella", email: "fenella@demo.matchlisted.com", name: "Fenella Ross", createdAt: "2026-05-20T10:00:00Z" },
 ];
 
@@ -486,6 +487,37 @@ export const sampleHomes: HushHome[] = [
     createdAt: "2026-06-10T09:30:00Z",
   },
   {
+    // One click from live: report uploaded, awaiting admin verification.
+    // Verifying it demos the "possible match" alerts — it scores 90%+ for
+    // Ailsa (QS-2104) and Sandy (QS-2210).
+    id: "h-aberlady",
+    sellerId: "u-tam",
+    headline: "Sunlit detached family home by Aberlady Bay",
+    areaId: "east-lothian/aberlady",
+    addressLine: "4 Craigielaw Road, Aberlady",
+    price: 795000,
+    beds: 4,
+    baths: 2,
+    type: "detached",
+    garden: true,
+    features: ["parking", "sea-views", "garage"],
+    description:
+      "A bright detached family home on the edge of Aberlady with the nature reserve at the foot of the road, a west-facing garden and views over the bay.",
+    photos: [],
+    floorPlan: null,
+    homeReport: {
+      status: "uploaded",
+      supplier: "allied-surveyors",
+      orderedAt: "2026-07-21T09:00:00Z",
+      invoiceId: "inv-hr-aberlady",
+      fileName: "home-report-4-craigielaw-road.pdf",
+      uploadedAt: "2026-07-24T09:00:00Z",
+    },
+    contract: sig("Tam Buchanan", "2026-07-20T10:30:00Z", "seller-v1.0-2026-07"),
+    status: "pending-approval",
+    createdAt: "2026-07-20T10:30:00Z",
+  },
+  {
     id: "h-morningside",
     sellerId: "u-struan",
     headline: "Victorian terrace near the Hermitage",
@@ -664,6 +696,7 @@ export const sampleInvoices: Invoice[] = [
   { id: "inv-hr-standrews", userId: "u-morag", homeId: "h-standrews", kind: "home-report", description: "Home Report — Allied Surveyors (3 Gibson Place)", net: 610, vat: 122, status: "paid", createdAt: "2026-06-20T09:00:00Z", paidAt: "2026-06-20T09:02:00Z" },
   { id: "inv-hr-dunkeld", userId: "u-isla", homeId: "h-dunkeld", kind: "home-report", description: "Home Report — Graham + Sibbald (Larch Cottage)", net: 570, vat: 114, status: "paid", createdAt: "2026-06-21T09:00:00Z", paidAt: "2026-06-21T09:04:00Z" },
   { id: "inv-hr-troon", userId: "u-ewan", homeId: "h-troon", kind: "home-report", description: "Home Report — Allied Surveyors (22 Bentinck Drive)", net: 555, vat: 111, status: "paid", createdAt: "2026-06-11T09:00:00Z", paidAt: "2026-06-11T09:01:00Z" },
+  { id: "inv-hr-aberlady", userId: "u-tam", homeId: "h-aberlady", kind: "home-report", description: "Home Report — Allied Surveyors (4 Craigielaw Road)", net: 555, vat: 111, status: "paid", createdAt: "2026-07-21T09:00:00Z", paidAt: "2026-07-21T09:02:00Z" },
   { id: "inv-hr-inverness", userId: "u-isla", homeId: "h-inverness", kind: "home-report", description: "Home Report — Graham + Sibbald (9 Island Bank Lane)", net: 560, vat: 112, status: "paid", createdAt: "2026-07-08T09:00:00Z", paidAt: "2026-07-08T09:02:00Z" },
   { id: "inv-hr-melrose", userId: "u-morag", homeId: "h-melrose", kind: "home-report", description: "Home Report — Allied Surveyors (Eildon View)", net: 585, vat: 117, status: "paid", createdAt: "2026-05-22T09:00:00Z", paidAt: "2026-05-22T09:01:00Z" },
   { id: "inv-dep-kirsty", userId: "u-kirsty", homeId: "h-troon", offerId: "offer-troon", kind: "conveyancing-deposit", description: "Conveyancing deposit — Aberdein Considine appointed", net: 100, vat: 20, status: "paid", createdAt: "2026-06-25T15:00:00Z", paidAt: "2026-06-25T15:01:00Z" },

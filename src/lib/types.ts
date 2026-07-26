@@ -74,6 +74,21 @@ export interface User {
   phone?: string;
   isAdmin?: boolean;
   createdAt: string;
+  /**
+   * "Possible match" alert threshold: notify + email when a NEW pairing for
+   * this user's brief or home scores at least this %. 0 = alerts off.
+   * Undefined = the default (90, the "It's a match" band).
+   */
+  matchAlertPct?: number;
+}
+
+/** A simulated outbound email — the prototype's outbox (seam for Resend). */
+export interface OutboxEmail {
+  id: string;
+  to: string;
+  subject: string;
+  body: string;
+  createdAt: string;
 }
 
 export interface SeekerBrief {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
+  BellRing,
   CalendarClock,
   FileText,
   Heart,
@@ -18,7 +19,8 @@ import { SeekerMatchCard } from "@/components/seeker-match-card";
 import { MatchRing } from "@/components/match-ring";
 import { currentUser } from "@/lib/session";
 import { Button } from "@/components/ui/button";
-import { respondToIntroduction } from "@/lib/actions";
+import { respondToIntroduction, saveAlertPref } from "@/lib/actions";
+import { DEFAULT_ALERT_PCT } from "@/lib/alerts";
 import {
   getBrief,
   getHome,
@@ -436,6 +438,48 @@ export default async function DashboardPage() {
             </dl>
           )}
         </div>
+      </section>
+
+      {/* Possible-match alerts: the user picks how loud the Matchlist is */}
+      <section className="mt-6">
+        <form
+          action={saveAlertPref}
+          className="flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-lg)] bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline"
+        >
+          <div className="min-w-0">
+            <h2 className="flex items-center gap-2 text-xl">
+              <BellRing className="h-5 w-5 text-orange-deep" /> Possible-match
+              alerts
+            </h2>
+            <p className="mt-1 max-w-xl text-sm text-charcoal-soft">
+              When a <strong>new</strong> Hush Home or Quiet Seeker lands on
+              the Matchlist and scores this against your brief or your home,
+              you get a notification here and a{" "}
+              <em>&ldquo;You have a possible match&rdquo;</em> email.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <label htmlFor="matchAlertPct" className="sr-only">
+              Minimum match percentage for alerts
+            </label>
+            <select
+              id="matchAlertPct"
+              name="matchAlertPct"
+              defaultValue={user.matchAlertPct ?? DEFAULT_ALERT_PCT}
+              className="min-h-11 cursor-pointer rounded-xl border border-hairline bg-white px-4 text-sm font-semibold outline-none focus:border-orange-deep"
+            >
+              <option value={95}>95%+ — only the near-perfect</option>
+              <option value={90}>90%+ — “It&apos;s a match” level</option>
+              <option value={80}>80%+ — strong contenders</option>
+              <option value={70}>70%+ — cast the net wider</option>
+              <option value={50}>50%+ — anything worth a look</option>
+              <option value={0}>Off — no alerts</option>
+            </select>
+            <Button type="submit" className="min-h-11 px-5">
+              Save
+            </Button>
+          </div>
+        </form>
       </section>
 
       {/* My raised hands — seekers I've clicked as a home owner */}
