@@ -1,0 +1,490 @@
+@import "tailwindcss";
+
+/*
+  Matchlisted brand design tokens.
+  A dating site for homes: playful warmth, serious money. White-dominant,
+  soft shadows, rounded cards. Charcoal structure, Match Orange hearts and
+  CTAs, Seeker Blue links and seeker-side UI.
+*/
+@theme {
+  /* Core brand */
+  --color-charcoal: #34393f; /* headings, text, structure */
+  --color-charcoal-deep: #23272b; /* dark section grounds, footer */
+  --color-charcoal-soft: #565d66; /* AA-safe secondary text on white */
+  --color-orange: #f37c24; /* Match Orange: the heart, rings, badges */
+  --color-orange-deep: #b4530c; /* AA-safe orange for text + CTA bg (4.5:1+) */
+  --color-orange-cta-hover: #9a4708;
+  --color-orange-tint: #fef1e7; /* tint panels, heart hover fills */
+  --color-blue: #2fa2ce; /* Seeker Blue accents, 50-89% rings */
+  --color-blue-deep: #1d7096; /* AA-safe blue for links and text */
+  --color-blue-tint: #eaf6fb;
+  --color-soft: #f5f6f7; /* Soft Grey section backgrounds */
+  --color-paper: #ffffff; /* cards */
+  --color-hairline: #e4e7ea;
+  --color-muted: #6c737b;
+
+  /* Supporting */
+  --color-green: #2e9e6b; /* Verified Green: home report verified, contracts */
+  --color-green-deep: #1f7a50; /* AA text on tints */
+  --color-green-tint: #e6f4ed;
+  --color-red: #e0533d; /* Alert Red, sparingly */
+  --color-red-deep: #b23a27;
+  --color-red-tint: #fbeae7;
+
+  /* Typography: Montserrat display (closest to wordmark), Inter body */
+  --font-display: var(--font-montserrat), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+
+  /* Radii — rounded, card-led, dating-app soft */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+
+  /* Card shadows — one consistent elevation scale */
+  --shadow-card: 0 1px 2px rgb(52 57 63 / 0.05), 0 8px 24px -6px rgb(52 57 63 / 0.1);
+  --shadow-card-hover: 0 2px 4px rgb(52 57 63 / 0.06), 0 20px 44px -10px rgb(52 57 63 / 0.18);
+  --shadow-glow: 0 0 0 1px rgb(243 124 36 / 0.25), 0 10px 40px -8px rgb(243 124 36 / 0.35);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-charcoal);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--color-charcoal);
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-weight: 800;
+    letter-spacing: -0.035em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-orange-deep);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-orange-tint);
+    color: var(--color-charcoal);
+  }
+}
+
+/* Gentle fade-up for scroll reveals. */
+@keyframes fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fadeup 0.6s ease-out both;
+}
+.fade-up-late {
+  animation: fadeup 0.6s ease-out 0.15s both;
+}
+
+/* Hero ground: warm radial washes on white, quiet but not flat. */
+.hero-ground {
+  background:
+    radial-gradient(52rem 30rem at 85% -10%, rgb(243 124 36 / 0.1), transparent 60%),
+    radial-gradient(40rem 26rem at -10% 110%, rgb(47 162 206 / 0.09), transparent 60%),
+    var(--color-soft);
+}
+
+/* Statement display type for hero + section leads. */
+.display-xl {
+  font-size: clamp(2.6rem, 5.5vw, 4.25rem);
+  line-height: 1.02;
+}
+.display-lg {
+  font-size: clamp(1.9rem, 3.2vw, 2.75rem);
+  line-height: 1.1;
+}
+
+/* Card hover lift — transform+shadow only, no layout shift. */
+.card-lift {
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+@media (hover: hover) {
+  .card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-lift:hover {
+    transform: none;
+  }
+}
+
+/* Heart pop when a home is saved to the Matchlist. */
+@keyframes heartpop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.heart-pop {
+  animation: heartpop 0.35s ease-out;
+}
+
+/* Dual-handle budget slider: two stacked native ranges, transparent tracks,
+   only the thumbs catch the pointer. */
+.dual-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  height: 100%;
+}
+.dual-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid var(--color-orange);
+  box-shadow: 0 1px 4px rgb(52 57 63 / 0.25);
+  cursor: grab;
+}
+.dual-range::-moz-range-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid var(--color-orange);
+  box-shadow: 0 1px 4px rgb(52 57 63 / 0.25);
+  cursor: grab;
+}
+.dual-range::-moz-range-track {
+  background: transparent;
+}
+
+/* "It's a match" celebration ring. */
+@keyframes matchring {
+  from {
+    stroke-dashoffset: var(--ring-circumference, 100);
+  }
+  to {
+    stroke-dashoffset: var(--ring-offset, 0);
+  }
+}
+.match-ring-arc {
+  animation: matchring 0.9s ease-out both;
+}
+
+/* Count-up % number for MatchRing (countUp prop): a typed custom property
+   tweens 0 → target and a CSS counter renders it. Zero JS. In browsers
+   without @property support the number simply jumps — fine. */
+@property --pct-num {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
+@keyframes countup {
+  from {
+    --pct-num: 0;
+  }
+  to {
+    --pct-num: var(--pct-target, 100);
+  }
+}
+.ring-count {
+  animation: countup 0.9s ease-out both;
+  counter-reset: pct var(--pct-num);
+}
+.ring-count::after {
+  content: counter(pct) "%";
+}
+
+/* ------------------------------------------------------------------ */
+/* The Concept Reel: a ~15s looping in-code "video" that explains the  */
+/* whole idea. One master clock (--reel); every element runs the full  */
+/* duration, linear + infinite, and stages its scene as percentage     */
+/* windows inside its own keyframes, so the loop is always seamless.   */
+/* Scenes: seeker card in → home card in → ring sweeps to 97% → It's   */
+/* a match! → tagline → fade out and around again.                     */
+/* ------------------------------------------------------------------ */
+:root {
+  --reel: 15s;
+}
+
+.reel-run {
+  animation-duration: var(--reel);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+[data-paused="true"] .reel-run {
+  animation-play-state: paused;
+}
+
+@keyframes reel-card-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-56px) translateY(0) rotate(-4deg);
+  }
+  6%,
+  30% {
+    opacity: 1;
+    transform: translateX(0) translateY(0) rotate(-2deg);
+  }
+  36%,
+  90% {
+    opacity: 1;
+    transform: translateX(12px) translateY(-4px) rotate(-1deg);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translateX(12px) translateY(-4px) rotate(-1deg);
+  }
+}
+
+@keyframes reel-card-right {
+  0%,
+  12% {
+    opacity: 0;
+    transform: translateX(56px) translateY(0) rotate(4deg);
+  }
+  18%,
+  30% {
+    opacity: 1;
+    transform: translateX(0) translateY(0) rotate(2deg);
+  }
+  36%,
+  90% {
+    opacity: 1;
+    transform: translateX(-12px) translateY(-4px) rotate(1deg);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translateX(-12px) translateY(-4px) rotate(1deg);
+  }
+}
+
+/* The ring badge scales in between the two cards, then the arc sweeps. */
+@keyframes reel-ring {
+  0%,
+  32% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  36%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes reel-ring-sweep {
+  0%,
+  36% {
+    stroke-dashoffset: var(--ring-circumference, 100);
+  }
+  47%,
+  90% {
+    stroke-dashoffset: var(--ring-offset, 0);
+  }
+  100% {
+    stroke-dashoffset: var(--ring-circumference, 100);
+  }
+}
+
+@keyframes reel-count {
+  0%,
+  36% {
+    --pct-num: 0;
+  }
+  47%,
+  100% {
+    --pct-num: var(--pct-target, 97);
+  }
+}
+.reel-count {
+  counter-reset: pct var(--pct-num);
+}
+.reel-count::after {
+  content: counter(pct) "%";
+}
+
+/* The "It's a match!" banner pops up under the cards. */
+@keyframes reel-banner {
+  0%,
+  47% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0) scale(1.04);
+  }
+  53%,
+  90% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Heart pop inside the banner — borrowed heartpop shape, reel-windowed. */
+@keyframes reel-heart {
+  0%,
+  47% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+  53%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* Sparkle particles burst outward from the ring on the match moment.
+   Each particle sets --dx/--dy for its direction. */
+@keyframes reel-sparkle {
+  0%,
+  47% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  50% {
+    opacity: 1;
+  }
+  58%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx, 0), var(--dy, -40px)) scale(1);
+  }
+}
+
+/* Closing caption: "A private introduction — no boards, no portals." */
+@keyframes reel-caption {
+  0%,
+  68% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  73%,
+  91% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+/* Narrow phones: the reel is a fixed 28rem canvas — scale it down and pull
+   the layout box in so the section below doesn't gape. */
+/* The reel canvas is a fixed 28rem design surface. Centre it with a
+   translate (auto margins never go negative when it overflows the column),
+   and on narrow phones shrink it with a scale on the same transform. */
+.reel-canvas {
+  margin-left: 50%;
+  transform: translateX(-50%);
+  transform-origin: top center;
+}
+@media (max-width: 500px) {
+  .reel-canvas {
+    transform: translateX(-50%) scale(0.72);
+    margin-bottom: -7.5rem;
+  }
+}
+
+/* Reduced motion: the global kill-switch would freeze the reel on its
+   faded-out last frame, so swap the animated stage for a static tableau. */
+.reel-static {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reel-stage {
+    display: none;
+  }
+  .reel-static {
+    display: block;
+  }
+}
+
+/* Live-from-the-Matchlist ticker: each item fades up as it swaps in. */
+@keyframes tickerin {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ticker-item {
+  animation: tickerin 0.45s ease-out both;
+}

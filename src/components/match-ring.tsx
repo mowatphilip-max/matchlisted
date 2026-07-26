@@ -1,0 +1,100 @@
+// The circular Match % ring badge worn by every home card and profile.
+// Orange ring ≥90%, blue 50–89%, grey <50%.
+
+import { matchBand } from "@/lib/match";
+import { cn } from "@/lib/utils";
+
+const bandColors = {
+  hot: { ring: "#F37C24", text: "text-orange-deep" },
+  warm: { ring: "#2FA2CE", text: "text-blue-deep" },
+  cool: { ring: "#9AA1A9", text: "text-charcoal-soft" },
+} as const;
+
+const sizes = {
+  sm: { box: 44, stroke: 4, textCls: "text-[11px]" },
+  md: { box: 60, stroke: 5, textCls: "text-sm" },
+  lg: { box: 88, stroke: 6, textCls: "text-xl" },
+} as const;
+
+export function MatchRing({
+  pct,
+  size = "md",
+  className,
+  animate = false,
+  countUp = false,
+}: {
+  pct: number;
+  size?: keyof typeof sizes;
+  className?: string;
+  animate?: boolean;
+  /** Count the number up 0→pct in sync with the arc sweep (CSS-only). */
+  countUp?: boolean;
+}) {
+  const { box, stroke, textCls } = sizes[size];
+  const band = matchBand(pct);
+  const { ring, text } = bandColors[band];
+  const r = (box - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = c * (1 - Math.min(pct, 100) / 100);
+
+  return (
+    <div
+      className={cn("relative inline-flex items-center justify-center", className)}
+      style={{ width: box, height: box }}
+      role="img"
+      aria-label={`${pct}% match`}
+    >
+      <svg width={box} height={box} className="-rotate-90">
+        <circle
+          cx={box / 2}
+          cy={box / 2}
+          r={r}
+          fill="white"
+          stroke="#E4E7EA"
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={box / 2}
+          cy={box / 2}
+          r={r}
+          fill="none"
+          stroke={ring}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={offset}
+          className={animate ? "match-ring-arc" : undefined}
+          style={
+            animate
+              ? ({
+                  "--ring-circumference": `${c}`,
+                  "--ring-offset": `${offset}`,
+                } as React.CSSProperties)
+              : undefined
+          }
+        />
+      </svg>
+      {countUp ? (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "ring-count absolute inset-0 flex items-center justify-center font-bold font-display",
+            textCls,
+            text,
+          )}
+          style={{ "--pct-target": pct } as React.CSSProperties}
+        />
+      ) : (
+        <span
+          className={cn(
+            "absolute inset-0 flex items-center justify-center font-bold font-display",
+            textCls,
+            text,
+          )}
+        >
+          {pct}%
+        </span>
+      )}
+    </div>
+  );
+}
