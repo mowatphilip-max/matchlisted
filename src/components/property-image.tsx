@@ -30,6 +30,20 @@ export function PropertyImage({
   className?: string;
 }) {
   if (src) {
+    // Seller-uploaded photos live in the store as data: URLs (prototype);
+    // next/image rejects those, so render them with a plain img.
+    if (src.startsWith("data:")) {
+      return (
+        <div className={cn("relative overflow-hidden", className)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </div>
+      );
+    }
     return (
       <div className={cn("relative overflow-hidden", className)}>
         <Image src={src} alt={alt} fill className="object-cover" />

@@ -7,11 +7,13 @@ import {
   CircleDashed,
   FileCheck2,
   FileUp,
+  ImagePlus,
   PenLine,
   Trash2,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button, ButtonLink } from "@/components/ui/button";
+import { PropertyImage } from "@/components/property-image";
 import { SeekerMatchCard } from "@/components/seeker-match-card";
 import { currentUser } from "@/lib/session";
 import {
@@ -27,7 +29,9 @@ import {
   addViewingSlot,
   deleteViewingSlot,
   orderHomeReport,
+  removeHomePhoto,
   respondToOffer,
+  uploadHomePhotos,
   uploadHomeReport,
 } from "@/lib/actions";
 import { areaLabel } from "@/lib/areas";
@@ -266,6 +270,74 @@ export default async function SellerHomePage({
           </p>
         )}
       </div>
+
+      {/* Photos — the seller's own, uploadable at any stage */}
+      <section id="photos" className="mt-10 scroll-mt-20">
+        <h2 className="text-2xl">Photos</h2>
+        <p className="mt-1 text-sm text-charcoal-soft">
+          Upload your own photos whenever you like — before the Home Report is
+          even ordered. They only show to buyers once the listing is live, and
+          profiles with photos get more Introductions.
+        </p>
+        <div className="mt-5 rounded-[var(--radius-lg)] bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline">
+          {home.photos.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {home.photos.map((src, i) => (
+                <div key={i} className="group relative">
+                  <PropertyImage
+                    src={src}
+                    alt={`Photo ${i + 1} of ${home.headline}`}
+                    placeholderKey={home.id}
+                    className="aspect-[4/3] w-full rounded-xl"
+                  />
+                  {i === 0 && (
+                    <span className="absolute left-2 top-2 rounded-full bg-charcoal/80 px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                      Cover
+                    </span>
+                  )}
+                  <form action={removeHomePhoto} className="absolute right-2 top-2">
+                    <input type="hidden" name="homeId" value={home.id} />
+                    <input type="hidden" name="index" value={i} />
+                    <button
+                      type="submit"
+                      aria-label={`Remove photo ${i + 1}`}
+                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/90 text-charcoal-soft shadow-sm ring-1 ring-hairline transition-colors hover:text-red-deep"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </form>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-charcoal-soft">
+              No photos yet. The first one you upload becomes the cover.
+            </p>
+          )}
+          {home.photos.length < 8 && (
+            <form
+              action={uploadHomePhotos}
+              className="mt-4 flex flex-wrap items-center gap-3 border-t border-hairline pt-4"
+            >
+              <input type="hidden" name="homeId" value={home.id} />
+              <input
+                type="file"
+                name="photos"
+                accept="image/*"
+                multiple
+                required
+                className="text-sm file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-charcoal file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+              />
+              <Button type="submit" variant="seller" className="min-h-9 px-4 py-1.5">
+                <ImagePlus className="h-4 w-4" /> Upload photos
+              </Button>
+              <span className="text-xs text-charcoal-soft">
+                Up to 8 photos · JPG/PNG/HEIC · we resize them for you
+              </span>
+            </form>
+          )}
+        </div>
+      </section>
 
       {/* Matching seekers */}
       <section className="mt-10">

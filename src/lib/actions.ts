@@ -302,6 +302,57 @@ export async function orderHomeReport(formData: FormData) {
   redirect(`/pay/${invoice.id}`);
 }
 
+/**
+ * Seller uploads their own photos — allowed at ANY stage (before the Home
+ * Report too); only going LIVE is gated on the verified report. Prototype
+ * storage: compressed to ~1200px JPEG data URLs in the in-memory store.
+ * Production swaps this for Supabase Storage.
+ */
+export async function uploadHomePhotos(formData: FormData) {
+  const user = await requireUser();
+  const home = getHome(String(formData.get("homeId") ?? ""));
+  if (!home || home.sellerId !== user.id) redirect("/dashboard");
+
+  const MAX_PHOTOS = 8;
+  const MAX_BYTES = 8 * 1024 * 1024;
+  const files = formData
+    .getAll("photos")
+    .filter((f): f is File => f instanceof File && f.size > 0);
+
+  const sharp = (await import("sharp")).default;
+  for (const file of files) {
+    if (home.photos.length >= MAX_PHOTOS) break;
+    if (file.size > MAX_BYTES || !file.type.startsWith("image/")) continue;
+    try {
+      const buf = Buffer.from(await file.arrayBuffer());
+      const jpeg = await sharp(buf)
+        .rotate() // respect EXIF orientation
+        .resize(1200, 1200, { fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+      home.photos.push(`data:image/jpeg;base64,${jpeg.toString("base64")}`);
+    } catch {
+      // Not a readable image — skip it quietly.
+    }
+  }
+  upsertHome(home);
+  refresh();
+  redirect(`/dashboard/home/${home.id}#photos`);
+}
+
+export async function removeHomePhoto(formData: FormData) {
+  const user = await requireUser();
+  const home = getHome(String(formData.get("homeId") ?? ""));
+  if (!home || home.sellerId !== user.id) redirect("/dashboard");
+  const index = Number(formData.get("index"));
+  if (Number.isInteger(index) && index >= 0 && index < home.photos.length) {
+    home.photos.splice(index, 1);
+    upsertHome(home);
+  }
+  refresh();
+  redirect(`/dashboard/home/${home.id}#photos`);
+}
+
 export async function uploadHomeReport(formData: FormData) {
   const user = await requireUser();
   const home = getHome(String(formData.get("homeId") ?? ""));
