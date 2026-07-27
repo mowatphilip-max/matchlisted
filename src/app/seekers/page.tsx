@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { ShieldCheck, TriangleAlert } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
-import { SeekerCard } from "@/components/seeker-card";
-import { toBriefLike } from "@/lib/mowatt-bridge";
+import { SeekersBrowser } from "@/components/seekers/seekers-browser";
 import { fetchMowattSeekers } from "@/lib/mowatt-seekers";
 
 export const metadata: Metadata = {
@@ -18,7 +18,6 @@ export const dynamic = "force-dynamic";
 export default async function SeekersDirectoryPage() {
   const { seekers, failedRegions } = await fetchMowattSeekers();
   const active = seekers.filter((s) => s.active);
-  const matched = seekers.filter((s) => !s.active);
 
   return (
     <>
@@ -54,35 +53,7 @@ export default async function SeekersDirectoryPage() {
 
       <section className="py-14 sm:py-16">
         <Container>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {active.map((s) => (
-              <SeekerCard key={s.ref} brief={toBriefLike(s)} />
-            ))}
-          </div>
-
-          {matched.length > 0 && (
-            <>
-              <h2 className="mt-14 text-2xl">
-                {matched.length} recently matched
-              </h2>
-              <p className="mt-1 text-sm text-charcoal-soft">
-                These buyers found their home through the Matchlist — proof
-                the quiet route works.
-              </p>
-              <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {matched.map((s) => (
-                  <div key={s.ref} className="relative">
-                    <div className="pointer-events-none select-none opacity-55 grayscale-[0.4]">
-                      <SeekerCard brief={toBriefLike(s)} />
-                    </div>
-                    <span className="absolute left-1/2 top-4 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-charcoal/85 px-4 py-1.5 text-xs font-semibold text-white shadow-sm">
-                      This buyer has found their home
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          <SeekersBrowser seekers={seekers} />
         </Container>
       </section>
 

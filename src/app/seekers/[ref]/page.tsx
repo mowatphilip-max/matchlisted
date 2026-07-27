@@ -27,8 +27,9 @@ import {
   getBriefByPublicRef,
   homesBySeller,
 } from "@/lib/db";
+import { MowattSeekerCard } from "@/components/seekers/mowatt-seeker-card";
 import { findMowattSeeker, toBriefLike } from "@/lib/mowatt-bridge";
-import { fetchMowattSeekers } from "@/lib/mowatt-seekers";
+import { fetchMowattSeekers, type MowattSeeker } from "@/lib/mowatt-seekers";
 import { currentUser } from "@/lib/session";
 import { FEATURE_TAGS, PROPERTY_TYPES, type SeekerBrief } from "@/lib/types";
 
@@ -88,19 +89,19 @@ export default async function SeekerProfilePage({
 
   // Nearby seekers: native briefs by shared area id, or for sheet seekers,
   // other live sheet profiles that share a town.
-  let others: SeekerBrief[];
+  let others: SeekerBrief[] = [];
+  let sheetOthers: MowattSeeker[] = [];
   if (sheet) {
     const { seekers } = await fetchMowattSeekers();
     const mine = seekers.find((s) => s.ref === brief.publicRef);
-    others = seekers
+    sheetOthers = seekers
       .filter(
         (s) =>
           s.active &&
           s.ref !== brief.publicRef &&
           s.towns.some((t) => mine?.towns.includes(t)),
       )
-      .slice(0, 3)
-      .map(toBriefLike);
+      .slice(0, 3);
   } else {
     others = activeBriefs()
       .filter(
@@ -342,11 +343,14 @@ export default async function SeekerProfilePage({
         </Container>
       </section>
 
-      {others.length > 0 && (
+      {(others.length > 0 || sheetOthers.length > 0) && (
         <section className="border-t border-hairline py-14">
           <Container>
             <h2 className="text-2xl">More seekers in the same areas</h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {sheetOthers.map((s) => (
+                <MowattSeekerCard key={s.ref} seeker={s} />
+              ))}
               {others.map((b) => (
                 <SeekerCard key={b.publicRef} brief={b} />
               ))}

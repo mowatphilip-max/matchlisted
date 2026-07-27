@@ -11,13 +11,13 @@ import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { MatchRing } from "@/components/match-ring";
 import { HomeCard } from "@/components/home-card";
-import { SeekerCard } from "@/components/seeker-card";
+import { MowattSeekerCard } from "@/components/seekers/mowatt-seeker-card";
 import { ConceptReel } from "@/components/home/concept-reel";
 import { AreaFinder } from "@/components/home/area-finder";
 import { LiveTicker } from "@/components/home/live-ticker";
 import { getBrief, homesBySeller, liveHomes } from "@/lib/db";
 import { matchesForHome, matchesForSeeker } from "@/lib/matches";
-import { mowattAreaStats, toBriefLike } from "@/lib/mowatt-bridge";
+import { mowattAreaStats } from "@/lib/mowatt-bridge";
 import { fetchMowattSeekers } from "@/lib/mowatt-seekers";
 import { areaSeekerStats, matchlistPulse } from "@/lib/pulse";
 import { currentUser } from "@/lib/session";
@@ -86,7 +86,7 @@ export default async function HomePage() {
   const liveSeekers = seekers.filter((s) => s.active);
   const stats =
     liveSeekers.length > 0 ? mowattAreaStats(seekers) : areaSeekerStats();
-  const seekerTeasers = liveSeekers.slice(0, 3).map(toBriefLike);
+  const seekerTeasers = liveSeekers.slice(0, 3);
   const seekerCount = liveSeekers.length;
 
   const teasers = liveHomes()
@@ -323,8 +323,8 @@ export default async function HomePage() {
             </ButtonLink>
           </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {seekerTeasers.map((brief) => (
-              <SeekerCard key={brief.publicRef} brief={brief} />
+            {seekerTeasers.map((seeker) => (
+              <MowattSeekerCard key={seeker.ref} seeker={seeker} />
             ))}
           </div>
         </Container>

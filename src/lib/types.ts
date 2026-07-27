@@ -1,5 +1,10 @@
 // Shared domain types. One source of truth for the whole app.
 
+import type {
+  SeekerPropertyType,
+  SeekerReadiness,
+} from "./mowatt-seekers";
+
 export type PropertyType =
   | "detached"
   | "semi-detached"
@@ -119,6 +124,19 @@ export interface SeekerBrief {
   position: BuyingPosition | (string & {});
   notes?: string;
   contract: ContractSignature | null;
+  /**
+   * Property types this seeker wants (multi-select from the closed icon
+   * set). Empty/undefined = "any". The FIRST entry drives the card icon;
+   * the full set drives matching and filters.
+   */
+  propertyTypes?: SeekerPropertyType[];
+  /** Readiness signals shown as card badges. Defaults to empty. */
+  readiness?: SeekerReadiness[];
+  /** Only true after a real ID & funds check — never defaulted on. */
+  vetted?: boolean;
+  /** Budget meter scale ends; derived ±30% when absent. */
+  budgetRangeMin?: number | null;
+  budgetRangeMax?: number | null;
   createdAt: string;
   updatedAt: string;
 }

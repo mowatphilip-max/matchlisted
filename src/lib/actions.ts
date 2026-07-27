@@ -56,6 +56,7 @@ import {
   homeReportQuote,
   sourcingFee,
 } from "./site";
+import type { SeekerPropertyType } from "./mowatt-seekers";
 import type {
   BuyingPosition,
   ContractSignature,
@@ -186,6 +187,21 @@ export async function saveBrief(formData: FormData) {
   const headline = String(formData.get("headline") ?? "").trim();
   const story = String(formData.get("story") ?? "").trim();
 
+  // Property-type picker (multi-select from the closed set). Skipped = []
+  // = "open to any" — the card renders the 'any' icon, never an empty tile.
+  const { SEEKER_PROPERTY_TYPES } = await import("./mowatt-seekers");
+  const validTypes = new Set<string>(SEEKER_PROPERTY_TYPES.map((t) => t.key));
+  let propertyTypes: SeekerPropertyType[] = [];
+  try {
+    const raw: unknown = JSON.parse(String(formData.get("propertyTypes") ?? "[]"));
+    if (Array.isArray(raw)) {
+      propertyTypes = raw.filter(
+        (t): t is SeekerPropertyType =>
+          typeof t === "string" && validTypes.has(t) && t !== "any",
+      );
+    }
+  } catch {}
+
   const brief: SeekerBrief = {
     userId: user.id,
     // Public anonymised profile. The ref is stable for the brief's life;
@@ -209,6 +225,11 @@ export async function saveBrief(formData: FormData) {
       "cash-nothing-to-sell",
     notes: String(formData.get("notes") ?? "").trim() || undefined,
     contract: existing?.contract ?? null,
+    propertyTypes,
+    readiness: existing?.readiness ?? [],
+    vetted: existing?.vetted ?? false,
+    budgetRangeMin: existing?.budgetRangeMin ?? null,
+    budgetRangeMax: existing?.budgetRangeMax ?? null,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };

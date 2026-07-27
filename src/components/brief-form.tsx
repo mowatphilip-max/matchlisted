@@ -5,9 +5,14 @@
 // and the structured preference fields the Matchlist scores against.
 
 import { useMemo, useState } from "react";
-import { MapPin, Search, X } from "lucide-react";
+import { Check, MapPin, Search, X } from "lucide-react";
 import { REGIONS, areaId, areaLabel, searchAreas } from "@/lib/areas";
 import { saveBrief } from "@/lib/actions";
+import {
+  SEEKER_PROPERTY_TYPES,
+  type SeekerPropertyType,
+} from "@/lib/mowatt-seekers";
+import { PropertyTypeIcon } from "@/components/property-type-icon";
 import {
   BUYING_POSITIONS,
   FEATURE_TAGS,
@@ -16,6 +21,10 @@ import {
 } from "@/lib/types";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+
+// The picker offers the ten concrete types — "any" is the implicit
+// fallback when the step is skipped, never an option you tick.
+const PICKER_TYPES = SEEKER_PROPERTY_TYPES.filter((t) => t.key !== "any");
 
 // Budget slider: log scale so the £200k–£600k heartland gets most of the
 // travel. t ∈ [0,100] → £50,000 … £5,000,000, snapped to sensible steps.
@@ -43,6 +52,15 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
   const [browseRegion, setBrowseRegion] = useState<string | null>(null);
   const [tMin, setTMin] = useState(valueToT(brief?.budgetMin ?? 150000));
   const [tMax, setTMax] = useState(valueToT(brief?.budgetMax ?? 450000));
+  const [pickedTypes, setPickedTypes] = useState<SeekerPropertyType[]>(
+    brief?.propertyTypes ?? [],
+  );
+
+  function togglePickedType(key: SeekerPropertyType) {
+    setPickedTypes((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+    );
+  }
 
   const budgetMin = tToValue(Math.min(tMin, tMax));
   const budgetMax = tToValue(Math.max(tMin, tMax));
@@ -58,6 +76,11 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
       <input type="hidden" name="areas" value={JSON.stringify(areas)} />
       <input type="hidden" name="budgetMin" value={budgetMin} />
       <input type="hidden" name="budgetMax" value={budgetMax} />
+      <input
+        type="hidden"
+        name="propertyTypes"
+        value={JSON.stringify(pickedTypes)}
+      />
 
       {/* Areas */}
       <section>
@@ -179,6 +202,65 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
       </section>
 
       {/* Budget */}
+      <section>
+        <h2 className="text-xl">What kind of home are you looking for?</h2>
+        <p className="mt-1 max-w-xl text-sm text-charcoal-soft">
+          Pick the closest match — more than one if you&apos;re torn. This
+          helps us match you to the right properties before they&apos;re
+          listed — and it&apos;s the image that appears on your anonymous
+          Quiet Seeker card. You can change it any time.
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {PICKER_TYPES.map((t) => {
+            const on = pickedTypes.includes(t.key);
+            const first = pickedTypes[0] === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                aria-pressed={on}
+                onClick={() => togglePickedType(t.key)}
+                className={cn(
+                  "relative min-h-11 cursor-pointer rounded-xl border-[1.5px] p-3 pb-2.5 text-center transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-orange/50",
+                  on
+                    ? "border-orange-deep bg-orange-tint shadow-[0_0_0_3px_rgb(243_124_36/0.14)]"
+                    : "border-hairline bg-white hover:border-charcoal/30 hover:bg-soft/60",
+                )}
+              >
+                {on && (
+                  <span className="absolute -right-2 -top-2 flex h-[22px] w-[22px] items-center justify-center rounded-full bg-orange-deep text-white">
+                    <Check className="h-3 w-3" aria-hidden="true" />
+                    <span className="sr-only">selected</span>
+                  </span>
+                )}
+                <PropertyTypeIcon
+                  type={t.key}
+                  size={52}
+                  className="mx-auto text-charcoal"
+                />
+                <span className="mt-2 block text-[11.5px] font-bold leading-tight">
+                  {t.label}
+                </span>
+                {first && pickedTypes.length > 1 && (
+                  <span className="mt-0.5 block text-[9.5px] font-semibold uppercase tracking-wide text-orange-deep">
+                    Card icon
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-xs text-charcoal-soft" aria-live="polite">
+          {pickedTypes.length === 0
+            ? "Skip this and your card shows the “open to any property type” mark."
+            : `Selected: ${pickedTypes
+                .map(
+                  (k) => SEEKER_PROPERTY_TYPES.find((t) => t.key === k)?.label,
+                )
+                .join(", ")}${pickedTypes.length > 1 ? " — the first one is your card icon" : ""}.`}
+        </p>
+      </section>
+
       <section>
         <h2 className="text-xl">Your budget range</h2>
         <p className="mt-1 text-sm text-charcoal-soft">
