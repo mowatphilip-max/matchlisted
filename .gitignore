@@ -41,4 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+# Every .env file stays out of the repo — except the no-secrets template.
 .env*
+!.env.example
