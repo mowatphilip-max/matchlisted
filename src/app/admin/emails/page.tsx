@@ -7,9 +7,9 @@ export const metadata: Metadata = { title: "Admin — Email outbox" };
 
 // In the prototype nothing is really sent: every email the platform would
 // send lands here so the flow can be inspected. Production swaps the
-// recordEmail() seam in lib/db.ts for Resend.
-export default function AdminEmailsPage() {
-  const emails = allEmails();
+// await recordEmail() seam in lib/db.ts for Resend.
+export default async function AdminEmailsPage() {
+  const emails = await allEmails();
 
   return (
     <>

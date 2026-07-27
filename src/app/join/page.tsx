@@ -16,7 +16,7 @@ export default async function JoinPage({
   searchParams: Promise<{ as?: string; error?: string; seeker?: string }>;
 }) {
   const { as, error, seeker } = await searchParams;
-  let seekerBrief = seeker ? getBriefByPublicRef(seeker) : undefined;
+  let seekerBrief = seeker ? await getBriefByPublicRef(seeker) : undefined;
   let sheetSeeker = false;
   if (seeker && !seekerBrief?.contract) {
     const mowatt = await findMowattSeeker(seeker);
@@ -57,6 +57,20 @@ export default async function JoinPage({
         {error === "invalid" && (
           <p className="mt-4 rounded-xl bg-red-tint px-4 py-3 text-sm font-medium text-red-deep">
             Please give us your name and a valid email address.
+          </p>
+        )}
+        {error === "weak-password" && (
+          <p className="mt-4 rounded-xl bg-red-tint px-4 py-3 text-sm font-medium text-red-deep">
+            Your password needs to be at least 10 characters.
+          </p>
+        )}
+        {error === "signup-failed" && (
+          <p className="mt-4 rounded-xl bg-red-tint px-4 py-3 text-sm font-medium text-red-deep">
+            We couldn&apos;t create that account. If you already have one,{" "}
+            <Link href="/login" className="underline">
+              sign in instead
+            </Link>
+            .
           </p>
         )}
 
@@ -134,9 +148,28 @@ export default async function JoinPage({
               id="email"
               name="email"
               type="email"
+              autoComplete="email"
               required
               className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
             />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-semibold">
+              Choose a password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={10}
+              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
+            />
+            <p className="mt-1 text-xs text-charcoal-soft">
+              At least 10 characters. A short phrase you&apos;ll remember beats
+              a complicated word.
+            </p>
           </div>
           <Button type="submit" className="w-full">
             {intent === "seller"

@@ -18,10 +18,10 @@ export default async function ViewingFeedbackPage({
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
-  const viewing = getViewing(id);
+  const viewing = await getViewing(id);
   if (!viewing || viewing.seekerId !== user.id) notFound();
   if (viewing.status === "completed") redirect("/dashboard");
-  const home = getHome(viewing.homeId);
+  const home = await getHome(viewing.homeId);
   if (!home) notFound();
 
   return (

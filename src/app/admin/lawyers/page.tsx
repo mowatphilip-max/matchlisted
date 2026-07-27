@@ -6,8 +6,8 @@ import { formatPrice } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Admin — lawyer panel" };
 
-export default function AdminLawyersPage() {
-  const lawyers = allLawyers();
+export default async function AdminLawyersPage() {
+  const lawyers = await allLawyers();
 
   return (
     <>

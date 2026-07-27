@@ -15,7 +15,7 @@ export default async function EditHomePage({
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
-  const home = getHome(id);
+  const home = await getHome(id);
   if (!home || home.sellerId !== user.id) notFound();
 
   return (

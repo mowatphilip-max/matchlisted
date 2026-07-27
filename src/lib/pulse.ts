@@ -1,6 +1,6 @@
 // Read-only "pulse of the Matchlist" helpers for the landing page.
 // IMPORTANT: nothing here may mutate the store — in particular, never call
-// collectFreshHotMatches() from the landing page (it records seen-matches
+// await collectFreshHotMatches() from the landing page (it records seen-matches
 // and pushes notifications, which would consume the dashboard celebration).
 
 import { activeBriefs, liveHomes, matchWeights } from "./db";
@@ -24,7 +24,7 @@ export interface AreaSeekerStats {
  * with the span of their budgets. A brief credits each of its areas once,
  * and each council once. Compact enough to ship to a client island as JSON.
  */
-export function areaSeekerStats(): AreaSeekerStats {
+export async function areaSeekerStats(): Promise<AreaSeekerStats> {
   const byPlace: Record<string, AreaStat> = {};
   const byCouncil: Record<string, AreaStat> = {};
 
@@ -39,7 +39,7 @@ export function areaSeekerStats(): AreaSeekerStats {
     }
   };
 
-  for (const brief of activeBriefs()) {
+  for (const brief of await activeBriefs()) {
     const councils = new Set<string>();
     for (const areaId of brief.areas) {
       credit(byPlace, areaId, brief.budgetMin, brief.budgetMax);
@@ -62,10 +62,10 @@ export interface PulseEvent {
  * A short anonymised feed of real store activity for the landing-page
  * ticker: newest seekers, hottest live pairings, freshest Hush Homes.
  */
-export function matchlistPulse(): PulseEvent[] {
-  const briefs = activeBriefs();
-  const homes = liveHomes();
-  const weights = matchWeights();
+export async function matchlistPulse(): Promise<PulseEvent[]> {
+  const briefs = await activeBriefs();
+  const homes = await liveHomes();
+  const weights = await matchWeights();
 
   const newestSeekers: PulseEvent[] = [...briefs]
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))

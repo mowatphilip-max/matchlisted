@@ -16,7 +16,7 @@ const nav = [
 export async function SiteHeader() {
   const user = await currentUser();
   const unread = user
-    ? notificationsForUser(user.id).filter((n) => !n.readAt).length
+    ? (await notificationsForUser(user.id)).filter((n) => !n.readAt).length
     : 0;
 
   return (

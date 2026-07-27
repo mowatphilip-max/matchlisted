@@ -1,107 +1,107 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
-import { demoSignIn, signInWithEmail } from "@/lib/actions";
-import { getUserByEmail } from "@/lib/db";
+import { requestPasswordReset, signIn } from "@/lib/actions";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-const personas = [
-  {
-    email: "ailsa@demo.matchlisted.com",
-    label: "Ailsa — Quiet Seeker",
-    detail: "East Lothian brief, a 99% match waiting",
-  },
-  {
-    email: "gordon@demo.matchlisted.com",
-    label: "Gordon — Hush Home seller",
-    detail: "Live listing in Gullane",
-  },
-  {
-    email: "rachel@demo.matchlisted.com",
-    label: "Rachel — both roles",
-    detail: "Selling in Shawlands, seeking in East Lothian",
-  },
-  {
-    email: "struan@demo.matchlisted.com",
-    label: "Struan — new seller",
-    detail: "Draft listing, Home Report still to order",
-  },
-  {
-    email: "kirsty@demo.matchlisted.com",
-    label: "Kirsty — buying now",
-    detail: "Offer accepted on a Troon bungalow",
-  },
-  {
-    email: "phil@demo.matchlisted.com",
-    label: "Phil — admin",
-    detail: "Full back-office",
-  },
-];
+const inputClass =
+  "mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; reset?: string; registered?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, reset, registered } = await searchParams;
+
   return (
     <Container className="py-16">
-      <div className="mx-auto max-w-lg">
+      <div className="mx-auto max-w-md">
         <h1 className="text-3xl">Welcome back</h1>
         <p className="mt-2 text-charcoal-soft">
-          The prototype runs on sample data — sign in as a demo persona, or
-          with an email you registered this session.
+          Sign in to see your matches, your Hush Home and your Home Report.
         </p>
 
-        {error && (
-          <p className="mt-4 rounded-xl bg-red-tint px-4 py-3 text-sm font-medium text-red-deep">
-            {error === "exists"
-              ? "That email is already registered — sign in below."
-              : "We couldn't find that account. Try a demo persona, or register via “Find your match”."}
+        {registered && (
+          <p className="mt-6 rounded-xl bg-green-tint px-4 py-3 text-sm font-medium text-green-deep">
+            Account created — check your email to confirm the address, then
+            sign in.
+          </p>
+        )}
+        {reset === "sent" && (
+          <p className="mt-6 rounded-xl bg-blue-tint px-4 py-3 text-sm font-medium text-blue-deep">
+            If that address has an account, a reset link is on its way.
+          </p>
+        )}
+        {error === "bad-credentials" && (
+          <p className="mt-6 rounded-xl bg-red-tint px-4 py-3 text-sm font-medium text-red-deep">
+            That email and password don&apos;t match. Try again, or reset your
+            password below.
           </p>
         )}
 
-        <div className="mt-8 space-y-3">
-          {personas.map((p) => {
-            const user = getUserByEmail(p.email);
-            if (!user) return null;
-            return (
-              <form action={demoSignIn} key={p.email}>
-                <input type="hidden" name="userId" value={user.id} />
-                <button className="w-full cursor-pointer rounded-2xl bg-paper p-4 text-left shadow-[var(--shadow-card)] ring-1 ring-hairline transition-shadow hover:shadow-[var(--shadow-card-hover)]">
-                  <span className="block font-semibold">{p.label}</span>
-                  <span className="mt-0.5 block text-sm text-charcoal-soft">
-                    {p.detail}
-                  </span>
-                </button>
-              </form>
-            );
-          })}
-        </div>
-
         <form
-          action={signInWithEmail}
-          className="mt-8 rounded-2xl bg-soft p-5"
+          action={signIn}
+          className="mt-6 space-y-4 rounded-2xl bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline"
         >
-          <label
-            htmlFor="email"
-            className="block text-sm font-semibold text-charcoal"
-          >
-            Or sign in with your email
-          </label>
-          <div className="mt-2 flex gap-2">
+          <div>
+            <label htmlFor="email" className="block text-sm font-semibold">
+              Email
+            </label>
             <input
               id="email"
               name="email"
               type="email"
+              autoComplete="email"
               required
-              placeholder="you@example.com"
-              className="min-h-11 w-full rounded-full border border-hairline bg-white px-5 text-sm outline-none focus:border-blue-deep"
+              className={inputClass}
             />
-            <Button type="submit" variant="seeker" className="shrink-0">
-              Sign in
-            </Button>
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-semibold">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              className={inputClass}
+            />
+          </div>
+          <Button type="submit" className="w-full">
+            Sign in
+          </Button>
+          <p className="text-center text-xs text-charcoal-soft">
+            No account yet?{" "}
+            <Link href="/join" className="font-semibold text-blue-deep underline">
+              Register free
+            </Link>
+          </p>
+        </form>
+
+        <form action={requestPasswordReset} className="mt-6">
+          <label htmlFor="reset-email" className="sr-only">
+            Email for a password reset link
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              id="reset-email"
+              name="email"
+              type="email"
+              required
+              placeholder="Forgotten your password?"
+              className="min-h-10 flex-1 rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
+            />
+            <button
+              type="submit"
+              className="cursor-pointer rounded-full px-4 py-2 text-sm font-semibold text-blue-deep underline"
+            >
+              Email me a link
+            </button>
           </div>
         </form>
       </div>

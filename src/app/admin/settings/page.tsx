@@ -20,7 +20,7 @@ export default async function AdminSettingsPage({
 }: {
   searchParams: Promise<{ saved?: string }>;
 }) {
-  const weights = matchWeights() as unknown as Record<string, number>;
+  const weights = await matchWeights() as unknown as Record<string, number>;
   const { saved } = await searchParams;
   const total = fields.reduce((s, f) => s + (weights[f.key] ?? 0), 0);
 

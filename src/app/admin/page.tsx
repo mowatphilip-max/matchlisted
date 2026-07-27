@@ -4,17 +4,17 @@ import {
   allHomes,
   allInvoices,
   allOffers,
+  allUsers,
   activeBriefs,
-  store,
 } from "@/lib/db";
 import { formatMoney } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Admin — overview" };
 
-export default function AdminOverviewPage() {
-  const homes = allHomes();
-  const invoices = allInvoices();
-  const offers = allOffers();
+export default async function AdminOverviewPage() {
+  const homes = await allHomes();
+  const invoices = await allInvoices();
+  const offers = await allOffers();
 
   const live = homes.filter((h) => h.status === "live").length;
   const pendingReports = homes.filter(
@@ -22,8 +22,8 @@ export default function AdminOverviewPage() {
   ).length;
   const underOffer = homes.filter((h) => h.status === "under-offer").length;
   const sold = homes.filter((h) => h.status === "sold").length;
-  const seekers = activeBriefs().length;
-  const users = store().users.length;
+  const seekers = (await activeBriefs()).length;
+  const users = (await allUsers()).length;
 
   const paidRevenue = invoices
     .filter((i) => i.status === "paid")

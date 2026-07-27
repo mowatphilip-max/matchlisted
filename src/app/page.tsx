@@ -32,14 +32,14 @@ import {
 } from "@/lib/site";
 
 /** The personalized hero copy for a signed-in visitor, or null. */
-function personalHero(userId: string, name: string) {
+async function personalHero(userId: string, name: string) {
   const first = name.split(" ")[0];
-  const brief = getBrief(userId);
+  const brief = await getBrief(userId);
 
   // Seeker side first: the "your match is waiting" moment is the strongest.
   // Read-only queries ONLY — collectFreshHotMatches() belongs to /dashboard.
   if (brief?.contract) {
-    const top = matchesForSeeker(userId)[0];
+    const top = (await matchesForSeeker(userId))[0];
     if (top && top.result.pct >= 50) {
       return {
         headline: `${first}, a ${top.result.pct}% match is waiting.`,
@@ -51,11 +51,11 @@ function personalHero(userId: string, name: string) {
     }
   }
 
-  const live = homesBySeller(userId).filter(
+  const live = (await homesBySeller(userId)).filter(
     (h) => h.status === "live" || h.status === "under-offer",
   );
   if (live.length > 0) {
-    const top = matchesForHome(live[0])[0];
+    const top = (await matchesForHome(live[0]))[0];
     if (top && top.result.pct >= 50) {
       return {
         headline: `${first}, a Quiet Seeker is a ${top.result.pct}% match with your home.`,
@@ -78,18 +78,18 @@ function personalHero(userId: string, name: string) {
 
 export default async function HomePage() {
   const user = await currentUser();
-  const hero = user ? personalHero(user.id, user.name) : null;
-  const pulse = matchlistPulse();
+  const hero = user ? await personalHero(user.id, user.name) : null;
+  const pulse = await matchlistPulse();
 
   // Quiet Seeker numbers come live from the shared Mowatt sheets.
   const { seekers } = await fetchMowattSeekers();
   const liveSeekers = seekers.filter((s) => s.active);
   const stats =
-    liveSeekers.length > 0 ? mowattAreaStats(seekers) : areaSeekerStats();
+    liveSeekers.length > 0 ? mowattAreaStats(seekers) : await areaSeekerStats();
   const seekerTeasers = liveSeekers.slice(0, 3);
   const seekerCount = liveSeekers.length;
 
-  const teasers = liveHomes()
+  const teasers = (await liveHomes())
     .filter((h) => h.status === "live")
     .slice(0, 3);
 

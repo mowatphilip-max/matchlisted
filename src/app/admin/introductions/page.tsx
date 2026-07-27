@@ -36,8 +36,23 @@ function Gate({ ok, label }: { ok: boolean; label: string }) {
   );
 }
 
-export default function AdminIntroductionsPage() {
-  const intros = allIntroductions();
+export default async function AdminIntroductionsPage() {
+  const intros = await allIntroductions();
+  // Resolve each row's related records before rendering — a server
+  // component can't await inside the list below.
+  const rows = await Promise.all(
+    intros.map(async (intro) => {
+      const homes = await homesBySeller(intro.sellerId);
+      const home = intro.homeId ? await getHome(intro.homeId) : homes[0];
+      return {
+        intro,
+        seeker: await getBrief(intro.seekerId),
+        seekerUser: await getUser(intro.seekerId),
+        seller: await getUser(intro.sellerId),
+        home,
+      };
+    }),
+  );
 
   return (
     <>
@@ -56,12 +71,7 @@ export default function AdminIntroductionsPage() {
         </p>
       ) : (
         <ul className="mt-8 space-y-4">
-          {intros.map((intro) => {
-            const seeker = getBrief(intro.seekerId);
-            const seekerUser = getUser(intro.seekerId);
-            const seller = getUser(intro.sellerId);
-            const homes = homesBySeller(intro.sellerId);
-            const home = intro.homeId ? getHome(intro.homeId) : homes[0];
+          {rows.map(({ intro, seeker, seekerUser, seller, home }) => {
             const hasProfile = Boolean(home);
             const hasContract = Boolean(home?.contract);
             const reportVerified = home?.homeReport.status === "verified";

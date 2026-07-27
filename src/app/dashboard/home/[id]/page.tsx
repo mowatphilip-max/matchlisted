@@ -19,7 +19,7 @@ import { currentUser } from "@/lib/session";
 import {
   getInvoice,
   getHome,
-  getUser,
+  usersById,
   offersForHome,
   slotsForHome,
   viewingsForHome,
@@ -93,19 +93,21 @@ export default async function SellerHomePage({
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
-  const home = getHome(id);
+  const home = await getHome(id);
   if (!home || home.sellerId !== user.id) notFound();
 
   const report = home.homeReport;
   const contractSigned = home.contract !== null;
-  const reportInvoice = report.invoiceId ? getInvoice(report.invoiceId) : undefined;
+  const reportInvoice = report.invoiceId ? await getInvoice(report.invoiceId) : undefined;
   const awaitingPayment =
     reportInvoice?.status === "due" && report.status === "none";
 
-  const slots = slotsForHome(home.id);
-  const viewings = viewingsForHome(home.id);
-  const offers = offersForHome(home.id);
-  const matches = matchesForHome(home).slice(0, 3);
+  const slots = await slotsForHome(home.id);
+  const viewings = await viewingsForHome(home.id);
+  const offers = await offersForHome(home.id);
+  // Buyer names for the offers list, resolved before render.
+  const offerSeekers = await usersById();
+  const matches = (await matchesForHome(home)).slice(0, 3);
   const isLive = home.status === "live" || home.status === "under-offer";
 
   return (
@@ -525,7 +527,7 @@ export default async function SellerHomePage({
         ) : (
           <ul className="mt-6 space-y-4">
             {offers.map((o) => {
-              const seeker = getUser(o.seekerId);
+              const seeker = offerSeekers.get(o.seekerId);
               return (
                 <li
                   key={o.id}

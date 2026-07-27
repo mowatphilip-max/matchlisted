@@ -17,7 +17,7 @@ export default async function SeekerContractPage({
 }) {
   const user = await currentUser();
   if (!user) redirect("/login");
-  const brief = getBrief(user.id);
+  const brief = await getBrief(user.id);
   if (!brief) redirect("/dashboard/brief");
   if (brief.contract) redirect("/dashboard");
   const { error } = await searchParams;

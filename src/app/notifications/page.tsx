@@ -22,7 +22,7 @@ const icons = {
 export default async function NotificationsPage() {
   const user = await currentUser();
   if (!user) redirect("/login");
-  const items = notificationsForUser(user.id);
+  const items = await notificationsForUser(user.id);
 
   return (
     <Container className="py-10">

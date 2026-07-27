@@ -22,13 +22,13 @@ export default async function HushHomesPage() {
   const user = await currentUser();
   // Full details are for registered (contract-signed) Quiet Seekers + admin.
   const registered = Boolean(
-    user && (user.isAdmin || getBrief(user.id)?.contract),
+    user && (user.isAdmin || await (await getBrief(user.id))?.contract),
   );
 
   // Ship each viewer ONLY the fields they may see — the gate is server-side,
   // not a CSS trick over complete data.
   const homes: BrowserHome[] = [
-    ...liveHomes().map(
+    ...(await liveHomes()).map(
       (h): BrowserHome => ({
         id: h.id,
         areaId: h.areaId,
@@ -48,7 +48,7 @@ export default async function HushHomesPage() {
       }),
     ),
     // Preview listings ("Home Report later"): story + hazed photos for all.
-    ...previewHomes().map(
+    ...(await previewHomes()).map(
       (h): BrowserHome => ({
         id: h.id,
         areaId: h.areaId,

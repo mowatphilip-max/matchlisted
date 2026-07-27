@@ -30,20 +30,20 @@ export default async function OfferPage({
   if (!user) redirect("/login");
   const { id } = await params;
   const { counter, error } = await searchParams;
-  const home = getHome(id);
+  const home = await getHome(id);
   if (!home) notFound();
-  const brief = getBrief(user.id);
+  const brief = await getBrief(user.id);
   if (!brief?.contract) redirect("/dashboard/brief");
 
-  const counterOffer = counter ? getOffer(counter) : undefined;
-  const paidDeposit = invoicesForUser(user.id).find(
+  const counterOffer = counter ? await getOffer(counter) : undefined;
+  const paidDeposit = (await invoicesForUser(user.id)).find(
     (i) =>
       i.kind === "conveyancing-deposit" &&
       i.homeId === home.id &&
       i.status === "paid",
   );
   const appointedLawyer = paidDeposit?.lawyerId
-    ? getLawyer(paidDeposit.lawyerId)
+    ? await getLawyer(paidDeposit.lawyerId)
     : undefined;
 
   return (
@@ -105,7 +105,7 @@ export default async function OfferPage({
               credited against their fee.
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              {allLawyers().map((l) => (
+              {(await allLawyers()).map((l) => (
                 <form
                   key={l.id}
                   action={appointLawyer}

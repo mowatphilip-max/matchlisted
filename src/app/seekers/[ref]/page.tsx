@@ -48,7 +48,7 @@ async function resolveSeeker(rawRef: string): Promise<{
   matched: boolean;
 } | null> {
   const ref = decodeURIComponent(rawRef);
-  const native = getBriefByPublicRef(ref);
+  const native = await getBriefByPublicRef(ref);
   if (native?.contract) return { brief: native, sheet: false, matched: false };
   const mowatt = await findMowattSeeker(ref);
   if (!mowatt) return null;
@@ -84,8 +84,8 @@ export default async function SeekerProfilePage({
 
   const user = await currentUser();
   const isSelf = user?.id === brief.userId;
-  const existing = user ? findIntroduction(brief.userId, user.id) : undefined;
-  const hasHome = user ? homesBySeller(user.id).length > 0 : false;
+  const existing = user ? await findIntroduction(brief.userId, user.id) : undefined;
+  const hasHome = user ? (await homesBySeller(user.id)).length > 0 : false;
 
   // Nearby seekers: native briefs by shared area id, or for sheet seekers,
   // other live sheet profiles that share a town.
@@ -103,7 +103,7 @@ export default async function SeekerProfilePage({
       )
       .slice(0, 3);
   } else {
-    others = activeBriefs()
+    others = (await activeBriefs())
       .filter(
         (b) =>
           b.publicRef !== brief.publicRef &&

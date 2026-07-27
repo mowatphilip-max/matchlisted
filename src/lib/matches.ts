@@ -31,19 +31,19 @@ export interface SeekerMatch {
   result: MatchResult;
 }
 
-export function matchesForSeeker(userId: string): HomeMatch[] {
-  const brief = getBrief(userId);
+export async function matchesForSeeker(userId: string): Promise<HomeMatch[]> {
+  const brief = await getBrief(userId);
   if (!brief || !brief.contract) return [];
-  const weights = matchWeights();
-  return liveHomes()
+  const weights = await matchWeights();
+  return (await liveHomes())
     .filter((h) => h.sellerId !== userId) // never match someone to their own home
     .map((home) => ({ home, result: scoreMatch(home, brief, weights) }))
     .sort((a, b) => b.result.pct - a.result.pct);
 }
 
-export function matchesForHome(home: HushHome): SeekerMatch[] {
-  const weights = matchWeights();
-  return activeBriefs()
+export async function matchesForHome(home: HushHome): Promise<SeekerMatch[]> {
+  const weights = await matchWeights();
+  return (await activeBriefs())
     .filter((b) => b.userId !== home.sellerId)
     .map((brief) => toSeekerMatch(brief, scoreMatch(home, brief, weights)))
     .sort((a, b) => b.result.pct - a.result.pct);
@@ -69,21 +69,21 @@ function toSeekerMatch(brief: SeekerBrief, result: MatchResult): SeekerMatch {
  * as seen, and push "It's a match" notifications to both parties.
  * Returns the fresh matches so the dashboard can throw the celebration.
  */
-export function collectFreshHotMatches(userId: string): {
+export async function collectFreshHotMatches(userId: string): Promise<{
   asSeeker: HomeMatch[];
   asSeller: { home: HushHome; match: SeekerMatch }[];
-} {
+}> {
   const asSeeker: HomeMatch[] = [];
-  for (const m of matchesForSeeker(userId)) {
+  for (const m of await matchesForSeeker(userId)) {
     if (m.result.pct < MATCH_BANDS.hot) break;
     const key = `${m.home.id}:${userId}`;
-    if (hasSeenMatch(userId, key)) continue;
-    recordSeenMatch(userId, key, m.result.pct);
+    if (await hasSeenMatch(userId, key)) continue;
+    await recordSeenMatch(userId, key, m.result.pct);
     asSeeker.push(m);
     // Tell the seller too (once, from their side of the key).
-    if (!hasSeenMatch(m.home.sellerId, key)) {
-      recordSeenMatch(m.home.sellerId, key, m.result.pct);
-      pushNotification({
+    if (!await hasSeenMatch(m.home.sellerId, key)) {
+      await recordSeenMatch(m.home.sellerId, key, m.result.pct);
+      await pushNotification({
         userId: m.home.sellerId,
         kind: "match",
         title: `It's a match — ${m.result.pct}%`,
@@ -94,18 +94,18 @@ export function collectFreshHotMatches(userId: string): {
   }
 
   const asSeller: { home: HushHome; match: SeekerMatch }[] = [];
-  const user = getUser(userId);
+  const user = await getUser(userId);
   if (user) {
-    for (const home of liveHomes().filter((h) => h.sellerId === userId)) {
-      for (const match of matchesForHome(home)) {
+    for (const home of (await liveHomes()).filter((h) => h.sellerId === userId)) {
+      for (const match of await matchesForHome(home)) {
         if (match.result.pct < MATCH_BANDS.hot) break;
         const key = `${home.id}:${match.seekerId}`;
-        if (hasSeenMatch(userId, key)) continue;
-        recordSeenMatch(userId, key, match.result.pct);
+        if (await hasSeenMatch(userId, key)) continue;
+        await recordSeenMatch(userId, key, match.result.pct);
         asSeller.push({ home, match });
-        if (!hasSeenMatch(match.seekerId, key)) {
-          recordSeenMatch(match.seekerId, key, match.result.pct);
-          pushNotification({
+        if (!await hasSeenMatch(match.seekerId, key)) {
+          await recordSeenMatch(match.seekerId, key, match.result.pct);
+          await pushNotification({
             userId: match.seekerId,
             kind: "match",
             title: `It's a match — ${match.result.pct}%`,

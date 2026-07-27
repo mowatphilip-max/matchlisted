@@ -15,12 +15,12 @@ export const metadata: Metadata = { title: "My matches" };
 export default async function MatchesPage() {
   const user = await currentUser();
   if (!user) redirect("/login");
-  const brief = getBrief(user.id);
+  const brief = await getBrief(user.id);
   if (!brief) redirect("/dashboard/brief");
   if (!brief.contract) redirect("/dashboard/brief/contract");
 
-  const matches = matchesForSeeker(user.id);
-  const saved = new Set(savedForSeeker(user.id).map((s) => s.homeId));
+  const matches = await matchesForSeeker(user.id);
+  const saved = new Set((await savedForSeeker(user.id)).map((s) => s.homeId));
   const shortlist = matches.filter((m) => saved.has(m.home.id));
 
   return (

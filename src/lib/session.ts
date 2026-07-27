@@ -1,30 +1,104 @@
-// Cookie session for the prototype: the cookie holds a user id, users live in
-// the in-memory store. Production swaps this for Supabase Auth (see README).
+// Sessions, backed by Supabase Auth.
+//
+// The old prototype trusted a cookie that simply held a user id — anyone
+// who guessed `ml_uid=u-phil` became an administrator. Now the browser
+// holds a signed, expiring token issued by Supabase, verified on every
+// request. Nothing about who you are is taken on trust from the browser.
 
 import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { getUser } from "./db";
 import type { User } from "./types";
 
-const COOKIE = "ml_uid";
-
-export async function currentUser(): Promise<User | null> {
+/** Supabase client bound to the request's cookies — reads/refreshes the session. */
+async function authClient() {
   const jar = await cookies();
-  const uid = jar.get(COOKIE)?.value;
-  if (!uid) return null;
-  return getUser(uid) ?? null;
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll: () => jar.getAll(),
+        setAll: (list) => {
+          try {
+            for (const { name, value, options } of list) {
+              jar.set(name, value, options);
+            }
+          } catch {
+            // Called from a Server Component, where cookies are read-only.
+            // Middleware refreshes the session instead — safe to ignore.
+          }
+        },
+      },
+    },
+  );
 }
 
-export async function setSessionUser(userId: string): Promise<void> {
-  const jar = await cookies();
-  jar.set(COOKIE, userId, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+/**
+ * The signed-in user, or null. Verifies the token with Supabase rather than
+ * trusting the cookie's contents, then loads their profile.
+ */
+export async function currentUser(): Promise<User | null> {
+  const supabase = await authClient();
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) return null;
+  return (await getUser(data.user.id)) ?? null;
+}
+
+/** The authenticated account id, without loading the profile. */
+export async function currentUserId(): Promise<string | null> {
+  const supabase = await authClient();
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id ?? null;
+}
+
+export async function signInWithPassword(
+  email: string,
+  password: string,
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  const supabase = await authClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
+  if (error) {
+    // Deliberately vague: saying "no such account" tells an attacker which
+    // email addresses are registered.
+    return { ok: false, message: "That email and password don't match." };
+  }
+  return { ok: true };
+}
+
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+): Promise<{ ok: true; userId: string } | { ok: false; message: string }> {
+  const supabase = await authClient();
+  const { data, error } = await supabase.auth.signUp({
+    email: email.trim().toLowerCase(),
+    password,
+  });
+  if (error || !data.user) {
+    return { ok: false, message: error?.message ?? "Could not create that account." };
+  }
+  return { ok: true, userId: data.user.id };
+}
+
+export async function sendPasswordReset(email: string): Promise<void> {
+  const supabase = await authClient();
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: `${site}/account/password`,
   });
 }
 
 export async function clearSession(): Promise<void> {
-  const jar = await cookies();
-  jar.delete(COOKIE);
+  const supabase = await authClient();
+  await supabase.auth.signOut();
+}
+
+/** True when the signed-in user is an administrator. */
+export async function isAdmin(): Promise<boolean> {
+  const user = await currentUser();
+  return Boolean(user?.isAdmin);
 }

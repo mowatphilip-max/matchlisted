@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { FileCheck2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { allHomes, getUser } from "@/lib/db";
+import { allHomes, usersById } from "@/lib/db";
 import { adminVerifyReport } from "@/lib/actions";
 import { areaLabel } from "@/lib/areas";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -9,11 +9,12 @@ import { HOME_REPORT_SUPPLIERS } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Admin — Home Reports" };
 
-export default function AdminReportsPage() {
-  const pending = allHomes().filter((h) => h.homeReport.status === "uploaded");
-  const verified = allHomes().filter(
+export default async function AdminReportsPage() {
+  const pending = (await allHomes()).filter((h) => h.homeReport.status === "uploaded");
+  const verified = (await allHomes()).filter(
     (h) => h.homeReport.status === "verified",
   );
+  const users = await usersById();
 
   return (
     <>
@@ -30,7 +31,7 @@ export default function AdminReportsPage() {
       ) : (
         <ul className="mt-8 space-y-4">
           {pending.map((h) => {
-            const seller = getUser(h.sellerId);
+            const seller = users.get(h.sellerId);
             const supplier = HOME_REPORT_SUPPLIERS.find(
               (s) => s.id === h.homeReport.supplier,
             );

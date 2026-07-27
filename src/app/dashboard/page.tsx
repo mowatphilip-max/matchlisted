@@ -60,34 +60,54 @@ export default async function DashboardPage() {
   const user = await currentUser();
   if (!user) redirect("/login");
 
-  const brief = getBrief(user.id);
-  const myHomes = homesBySeller(user.id);
-  const fresh = collectFreshHotMatches(user.id);
+  const brief = await getBrief(user.id);
+  const myHomes = await homesBySeller(user.id);
+  const fresh = await collectFreshHotMatches(user.id);
 
-  const seekerMatches = brief?.contract ? matchesForSeeker(user.id) : [];
+  const seekerMatches = brief?.contract ? await matchesForSeeker(user.id) : [];
   const topSeekerMatches = seekerMatches.slice(0, 6);
-  const saved = new Set(savedForSeeker(user.id).map((s) => s.homeId));
+  const saved = new Set((await savedForSeeker(user.id)).map((s) => s.homeId));
 
-  const sellerMatchesByHome = myHomes
-    .filter((h) => h.status === "live" || h.status === "under-offer")
-    .map((home) => ({ home, matches: matchesForHome(home).slice(0, 3) }));
+  const sellerMatchesByHome = await Promise.all(
+    myHomes
+      .filter((h) => h.status === "live" || h.status === "under-offer")
+      .map(async (home) => ({
+        home,
+        matches: (await matchesForHome(home)).slice(0, 3),
+      })),
+  );
 
-  const viewings = viewingsForSeeker(user.id);
+  const viewings = await viewingsForSeeker(user.id);
   const pendingFeedback = viewings.filter(
     (v) => v.status === "booked" && new Date(v.end) < new Date(),
   );
   const upcoming = viewings.filter(
     (v) => v.status === "booked" && new Date(v.end) >= new Date(),
   );
-  const offers = offersForSeeker(user.id);
-  const dueInvoices = invoicesForUser(user.id).filter((i) => i.status === "due");
+  const offers = await offersForSeeker(user.id);
+  const dueInvoices = (await invoicesForUser(user.id)).filter((i) => i.status === "due");
 
   // Introductions: offers waiting on me as a seeker, and the status of any
   // "they might want my home" clicks I've made as an owner.
-  const introOffers = introductionsForSeeker(user.id).filter(
+  const introOffers = (await introductionsForSeeker(user.id)).filter(
     (i) => i.status === "offered",
   );
-  const outgoingIntros = introductionsBySeller(user.id);
+  const outgoingIntros = await introductionsBySeller(user.id);
+  // Related records for the two introduction lists, resolved before render.
+  const introOfferHomes = new Map(
+    await Promise.all(
+      introOffers.map(
+        async (i) => [i.id, i.homeId ? await getHome(i.homeId) : undefined] as const,
+      ),
+    ),
+  );
+  const outgoingSeekerBriefs = new Map(
+    await Promise.all(
+      outgoingIntros.map(
+        async (i) => [i.id, await getBrief(i.seekerId)] as const,
+      ),
+    ),
+  );
 
   const firstName = user.name.split(" ")[0];
 
@@ -148,7 +168,7 @@ export default async function DashboardPage() {
 
       {/* Introduction offers — a Hush Home owner clicked my public profile */}
       {introOffers.map((intro) => {
-        const home = intro.homeId ? getHome(intro.homeId) : undefined;
+        const home = introOfferHomes.get(intro.id);
         if (!home) return null;
         return (
           <div
@@ -497,7 +517,7 @@ export default async function DashboardPage() {
             </p>
             <ul className="mt-4 space-y-2 text-sm">
               {outgoingIntros.map((intro) => {
-                const seekerBrief = getBrief(intro.seekerId);
+                const seekerBrief = outgoingSeekerBriefs.get(intro.id);
                 const label =
                   intro.status === "new"
                     ? myHomes.length === 0

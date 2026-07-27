@@ -14,11 +14,11 @@ export async function GET(
 ) {
   const user = await currentUser();
   const { id } = await params;
-  const home = getHome(id);
+  const home = await getHome(id);
   if (!home || home.homeReport.status !== "verified") notFound();
 
   const isSeller = user?.id === home.sellerId;
-  const registered = user ? Boolean(getBrief(user.id)?.contract) : false;
+  const registered = user ? Boolean(await (await getBrief(user.id))?.contract) : false;
   if (!user || (!registered && !isSeller && !user.isAdmin)) {
     return new NextResponse(
       "Home Reports are available to registered Quiet Seekers only.",

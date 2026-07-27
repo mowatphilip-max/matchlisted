@@ -19,7 +19,7 @@ export default async function SellerContractPage({
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
-  const home = getHome(id);
+  const home = await getHome(id);
   if (!home || home.sellerId !== user.id) notFound();
   if (home.contract) redirect(`/dashboard/home/${home.id}`);
   const { error } = await searchParams;

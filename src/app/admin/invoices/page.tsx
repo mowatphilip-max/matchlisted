@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
-import { allInvoices, getUser } from "@/lib/db";
+import { allInvoices, usersById } from "@/lib/db";
 import { adminMarkInvoicePaid } from "@/lib/actions";
 import { formatDate, formatMoney } from "@/lib/format";
 
@@ -13,8 +13,9 @@ const kindLabels: Record<string, string> = {
   "withdrawal-fee": "Withdrawal fee",
 };
 
-export default function AdminInvoicesPage() {
-  const invoices = [...allInvoices()].sort((a, b) =>
+export default async function AdminInvoicesPage() {
+  const users = await usersById();
+  const invoices = [...(await allInvoices())].sort((a, b) =>
     b.createdAt.localeCompare(a.createdAt),
   );
   const due = invoices.filter((i) => i.status === "due");
@@ -56,7 +57,7 @@ export default function AdminInvoicesPage() {
                   {kindLabels[i.kind]}
                 </td>
                 <td className="px-5 py-3 whitespace-nowrap">
-                  {getUser(i.userId)?.name}
+                  {users.get(i.userId)?.name}
                 </td>
                 <td className="max-w-xs px-5 py-3 text-charcoal-soft">
                   {i.description}

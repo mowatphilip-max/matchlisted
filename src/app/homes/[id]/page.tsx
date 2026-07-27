@@ -43,12 +43,12 @@ export default async function HomeProfilePage({
   if (!user) redirect("/login");
   const { id } = await params;
   const { booked, offer } = await searchParams;
-  const home = getHome(id);
+  const home = await getHome(id);
   if (!home) notFound();
   const isSeller = home.sellerId === user.id;
   // An accepted introduction opens the door to a home that is not yet
   // publicly live — that is the whole point of the offer.
-  const introduced = introductionsForSeeker(user.id).some(
+  const introduced = (await introductionsForSeeker(user.id)).some(
     (i) => i.homeId === home.id && i.status === "accepted",
   );
   if (
@@ -59,15 +59,15 @@ export default async function HomeProfilePage({
   )
     notFound();
 
-  const brief = getBrief(user.id);
+  const brief = await getBrief(user.id);
   const registered = Boolean(brief?.contract);
   const match =
     registered && brief && !isSeller
-      ? scoreMatch(home, brief, matchWeights())
+      ? scoreMatch(home, brief, await matchWeights())
       : null;
-  const saved = savedForSeeker(user.id).some((s) => s.homeId === home.id);
-  const openSlots = slotsForHome(home.id).filter((s) => !s.bookedBy);
-  const myViewings = viewingsForSeeker(user.id).filter(
+  const saved = (await savedForSeeker(user.id)).some((s) => s.homeId === home.id);
+  const openSlots = (await slotsForHome(home.id)).filter((s) => !s.bookedBy);
+  const myViewings = (await viewingsForSeeker(user.id)).filter(
     (v) => v.homeId === home.id,
   );
   const canOffer = myViewings.some(

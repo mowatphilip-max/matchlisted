@@ -21,7 +21,7 @@ export default async function PayPage({
   const user = await currentUser();
   if (!user) redirect("/login");
   const { invoiceId } = await params;
-  const invoice = getInvoice(invoiceId);
+  const invoice = await getInvoice(invoiceId);
   if (!invoice || invoice.userId !== user.id) notFound();
   if (invoice.status === "paid") redirect("/dashboard");
 

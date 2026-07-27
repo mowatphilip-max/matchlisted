@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
-import { getBrief, homesBySeller, invoicesForUser, store } from "@/lib/db";
+import { allUsers, getBrief, homesBySeller, invoicesForUser } from "@/lib/db";
 import { areaShortLabel } from "@/lib/areas";
 import { formatBudget, formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Admin — users" };
 
-export default function AdminUsersPage() {
-  const users = store().users;
+export default async function AdminUsersPage() {
+  const users = await allUsers();
+
+  // Gather each user's brief, homes and unpaid fees up front — a React
+  // server component can't await inside the render loop below.
+  const rows = await Promise.all(
+    users.map(async (u) => ({
+      user: u,
+      brief: await getBrief(u.id),
+      homes: await homesBySeller(u.id),
+      due: (await invoicesForUser(u.id)).filter((i) => i.status === "due"),
+    })),
+  );
 
   return (
     <>
@@ -28,12 +39,7 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-hairline">
-            {users.map((u) => {
-              const brief = getBrief(u.id);
-              const homes = homesBySeller(u.id);
-              const due = invoicesForUser(u.id).filter(
-                (i) => i.status === "due",
-              );
+            {rows.map(({ user: u, brief, homes, due }) => {
               return (
                 <tr key={u.id}>
                   <td className="px-5 py-3 font-medium">

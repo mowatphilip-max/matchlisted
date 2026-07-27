@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { adminUpdatePurchaseOrder } from "@/lib/actions";
-import { allPurchaseOrders, getHome, getUser } from "@/lib/db";
+import { allPurchaseOrders, homesById, usersById } from "@/lib/db";
 import { areaLabel } from "@/lib/areas";
 import { formatDate, formatMoney } from "@/lib/format";
 import { HOME_REPORT_SUPPLIERS } from "@/lib/site";
@@ -16,8 +16,10 @@ const STATUS = {
   settled: { label: "Settled — surveyor paid", cls: "bg-green-tint text-green-deep" },
 } as const;
 
-export default function AdminOrdersPage() {
-  const orders = allPurchaseOrders();
+export default async function AdminOrdersPage() {
+  const orders = await allPurchaseOrders();
+  const users = await usersById();
+  const homes = await homesById();
   const owedTotal = orders
     .filter((o) => o.status !== "settled")
     .reduce((sum, o) => sum + o.base + o.vat, 0);
@@ -41,8 +43,8 @@ export default function AdminOrdersPage() {
       ) : (
         <ul className="mt-8 space-y-4">
           {orders.map((po) => {
-            const home = getHome(po.homeId);
-            const owner = getUser(po.sellerId);
+            const home = homes.get(po.homeId);
+            const owner = users.get(po.sellerId);
             const supplier = HOME_REPORT_SUPPLIERS.find((s) => s.id === po.supplier);
             const st = STATUS[po.status];
             return (

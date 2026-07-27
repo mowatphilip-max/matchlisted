@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "My Quiet Seeker brief" };
 export default async function BriefPage() {
   const user = await currentUser();
   if (!user) redirect("/login");
-  const brief = getBrief(user.id) ?? null;
+  const brief = await getBrief(user.id) ?? null;
 
   return (
     <Container className="py-10">

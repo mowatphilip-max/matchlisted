@@ -10,7 +10,8 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import {
   addSlot,
-  createUser,
+  adminUserId,
+  createProfile,
   findIntroduction,
   getBrief,
   getBriefByPublicRef,
@@ -30,6 +31,8 @@ import {
   invoicesForUser,
   matchWeights,
   newId,
+  nextPurchaseOrderRef,
+  nextSeekerRef,
   pushNotification,
   removeLawyer as dbRemoveLawyer,
   removeSlot,
@@ -46,7 +49,13 @@ import {
 } from "./db";
 import { alertSeekersAboutHome, alertSellersAboutBrief } from "./alerts";
 import { areaLabel } from "./areas";
-import { clearSession, currentUser, setSessionUser } from "./session";
+import {
+  clearSession,
+  currentUser,
+  sendPasswordReset,
+  signInWithPassword,
+  signUpWithPassword,
+} from "./session";
 import {
   CONTRACT_VERSIONS,
   CONVEYANCING_DEPOSIT,
@@ -109,47 +118,39 @@ function refresh() {
 
 // ---- Auth -----------------------------------------------------------------
 
-export async function demoSignIn(formData: FormData) {
-  const userId = String(formData.get("userId") ?? "");
-  const user = getUser(userId);
-  if (!user || !user.email.endsWith("@demo.matchlisted.com")) {
-    redirect("/login?error=unknown");
-  }
-  await setSessionUser(user.id);
-  refresh();
-  redirect(user.isAdmin ? "/admin" : "/dashboard");
-}
-
-export async function signInWithEmail(formData: FormData) {
-  const email = String(formData.get("email") ?? "").trim();
-  const user = email ? getUserByEmail(email) : undefined;
-  if (!user) redirect("/login?error=notfound");
-  await setSessionUser(user.id);
-  refresh();
-  redirect(user.isAdmin ? "/admin" : "/dashboard");
-}
-
 export async function register(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
   const intent = String(formData.get("intent") ?? "seeker");
   const seekerRef = String(formData.get("seeker") ?? "").trim();
-  if (!name || !email.includes("@")) {
+
+  const back = (error: string) =>
     redirect(
-      seekerRef
-        ? `/join?as=seller&seeker=${encodeURIComponent(seekerRef)}&error=invalid`
-        : "/join?error=invalid",
+      `/join?${new URLSearchParams({
+        ...(intent === "seller" ? { as: "seller" } : {}),
+        ...(seekerRef ? { seeker: seekerRef } : {}),
+        error,
+      })}`,
     );
+
+  if (!name || !email.includes("@")) back("invalid");
+  if (password.length < 10) back("weak-password");
+
+  // The login account comes first — the profile row is tied to it.
+  const created = await signUpWithPassword(email, password);
+  if (!created.ok) {
+    // Deliberately vague: never reveal whether an address is registered.
+    back("signup-failed");
+    return;
   }
-  if (getUserByEmail(email)) redirect("/login?error=exists");
-  const user = createUser({ name, email });
-  await setSessionUser(user.id);
+  const user = await createProfile({ id: created.userId, name, email });
 
   // Arrived via a Quiet Seeker's public profile: record the interest now,
   // so the introduction pipeline starts the moment the account exists.
-  const target = seekerRef ? getBriefByPublicRef(seekerRef) : undefined;
+  const target = seekerRef ? await getBriefByPublicRef(seekerRef) : undefined;
   if (target?.contract && target.userId !== user.id) {
-    recordInterest(target.userId, user.id, null);
+    await recordInterest(target.userId, user.id, null);
     refresh();
     redirect(`/dashboard/home/new?seeker=${encodeURIComponent(seekerRef)}`);
   }
@@ -157,7 +158,7 @@ export async function register(formData: FormData) {
     const { findMowattSeeker } = await import("./mowatt-bridge");
     const mowatt = await findMowattSeeker(seekerRef);
     if (mowatt?.active) {
-      recordInterest(`mowatt:${seekerRef}`, user.id, null);
+      await recordInterest(`mowatt:${seekerRef}`, user.id, null);
       refresh();
       redirect(`/dashboard/home/new?seeker=${encodeURIComponent(seekerRef)}`);
     }
@@ -165,6 +166,24 @@ export async function register(formData: FormData) {
 
   refresh();
   redirect(intent === "seller" ? "/dashboard/home/new" : "/dashboard/brief");
+}
+
+export async function signIn(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const result = await signInWithPassword(email, password);
+  if (!result.ok) redirect("/login?error=bad-credentials");
+  const user = await getUserByEmail(email);
+  refresh();
+  redirect(user?.isAdmin ? "/admin" : "/dashboard");
+}
+
+export async function requestPasswordReset(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
+  if (email.includes("@")) await sendPasswordReset(email);
+  // Same response either way, so the form can't be used to discover
+  // which email addresses have accounts.
+  redirect("/login?reset=sent");
 }
 
 export async function signOut() {
@@ -177,7 +196,7 @@ export async function signOut() {
 
 export async function saveBrief(formData: FormData) {
   const user = await requireUser();
-  const existing = getBrief(user.id);
+  const existing = await getBrief(user.id);
   const now = new Date().toISOString();
 
   const areas = JSON.parse(String(formData.get("areas") ?? "[]")) as string[];
@@ -206,7 +225,7 @@ export async function saveBrief(formData: FormData) {
     userId: user.id,
     // Public anonymised profile. The ref is stable for the brief's life;
     // headline/story fall back to something presentable if left blank.
-    publicRef: existing?.publicRef ?? newId("QS"),
+    publicRef: existing?.publicRef ?? await nextSeekerRef(),
     headline: headline || existing?.headline || "Registered Quiet Seeker",
     story:
       story ||
@@ -233,7 +252,7 @@ export async function saveBrief(formData: FormData) {
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };
-  upsertBrief(brief);
+  await upsertBrief(brief);
   refresh();
   if (!brief.contract) redirect("/dashboard/brief/contract");
   redirect("/dashboard?saved=brief");
@@ -243,15 +262,15 @@ export async function signSeekerContract(formData: FormData) {
   const user = await requireUser();
   const typedName = String(formData.get("typedName") ?? "").trim();
   const agreed = formData.get("agree") === "on";
-  const brief = getBrief(user.id);
+  const brief = await getBrief(user.id);
   if (!brief) redirect("/dashboard/brief");
   if (!typedName || !agreed)
     redirect("/dashboard/brief/contract?error=incomplete");
   brief.contract = await makeSignature(typedName, CONTRACT_VERSIONS.seeker);
   brief.updatedAt = new Date().toISOString();
-  upsertBrief(brief);
+  await upsertBrief(brief);
   // The brief just went live on the Matchlist: tell matching sellers.
-  alertSellersAboutBrief(brief);
+  await alertSellersAboutBrief(brief);
   refresh();
   redirect("/dashboard?signed=seeker");
 }
@@ -261,12 +280,12 @@ export async function signSeekerContract(formData: FormData) {
 export async function saveHomeListing(formData: FormData) {
   const user = await requireUser();
   const homeId = String(formData.get("homeId") ?? "");
-  const existing = homeId ? getHome(homeId) : undefined;
+  const existing = homeId ? await getHome(homeId) : undefined;
   if (existing && existing.sellerId !== user.id) redirect("/dashboard");
 
   const features = formData.getAll("features").map(String) as FeatureTag[];
   const home: HushHome = {
-    id: existing?.id ?? newId("h"),
+    id: existing?.id ?? newId(),
     sellerId: user.id,
     headline: String(formData.get("headline") ?? "").trim(),
     areaId: String(formData.get("areaId") ?? ""),
@@ -290,28 +309,28 @@ export async function saveHomeListing(formData: FormData) {
   if (!home.headline || !home.areaId || !home.price) {
     redirect(existing ? `/dashboard/home/${home.id}?error=invalid` : "/dashboard/home/new?error=invalid");
   }
-  upsertHome(home);
+  await upsertHome(home);
   refresh();
   redirect(`/dashboard/home/${home.id}`);
 }
 
 export async function signSellerContract(formData: FormData) {
   const user = await requireUser();
-  const home = getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const typedName = String(formData.get("typedName") ?? "").trim();
   const agreed = formData.get("agree") === "on";
   if (!typedName || !agreed)
     redirect(`/dashboard/home/${home.id}/contract?error=incomplete`);
   home.contract = await makeSignature(typedName, CONTRACT_VERSIONS.seller);
-  upsertHome(home);
+  await upsertHome(home);
   refresh();
   redirect(`/dashboard/home/${home.id}`);
 }
 
 export async function orderHomeReport(formData: FormData) {
   const user = await requireUser();
-  const home = getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
   const supplierId = String(formData.get("supplier") ?? "");
   const supplier = HOME_REPORT_SUPPLIERS.find((s) => s.id === supplierId);
   if (!home || home.sellerId !== user.id || !supplier) redirect("/dashboard");
@@ -327,7 +346,7 @@ export async function orderHomeReport(formData: FormData) {
   if (!quote) redirect(`/dashboard/home/${home.id}?error=negotiation`);
 
   const invoice: Invoice = {
-    id: newId("inv"),
+    id: newId(),
     userId: user.id,
     homeId: home.id,
     kind: "home-report",
@@ -337,13 +356,13 @@ export async function orderHomeReport(formData: FormData) {
     status: "due",
     createdAt: new Date().toISOString(),
   };
-  upsertInvoice(invoice);
+  await upsertInvoice(invoice);
   home.homeReport = {
     status: "none",
     supplier: supplier.id,
     invoiceId: invoice.id,
   };
-  upsertHome(home);
+  await upsertHome(home);
   refresh();
   redirect(`/pay/${invoice.id}`);
 }
@@ -356,7 +375,7 @@ export async function orderHomeReport(formData: FormData) {
  */
 export async function uploadHomePhotos(formData: FormData) {
   const user = await requireUser();
-  const home = getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
 
   const MAX_PHOTOS = 8;
@@ -381,19 +400,19 @@ export async function uploadHomePhotos(formData: FormData) {
       // Not a readable image — skip it quietly.
     }
   }
-  upsertHome(home);
+  await upsertHome(home);
   refresh();
   redirect(`/dashboard/home/${home.id}#photos`);
 }
 
 export async function removeHomePhoto(formData: FormData) {
   const user = await requireUser();
-  const home = getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const index = Number(formData.get("index"));
   if (Number.isInteger(index) && index >= 0 && index < home.photos.length) {
     home.photos.splice(index, 1);
-    upsertHome(home);
+    await upsertHome(home);
   }
   refresh();
   redirect(`/dashboard/home/${home.id}#photos`);
@@ -401,7 +420,7 @@ export async function removeHomePhoto(formData: FormData) {
 
 export async function uploadHomeReport(formData: FormData) {
   const user = await requireUser();
-  const home = getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const file = formData.get("report");
   const fileName =
@@ -429,9 +448,10 @@ export async function uploadHomeReport(formData: FormData) {
     uploadedAt: new Date().toISOString(),
   };
   home.status = "pending-approval";
-  upsertHome(home);
-  pushNotification({
-    userId: "u-phil",
+  await upsertHome(home);
+  const adminId = await adminUserId();
+  if (adminId) await pushNotification({
+    userId: adminId,
     kind: "system",
     title: "Home Report awaiting verification",
     body: `${home.headline} — report uploaded, listing is gated until you verify it.`,
@@ -445,15 +465,15 @@ export async function uploadHomeReport(formData: FormData) {
 
 export async function payInvoice(formData: FormData) {
   const user = await requireUser();
-  const invoice = getInvoice(String(formData.get("invoiceId") ?? ""));
+  const invoice = await getInvoice(String(formData.get("invoiceId") ?? ""));
   if (!invoice || invoice.userId !== user.id) redirect("/dashboard");
   if (invoice.status === "paid") redirect("/dashboard");
   invoice.status = "paid";
   invoice.paidAt = new Date().toISOString();
-  upsertInvoice(invoice);
+  await upsertInvoice(invoice);
 
   if (invoice.kind === "home-report" && invoice.homeId) {
-    const home = getHome(invoice.homeId);
+    const home = await getHome(invoice.homeId);
     if (home) {
       const now = new Date().toISOString();
       const supplier = HOME_REPORT_SUPPLIERS.find(
@@ -465,7 +485,7 @@ export async function payInvoice(formData: FormData) {
       // the job and bills US against this number.
       if (supplier && quote) {
         const po: PurchaseOrder = {
-          id: newId("PO"),
+          id: await nextPurchaseOrderRef(),
           homeId: home.id,
           sellerId: user.id,
           supplier: supplier.id,
@@ -478,19 +498,19 @@ export async function payInvoice(formData: FormData) {
           status: "instructed",
           createdAt: now,
         };
-        upsertPurchaseOrder(po);
+        await upsertPurchaseOrder(po);
         home.homeReport = {
           ...home.homeReport,
           status: "ordered",
           orderedAt: now,
           poId: po.id,
         };
-        upsertHome(home);
+        await upsertHome(home);
 
         const address = `${home.addressLine || home.headline}, ${areaLabel(home.areaId)}`;
 
         // 1) Instruct the surveyor.
-        recordEmail({
+        await recordEmail({
           to: supplier.email,
           subject: `HOME REPORT INSTRUCTION — ${po.id} — ${address}`,
           body: [
@@ -512,14 +532,14 @@ export async function payInvoice(formData: FormData) {
         });
 
         // 2) Tell the owner the surveyor has been instructed.
-        pushNotification({
+        await pushNotification({
           userId: user.id,
           kind: "system",
           title: "Your Home Report is booked",
           body: `${supplier.name} have been instructed (ref ${po.id}) and will be in touch to arrange the visit.`,
           href: `/dashboard/home/${home.id}`,
         });
-        recordEmail({
+        await recordEmail({
           to: user.email,
           subject: `Your Home Report is booked — ${supplier.name} will be in touch`,
           body: [
@@ -536,7 +556,7 @@ export async function payInvoice(formData: FormData) {
         });
 
         // 3) Send the owner their receipt.
-        recordEmail({
+        await recordEmail({
           to: user.email,
           subject: `Receipt — Home Report payment (${po.id})`,
           body: [
@@ -560,7 +580,7 @@ export async function payInvoice(formData: FormData) {
       } else {
         // Fallback (shouldn't happen): keep the old behaviour.
         home.homeReport = { ...home.homeReport, status: "ordered", orderedAt: now };
-        upsertHome(home);
+        await upsertHome(home);
       }
     }
     refresh();
@@ -578,15 +598,15 @@ export async function payInvoice(formData: FormData) {
 
 export async function addViewingSlot(formData: FormData) {
   const user = await requireUser();
-  const home = getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const date = String(formData.get("date") ?? "");
   const time = String(formData.get("time") ?? "");
   if (!date || !time) redirect(`/dashboard/home/${home.id}?error=slot`);
   const start = new Date(`${date}T${time}:00`);
   const end = new Date(start.getTime() + 30 * 60 * 1000);
-  addSlot({
-    id: newId("slot"),
+  await addSlot({
+    id: newId(),
     homeId: home.id,
     start: start.toISOString(),
     end: end.toISOString(),
@@ -598,26 +618,26 @@ export async function addViewingSlot(formData: FormData) {
 
 export async function deleteViewingSlot(formData: FormData) {
   const user = await requireUser();
-  const slot = getSlot(String(formData.get("slotId") ?? ""));
+  const slot = await getSlot(String(formData.get("slotId") ?? ""));
   if (!slot) redirect("/dashboard");
-  const home = getHome(slot.homeId);
+  const home = await getHome(slot.homeId);
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
-  removeSlot(slot.id);
+  await removeSlot(slot.id);
   refresh();
   redirect(`/dashboard/home/${home.id}#viewings`);
 }
 
 export async function bookViewing(formData: FormData) {
   const user = await requireUser();
-  const brief = getBrief(user.id);
+  const brief = await getBrief(user.id);
   if (!brief?.contract) redirect("/dashboard/brief");
-  const slot = getSlot(String(formData.get("slotId") ?? ""));
+  const slot = await getSlot(String(formData.get("slotId") ?? ""));
   if (!slot || slot.bookedBy) redirect("/matches?error=slot-taken");
-  const home = getHome(slot.homeId);
+  const home = await getHome(slot.homeId);
   if (!home) redirect("/matches");
   slot.bookedBy = user.id;
-  upsertViewing({
-    id: newId("view"),
+  await upsertViewing({
+    id: newId(),
     homeId: home.id,
     seekerId: user.id,
     slotId: slot.id,
@@ -625,7 +645,7 @@ export async function bookViewing(formData: FormData) {
     end: slot.end,
     status: "booked",
   });
-  pushNotification({
+  await pushNotification({
     userId: home.sellerId,
     kind: "viewing",
     title: "Viewing booked",
@@ -638,15 +658,15 @@ export async function bookViewing(formData: FormData) {
 
 export async function submitViewingFeedback(formData: FormData) {
   const user = await requireUser();
-  const viewing = getViewing(String(formData.get("viewingId") ?? ""));
+  const viewing = await getViewing(String(formData.get("viewingId") ?? ""));
   if (!viewing || viewing.seekerId !== user.id) redirect("/dashboard");
   viewing.status = "completed";
   viewing.feedback = String(formData.get("feedback") ?? "").trim();
   viewing.stillInterested = formData.get("stillInterested") === "yes";
-  upsertViewing(viewing);
-  const home = getHome(viewing.homeId);
+  await upsertViewing(viewing);
+  const home = await getHome(viewing.homeId);
   if (home) {
-    pushNotification({
+    await pushNotification({
       userId: home.sellerId,
       kind: "viewing",
       title: viewing.stillInterested
@@ -668,11 +688,11 @@ export async function submitViewingFeedback(formData: FormData) {
 
 export async function appointLawyer(formData: FormData) {
   const user = await requireUser();
-  const home = getHome(String(formData.get("homeId") ?? ""));
-  const lawyer = getLawyer(String(formData.get("lawyerId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const lawyer = await getLawyer(String(formData.get("lawyerId") ?? ""));
   if (!home || !lawyer) redirect("/matches");
   const invoice: Invoice = {
-    id: newId("inv"),
+    id: newId(),
     userId: user.id,
     homeId: home.id,
     lawyerId: lawyer.id,
@@ -683,22 +703,22 @@ export async function appointLawyer(formData: FormData) {
     status: "due",
     createdAt: new Date().toISOString(),
   };
-  upsertInvoice(invoice);
+  await upsertInvoice(invoice);
   refresh();
   redirect(`/pay/${invoice.id}?lawyer=${lawyer.id}`);
 }
 
 export async function submitOffer(formData: FormData) {
   const user = await requireUser();
-  const brief = getBrief(user.id);
+  const brief = await getBrief(user.id);
   if (!brief?.contract) redirect("/dashboard/brief");
-  const home = getHome(String(formData.get("homeId") ?? ""));
-  const lawyer = getLawyer(String(formData.get("lawyerId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const lawyer = await getLawyer(String(formData.get("lawyerId") ?? ""));
   const amount = Number(formData.get("amount") ?? 0);
   if (!home || !lawyer || !amount) redirect("/matches");
 
   // The deposit must be paid before the offer can be submitted.
-  const deposit = invoicesForUser(user.id).find(
+  const deposit = (await invoicesForUser(user.id)).find(
     (i) =>
       i.kind === "conveyancing-deposit" &&
       i.homeId === home.id &&
@@ -707,7 +727,7 @@ export async function submitOffer(formData: FormData) {
   if (!deposit) redirect(`/homes/${home.id}/offer?error=deposit`);
 
   const offer = {
-    id: newId("offer"),
+    id: newId(),
     homeId: home.id,
     seekerId: user.id,
     lawyerId: lawyer.id,
@@ -722,8 +742,8 @@ export async function submitOffer(formData: FormData) {
     ],
     createdAt: new Date().toISOString(),
   };
-  upsertOffer(offer);
-  pushNotification({
+  await upsertOffer(offer);
+  await pushNotification({
     userId: home.sellerId,
     kind: "offer",
     title: "You've received an offer",
@@ -736,9 +756,9 @@ export async function submitOffer(formData: FormData) {
 
 export async function respondToOffer(formData: FormData) {
   const user = await requireUser();
-  const offer = getOffer(String(formData.get("offerId") ?? ""));
+  const offer = await getOffer(String(formData.get("offerId") ?? ""));
   if (!offer) redirect("/dashboard");
-  const home = getHome(offer.homeId);
+  const home = await getHome(offer.homeId);
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const action = String(formData.get("action") ?? "");
   const now = new Date().toISOString();
@@ -747,9 +767,9 @@ export async function respondToOffer(formData: FormData) {
     offer.status = "accepted";
     offer.history.push({ at: now, event: "Accepted by the seller" });
     home.status = "under-offer";
-    upsertHome(home);
-    const lawyer = getLawyer(offer.lawyerId);
-    pushNotification({
+    await upsertHome(home);
+    const lawyer = await getLawyer(offer.lawyerId);
+    await pushNotification({
       userId: offer.seekerId,
       kind: "offer",
       title: "Offer accepted 🎉",
@@ -759,7 +779,7 @@ export async function respondToOffer(formData: FormData) {
   } else if (action === "decline") {
     offer.status = "declined";
     offer.history.push({ at: now, event: "Declined by the seller" });
-    pushNotification({
+    await pushNotification({
       userId: offer.seekerId,
       kind: "offer",
       title: "Offer declined",
@@ -775,7 +795,7 @@ export async function respondToOffer(formData: FormData) {
       at: now,
       event: `Countered at £${counterAmount.toLocaleString("en-GB")}`,
     });
-    pushNotification({
+    await pushNotification({
       userId: offer.seekerId,
       kind: "offer",
       title: "The seller has countered",
@@ -783,17 +803,17 @@ export async function respondToOffer(formData: FormData) {
       href: `/homes/${home.id}/offer?counter=${offer.id}`,
     });
   }
-  upsertOffer(offer);
+  await upsertOffer(offer);
   refresh();
   redirect(`/dashboard/home/${home.id}`);
 }
 
 export async function acceptCounter(formData: FormData) {
   const user = await requireUser();
-  const offer = getOffer(String(formData.get("offerId") ?? ""));
+  const offer = await getOffer(String(formData.get("offerId") ?? ""));
   if (!offer || offer.seekerId !== user.id || offer.status !== "countered")
     redirect("/dashboard");
-  const home = getHome(offer.homeId);
+  const home = await getHome(offer.homeId);
   if (!home) redirect("/dashboard");
   const now = new Date().toISOString();
   offer.amount = offer.counterAmount ?? offer.amount;
@@ -802,10 +822,10 @@ export async function acceptCounter(formData: FormData) {
     at: now,
     event: `Counter accepted at £${offer.amount.toLocaleString("en-GB")}`,
   });
-  upsertOffer(offer);
+  await upsertOffer(offer);
   home.status = "under-offer";
-  upsertHome(home);
-  pushNotification({
+  await upsertHome(home);
+  await pushNotification({
     userId: home.sellerId,
     kind: "offer",
     title: "Counter-offer accepted",
@@ -824,24 +844,25 @@ export async function acceptCounter(formData: FormData) {
  * runs the gate (both registered + home details + verified report) before the
  * seeker is ever offered the introduction.
  */
-function recordInterest(
+async function recordInterest(
   seekerId: string,
   sellerId: string,
   homeId: string | null,
-): Introduction {
-  const existing = findIntroduction(seekerId, sellerId);
+): Promise<Introduction> {
+  const existing = await findIntroduction(seekerId, sellerId);
   if (existing) return existing;
   const intro: Introduction = {
-    id: newId("intro"),
+    id: newId(),
     seekerId,
     sellerId,
-    homeId: homeId ?? homesBySeller(sellerId)[0]?.id ?? null,
+    homeId: homeId ?? (await homesBySeller(sellerId))[0]?.id ?? null,
     status: "new",
     createdAt: new Date().toISOString(),
   };
-  upsertIntroduction(intro);
-  pushNotification({
-    userId: "u-phil",
+  await upsertIntroduction(intro);
+  const adminId = await adminUserId();
+  if (adminId) await pushNotification({
+    userId: adminId,
     kind: "system",
     title: "New introduction request",
     body: "A home owner clicked a Quiet Seeker's profile. Check the gate before offering the introduction.",
@@ -854,7 +875,7 @@ function recordInterest(
 export async function expressInterestInSeeker(formData: FormData) {
   const user = await requireUser();
   const ref = String(formData.get("seekerRef") ?? "").trim();
-  const brief = getBriefByPublicRef(ref);
+  const brief = await getBriefByPublicRef(ref);
   if (brief?.contract) {
     if (brief.userId === user.id) redirect("/seekers");
     recordInterest(brief.userId, user.id, null);
@@ -878,18 +899,18 @@ export async function expressInterestInSeeker(formData: FormData) {
  */
 export async function adminOfferIntroduction(formData: FormData) {
   await requireAdmin();
-  const intro = getIntroduction(String(formData.get("introId") ?? ""));
+  const intro = await getIntroduction(String(formData.get("introId") ?? ""));
   if (!intro || intro.status !== "new") redirect("/admin/introductions");
   const homeId = String(formData.get("homeId") ?? "") || intro.homeId;
-  const home = homeId ? getHome(homeId) : undefined;
+  const home = homeId ? await getHome(homeId) : undefined;
   if (!home || home.sellerId !== intro.sellerId || !home.contract) {
     redirect("/admin/introductions?error=gate");
   }
   intro.homeId = home.id;
   intro.status = "offered";
   intro.offeredAt = new Date().toISOString();
-  upsertIntroduction(intro);
-  pushNotification({
+  await upsertIntroduction(intro);
+  await pushNotification({
     userId: intro.seekerId,
     kind: "match",
     title: "A home owner spotted your profile",
@@ -903,16 +924,16 @@ export async function adminOfferIntroduction(formData: FormData) {
 /** The seeker's answer to an offered introduction: see it, or pass. */
 export async function respondToIntroduction(formData: FormData) {
   const user = await requireUser();
-  const intro = getIntroduction(String(formData.get("introId") ?? ""));
+  const intro = await getIntroduction(String(formData.get("introId") ?? ""));
   if (!intro || intro.seekerId !== user.id || intro.status !== "offered")
     redirect("/dashboard");
   const accepted = String(formData.get("answer")) === "yes";
   intro.status = accepted ? "accepted" : "declined";
   intro.respondedAt = new Date().toISOString();
-  upsertIntroduction(intro);
-  const home = intro.homeId ? getHome(intro.homeId) : undefined;
+  await upsertIntroduction(intro);
+  const home = intro.homeId ? await getHome(intro.homeId) : undefined;
   if (home) {
-    pushNotification({
+    await pushNotification({
       userId: home.sellerId,
       kind: "match",
       title: accepted
@@ -934,13 +955,13 @@ export async function respondToIntroduction(formData: FormData) {
 
 export async function toggleSaveHome(formData: FormData) {
   const user = await requireUser();
-  toggleSaved(user.id, String(formData.get("homeId") ?? ""));
+  await toggleSaved(user.id, String(formData.get("homeId") ?? ""));
   refresh();
 }
 
 export async function markAllNotificationsRead() {
   const user = await requireUser();
-  markNotificationsRead(user.id);
+  await markNotificationsRead(user.id);
   refresh();
 }
 
@@ -960,7 +981,7 @@ export async function saveAlertPref(formData: FormData) {
 
 export async function adminVerifyReport(formData: FormData) {
   await requireAdmin();
-  const home = getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
   if (!home || home.homeReport.status !== "uploaded") redirect("/admin/reports");
   home.homeReport = {
     ...home.homeReport,
@@ -968,8 +989,8 @@ export async function adminVerifyReport(formData: FormData) {
     verifiedAt: new Date().toISOString(),
   };
   home.status = "live";
-  upsertHome(home);
-  pushNotification({
+  await upsertHome(home);
+  await pushNotification({
     userId: home.sellerId,
     kind: "system",
     title: "Your Hush Home is live",
@@ -977,26 +998,26 @@ export async function adminVerifyReport(formData: FormData) {
     href: "/dashboard",
   });
   // The home just went live: tell every Quiet Seeker it matches.
-  alertSeekersAboutHome(home);
+  await alertSeekersAboutHome(home);
   refresh();
   redirect("/admin/reports");
 }
 
 export async function adminConcludeMissives(formData: FormData) {
   await requireAdmin();
-  const offer = getOffer(String(formData.get("offerId") ?? ""));
+  const offer = await getOffer(String(formData.get("offerId") ?? ""));
   if (!offer || offer.status !== "accepted") redirect("/admin/deals");
-  const home = getHome(offer.homeId);
+  const home = await getHome(offer.homeId);
   if (!home) redirect("/admin/deals");
   const now = new Date().toISOString();
   offer.missivesConcludedAt = now;
   offer.history.push({ at: now, event: "Missives concluded" });
-  upsertOffer(offer);
+  await upsertOffer(offer);
   home.status = "sold";
-  upsertHome(home);
+  await upsertHome(home);
   const fee = sourcingFee(offer.amount);
-  upsertInvoice({
-    id: newId("inv"),
+  await upsertInvoice({
+    id: newId(),
     userId: offer.seekerId,
     homeId: home.id,
     offerId: offer.id,
@@ -1007,7 +1028,7 @@ export async function adminConcludeMissives(formData: FormData) {
     status: "due",
     createdAt: now,
   });
-  pushNotification({
+  await pushNotification({
     userId: offer.seekerId,
     kind: "system",
     title: "Missives concluded — congratulations",
@@ -1020,13 +1041,13 @@ export async function adminConcludeMissives(formData: FormData) {
 
 export async function adminRecordWithdrawal(formData: FormData) {
   await requireAdmin();
-  const home = getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHome(String(formData.get("homeId") ?? ""));
   if (!home) redirect("/admin/deals");
   const now = new Date().toISOString();
   home.status = "withdrawn";
-  upsertHome(home);
-  upsertInvoice({
-    id: newId("inv"),
+  await upsertHome(home);
+  await upsertInvoice({
+    id: newId(),
     userId: home.sellerId,
     homeId: home.id,
     kind: "withdrawal-fee",
@@ -1036,7 +1057,7 @@ export async function adminRecordWithdrawal(formData: FormData) {
     status: "due",
     createdAt: now,
   });
-  pushNotification({
+  await pushNotification({
     userId: home.sellerId,
     kind: "system",
     title: "Listing withdrawn",
@@ -1050,7 +1071,7 @@ export async function adminRecordWithdrawal(formData: FormData) {
 /** Purchase-order lifecycle: surveyor's invoice arrives, then we pay it. */
 export async function adminUpdatePurchaseOrder(formData: FormData) {
   await requireAdmin();
-  const po = getPurchaseOrder(String(formData.get("poId") ?? ""));
+  const po = await getPurchaseOrder(String(formData.get("poId") ?? ""));
   const action = String(formData.get("action") ?? "");
   if (po) {
     const now = new Date().toISOString();
@@ -1061,7 +1082,7 @@ export async function adminUpdatePurchaseOrder(formData: FormData) {
       po.status = "settled";
       po.settledAt = now;
     }
-    upsertPurchaseOrder(po);
+    await upsertPurchaseOrder(po);
   }
   refresh();
   redirect("/admin/orders");
@@ -1069,11 +1090,11 @@ export async function adminUpdatePurchaseOrder(formData: FormData) {
 
 export async function adminMarkInvoicePaid(formData: FormData) {
   await requireAdmin();
-  const invoice = getInvoice(String(formData.get("invoiceId") ?? ""));
+  const invoice = await getInvoice(String(formData.get("invoiceId") ?? ""));
   if (invoice && invoice.status === "due") {
     invoice.status = "paid";
     invoice.paidAt = new Date().toISOString();
-    upsertInvoice(invoice);
+    await upsertInvoice(invoice);
   }
   refresh();
   redirect("/admin/invoices");
@@ -1081,21 +1102,21 @@ export async function adminMarkInvoicePaid(formData: FormData) {
 
 export async function adminSaveWeights(formData: FormData) {
   await requireAdmin();
-  const current = matchWeights();
+  const current = await matchWeights();
   const next = { ...current };
   for (const key of Object.keys(next) as (keyof typeof next)[]) {
     const v = Number(formData.get(key));
     if (Number.isFinite(v) && v >= 0) next[key] = v;
   }
-  setMatchWeights(next);
+  await setMatchWeights(next);
   refresh();
   redirect("/admin/settings?saved=1");
 }
 
 export async function adminSaveLawyer(formData: FormData) {
   await requireAdmin();
-  const id = String(formData.get("lawyerId") ?? "") || newId("law");
-  upsertLawyer({
+  const id = String(formData.get("lawyerId") ?? "") || newId();
+  await upsertLawyer({
     id,
     firm: String(formData.get("firm") ?? "").trim(),
     contactName: String(formData.get("contactName") ?? "").trim(),

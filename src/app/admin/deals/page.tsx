@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import {
   allHomes,
+  allLawyers,
   allOffers,
-  getLawyer,
-  getUser,
+  usersById,
   viewingsForHome,
 } from "@/lib/db";
 import { adminConcludeMissives, adminRecordWithdrawal } from "@/lib/actions";
@@ -14,9 +14,16 @@ import { sourcingFee } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Admin — deals" };
 
-export default function AdminDealsPage() {
-  const homes = allHomes();
-  const offers = allOffers();
+export default async function AdminDealsPage() {
+  const homes = await allHomes();
+  const users = await usersById();
+  const lawyers = new Map((await allLawyers()).map((l) => [l.id, l]));
+  const offers = await allOffers();
+  const viewingCounts = new Map(
+    await Promise.all(
+      homes.map(async (h) => [h.id, (await viewingsForHome(h.id)).length] as const),
+    ),
+  );
 
   return (
     <>
@@ -33,8 +40,8 @@ export default function AdminDealsPage() {
           .filter((o) => o.status === "accepted" && !o.missivesConcludedAt)
           .map((o) => {
             const home = homes.find((h) => h.id === o.homeId);
-            const buyer = getUser(o.seekerId);
-            const lawyer = getLawyer(o.lawyerId);
+            const buyer = users.get(o.seekerId);
+            const lawyer = lawyers.get(o.lawyerId);
             if (!home) return null;
             return (
               <li
@@ -96,12 +103,12 @@ export default function AdminDealsPage() {
                     {areaShortLabel(h.areaId)}
                   </span>
                 </td>
-                <td className="px-5 py-3">{getUser(h.sellerId)?.name}</td>
+                <td className="px-5 py-3">{users.get(h.sellerId)?.name}</td>
                 <td className="px-5 py-3">{formatPrice(h.price)}</td>
                 <td className="px-5 py-3 capitalize">{h.status.replace("-", " ")}</td>
-                <td className="px-5 py-3">{viewingsForHome(h.id).length}</td>
+                <td className="px-5 py-3">{viewingCounts.get(h.id) ?? 0}</td>
                 <td className="px-5 py-3">
-                  {allOffers().filter((o) => o.homeId === h.id).length}
+                  {offers.filter((o) => o.homeId === h.id).length}
                 </td>
                 <td className="px-5 py-3">
                   {(h.status === "live" || h.status === "under-offer") && (

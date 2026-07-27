@@ -1,24 +1,27 @@
-// In-memory data store, seeded from sample data.
+// The data layer — every read and write goes through here.
 //
-// The prototype runs with zero backend setup: every read and write goes
-// through this module. State survives hot reloads via globalThis but resets
-// when the server restarts — exactly like the Mowatt prototype's sample mode.
-// supabase/migrations/ holds the matching production schema; swapping this
-// module's internals for Supabase queries is the planned production step.
+// Backed by Postgres (Supabase). Function names and shapes match the old
+// in-memory prototype store one-for-one, so call sites only had to gain an
+// `await`. Everything runs with the SERVER key, which bypasses row-level
+// security — so permission checks belong in the calling code, never here.
 
+import { serverDb } from "./supabase";
 import {
-  sampleBriefs,
-  sampleHomes,
-  sampleIntroductions,
-  sampleInvoices,
-  sampleLawyers,
-  sampleNotifications,
-  sampleOffers,
-  sampleSaved,
-  sampleSlots,
-  sampleUsers,
-  sampleViewings,
-} from "./sample-data";
+  fromBrief,
+  fromHome,
+  fromIntroduction,
+  fromInvoice,
+  fromPurchaseOrder,
+  fromUser,
+  toBrief,
+  toEmail,
+  toHome,
+  toIntroduction,
+  toInvoice,
+  toPurchaseOrder,
+  toPurchaseOrder as toPO,
+  toUser,
+} from "./db-mappers";
 import { DEFAULT_WEIGHTS } from "./match";
 import type {
   AppNotification,
@@ -32,417 +35,690 @@ import type {
   PurchaseOrder,
   SavedHome,
   SeekerBrief,
-  SeenMatch,
   User,
   Viewing,
   ViewingSlot,
 } from "./types";
 
-interface Store {
-  users: User[];
-  briefs: SeekerBrief[];
-  homes: HushHome[];
-  lawyers: Lawyer[];
-  slots: ViewingSlot[];
-  viewings: Viewing[];
-  offers: Offer[];
-  invoices: Invoice[];
-  saved: SavedHome[];
-  notifications: AppNotification[];
-  introductions: Introduction[];
-  seenMatches: SeenMatch[];
-  /** Simulated outbound email log (newest last). */
-  emails: OutboxEmail[];
-  /** Purchase orders raised to surveyors for paid Home Reports. */
-  purchaseOrders: PurchaseOrder[];
-  /** Dedupe for "possible match" alerts: one per user per pairing key. */
-  sentAlerts: { userId: string; key: string; sentAt: string }[];
-  weights: MatchWeights;
-  counter: number;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/** Throw on a real database error; treat "no rows" as simply absent. */
+function unwrap<T>(res: { data: T | null; error: any }, context: string): T | null {
+  if (res.error && res.error.code !== "PGRST116") {
+    throw new Error(`${context}: ${res.error.message}`);
+  }
+  return res.data;
 }
 
-function seed(): Store {
-  // Deep-clone the samples so mutations never touch module constants.
-  return structuredClone({
-    users: sampleUsers,
-    briefs: sampleBriefs,
-    homes: sampleHomes,
-    lawyers: sampleLawyers,
-    slots: sampleSlots,
-    viewings: sampleViewings,
-    offers: sampleOffers,
-    invoices: sampleInvoices,
-    saved: sampleSaved,
-    notifications: sampleNotifications,
-    introductions: sampleIntroductions,
-    seenMatches: [] as SeenMatch[],
-    emails: [] as OutboxEmail[],
-    purchaseOrders: [] as PurchaseOrder[],
-    sentAlerts: [] as { userId: string; key: string; sentAt: string }[],
-    weights: DEFAULT_WEIGHTS,
-    counter: 1000,
-  });
+/** New primary key. Postgres would default these, but the app builds whole
+ *  objects before saving, so it needs the id up front. */
+export function newId(): string {
+  return crypto.randomUUID();
 }
 
-const g = globalThis as unknown as { __matchlistedStore?: Store };
+// ---- Users / profiles -----------------------------------------------------
 
-export function store(): Store {
-  if (!g.__matchlistedStore) g.__matchlistedStore = seed();
-  return g.__matchlistedStore;
+export async function getUser(id: string): Promise<User | undefined> {
+  const res = await serverDb().from("profiles").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getUser");
+  return row ? toUser(row) : undefined;
 }
 
-export function resetStore(): void {
-  g.__matchlistedStore = seed();
+export async function getUserByEmail(email: string): Promise<User | undefined> {
+  const res = await serverDb()
+    .from("profiles")
+    .select("*")
+    .ilike("email", email.trim())
+    .maybeSingle();
+  const row = unwrap(res, "getUserByEmail");
+  return row ? toUser(row) : undefined;
 }
 
-export function newId(prefix: string): string {
-  const s = store();
-  s.counter += 1;
-  return `${prefix}-${s.counter}`;
+/**
+ * Someone to send back-office alerts to. The prototype hardcoded a demo id;
+ * now we look up a real administrator. Returns null if none exists yet, so
+ * a missing admin can never crash a customer's action.
+ */
+export async function adminUserId(): Promise<string | null> {
+  const res = await serverDb()
+    .from("profiles")
+    .select("id")
+    .eq("is_admin", true)
+    .order("created_at")
+    .limit(1)
+    .maybeSingle();
+  const row = unwrap(res, "adminUserId");
+  return row?.id ?? null;
 }
 
-// ---- Users ----------------------------------------------------------------
-
-export function getUser(id: string): User | undefined {
-  return store().users.find((u) => u.id === id);
+/**
+ * Every profile keyed by id. Admin tables need a name against each row;
+ * fetching them once beats one query per row, and lets the render stay
+ * synchronous (a React server component can't await inside a loop).
+ */
+export async function usersById(): Promise<Map<string, User>> {
+  const users = await allUsers();
+  return new Map(users.map((u) => [u.id, u]));
 }
 
-export function getUserByEmail(email: string): User | undefined {
-  const e = email.trim().toLowerCase();
-  return store().users.find((u) => u.email.toLowerCase() === e);
+/** Every home keyed by id — same reasoning as usersById(). */
+export async function homesById(): Promise<Map<string, HushHome>> {
+  const homes = await allHomes();
+  return new Map(homes.map((h) => [h.id, h]));
 }
 
-export function createUser(input: { name: string; email: string }): User {
-  const user: User = {
-    id: newId("u"),
-    name: input.name.trim(),
-    email: input.email.trim().toLowerCase(),
-    createdAt: new Date().toISOString(),
-  };
-  store().users.push(user);
-  return user;
+export async function allUsers(): Promise<User[]> {
+  const res = await serverDb().from("profiles").select("*").order("created_at");
+  return (unwrap(res, "allUsers") ?? []).map(toUser);
+}
+
+/** Create the profile row for an existing Supabase Auth account. */
+export async function createProfile(input: {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  isAdmin?: boolean;
+}): Promise<User> {
+  const res = await serverDb()
+    .from("profiles")
+    .insert({
+      id: input.id,
+      name: input.name.trim(),
+      email: input.email.trim().toLowerCase(),
+      phone: input.phone ?? null,
+      is_admin: input.isAdmin ?? false,
+    })
+    .select("*")
+    .single();
+  const row = unwrap(res, "createProfile");
+  if (!row) throw new Error("createProfile returned no row");
+  return toUser(row);
+}
+
+export async function upsertUser(user: User): Promise<void> {
+  const res = await serverDb().from("profiles").upsert(fromUser(user));
+  unwrap(res as any, "upsertUser");
 }
 
 // ---- Briefs ---------------------------------------------------------------
 
-export function getBrief(userId: string): SeekerBrief | undefined {
-  return store().briefs.find((b) => b.userId === userId);
+export async function getBrief(userId: string): Promise<SeekerBrief | undefined> {
+  const res = await serverDb()
+    .from("seeker_briefs")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  const row = unwrap(res, "getBrief");
+  return row ? toBrief(row) : undefined;
 }
 
-export function upsertBrief(brief: SeekerBrief): void {
-  const s = store();
-  const i = s.briefs.findIndex((b) => b.userId === brief.userId);
-  if (i >= 0) s.briefs[i] = brief;
-  else s.briefs.push(brief);
+export async function upsertBrief(brief: SeekerBrief): Promise<void> {
+  const res = await serverDb().from("seeker_briefs").upsert(fromBrief(brief));
+  unwrap(res as any, "upsertBrief");
 }
 
 /** Briefs that are contract-signed — the only ones the engine matches. */
-export function activeBriefs(): SeekerBrief[] {
-  return store().briefs.filter((b) => b.contract !== null);
+export async function activeBriefs(): Promise<SeekerBrief[]> {
+  const res = await serverDb()
+    .from("seeker_briefs")
+    .select("*")
+    .not("contract_signed_at", "is", null);
+  return (unwrap(res, "activeBriefs") ?? []).map(toBrief);
 }
 
 /** Find a brief by its public anonymised ref (the /seekers/[ref] URL id). */
-export function getBriefByPublicRef(ref: string): SeekerBrief | undefined {
-  return store().briefs.find((b) => b.publicRef === ref);
+export async function getBriefByPublicRef(
+  ref: string,
+): Promise<SeekerBrief | undefined> {
+  const res = await serverDb()
+    .from("seeker_briefs")
+    .select("*")
+    .eq("public_ref", ref)
+    .maybeSingle();
+  const row = unwrap(res, "getBriefByPublicRef");
+  return row ? toBrief(row) : undefined;
+}
+
+/** Next public Quiet Seeker reference (QS-2304), allocated by Postgres. */
+export async function nextSeekerRef(): Promise<string> {
+  const res = await serverDb().rpc("next_seeker_ref");
+  if (res.error) throw new Error(`nextSeekerRef: ${res.error.message}`);
+  return res.data as unknown as string;
 }
 
 // ---- Introductions --------------------------------------------------------
 
-export function getIntroduction(id: string): Introduction | undefined {
-  return store().introductions.find((i) => i.id === id);
+export async function getIntroduction(id: string): Promise<Introduction | undefined> {
+  const res = await serverDb().from("introductions").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getIntroduction");
+  return row ? toIntroduction(row) : undefined;
 }
 
-export function allIntroductions(): Introduction[] {
-  return [...store().introductions].sort((a, b) =>
-    b.createdAt.localeCompare(a.createdAt),
-  );
+export async function allIntroductions(): Promise<Introduction[]> {
+  const res = await serverDb()
+    .from("introductions")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "allIntroductions") ?? []).map(toIntroduction);
 }
 
-export function introductionsForSeeker(seekerId: string): Introduction[] {
-  return allIntroductions().filter((i) => i.seekerId === seekerId);
+export async function introductionsForSeeker(seekerId: string): Promise<Introduction[]> {
+  const res = await serverDb()
+    .from("introductions")
+    .select("*")
+    .eq("seeker_ref", seekerId)
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "introductionsForSeeker") ?? []).map(toIntroduction);
 }
 
-export function introductionsBySeller(sellerId: string): Introduction[] {
-  return allIntroductions().filter((i) => i.sellerId === sellerId);
+export async function introductionsBySeller(sellerId: string): Promise<Introduction[]> {
+  const res = await serverDb()
+    .from("introductions")
+    .select("*")
+    .eq("seller_id", sellerId)
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "introductionsBySeller") ?? []).map(toIntroduction);
 }
 
-export function findIntroduction(
+export async function findIntroduction(
   seekerId: string,
   sellerId: string,
-): Introduction | undefined {
-  return store().introductions.find(
-    (i) => i.seekerId === seekerId && i.sellerId === sellerId,
-  );
+): Promise<Introduction | undefined> {
+  const res = await serverDb()
+    .from("introductions")
+    .select("*")
+    .eq("seeker_ref", seekerId)
+    .eq("seller_id", sellerId)
+    .maybeSingle();
+  const row = unwrap(res, "findIntroduction");
+  return row ? toIntroduction(row) : undefined;
 }
 
-export function upsertIntroduction(intro: Introduction): void {
-  const s = store();
-  const i = s.introductions.findIndex((x) => x.id === intro.id);
-  if (i >= 0) s.introductions[i] = intro;
-  else s.introductions.push(intro);
+export async function upsertIntroduction(intro: Introduction): Promise<void> {
+  const res = await serverDb().from("introductions").upsert(fromIntroduction(intro));
+  unwrap(res as any, "upsertIntroduction");
 }
 
 // ---- Homes ----------------------------------------------------------------
 
-export function getHome(id: string): HushHome | undefined {
-  return store().homes.find((h) => h.id === id);
+export async function getHome(id: string): Promise<HushHome | undefined> {
+  const res = await serverDb().from("hush_homes").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getHome");
+  return row ? toHome(row) : undefined;
 }
 
-export function homesBySeller(sellerId: string): HushHome[] {
-  return store().homes.filter((h) => h.sellerId === sellerId);
+export async function homesBySeller(sellerId: string): Promise<HushHome[]> {
+  const res = await serverDb()
+    .from("hush_homes")
+    .select("*")
+    .eq("seller_id", sellerId)
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "homesBySeller") ?? []).map(toHome);
 }
 
-export function liveHomes(): HushHome[] {
-  return store().homes.filter(
-    (h) => h.status === "live" || h.status === "under-offer",
-  );
+export async function liveHomes(): Promise<HushHome[]> {
+  const res = await serverDb()
+    .from("hush_homes")
+    .select("*")
+    .in("status", ["live", "under-offer"])
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "liveHomes") ?? []).map(toHome);
 }
 
 /**
  * Preview listings: agreement signed, owner chose "Home Report later" —
  * shown as description + hazed photos only, never fully live.
  */
-export function previewHomes(): HushHome[] {
-  return store().homes.filter(
-    (h) =>
-      h.previewListed === true &&
-      h.contract !== null &&
-      (h.status === "draft" || h.status === "pending-approval"),
-  );
+export async function previewHomes(): Promise<HushHome[]> {
+  const res = await serverDb()
+    .from("hush_homes")
+    .select("*")
+    .eq("preview_listed", true)
+    .not("contract_signed_at", "is", null)
+    .in("status", ["draft", "pending-approval"])
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "previewHomes") ?? []).map(toHome);
 }
 
-export function allHomes(): HushHome[] {
-  return store().homes;
+export async function allHomes(): Promise<HushHome[]> {
+  const res = await serverDb()
+    .from("hush_homes")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "allHomes") ?? []).map(toHome);
 }
 
-export function upsertHome(home: HushHome): void {
-  const s = store();
-  const i = s.homes.findIndex((h) => h.id === home.id);
-  if (i >= 0) s.homes[i] = home;
-  else s.homes.push(home);
+export async function upsertHome(home: HushHome): Promise<void> {
+  const res = await serverDb().from("hush_homes").upsert(fromHome(home));
+  unwrap(res as any, "upsertHome");
 }
 
 // ---- Lawyers --------------------------------------------------------------
 
-export function allLawyers(): Lawyer[] {
-  return store().lawyers;
+function toLawyer(row: any): Lawyer {
+  return {
+    id: row.id,
+    firm: row.firm,
+    contactName: row.contact_name,
+    location: row.location,
+    feeEstimate: Number(row.fee_estimate),
+    blurb: row.blurb ?? "",
+  };
 }
 
-export function getLawyer(id: string): Lawyer | undefined {
-  return store().lawyers.find((l) => l.id === id);
+export async function allLawyers(): Promise<Lawyer[]> {
+  const res = await serverDb().from("lawyers").select("*").order("firm");
+  return (unwrap(res, "allLawyers") ?? []).map(toLawyer);
 }
 
-export function upsertLawyer(lawyer: Lawyer): void {
-  const s = store();
-  const i = s.lawyers.findIndex((l) => l.id === lawyer.id);
-  if (i >= 0) s.lawyers[i] = lawyer;
-  else s.lawyers.push(lawyer);
+export async function getLawyer(id: string): Promise<Lawyer | undefined> {
+  const res = await serverDb().from("lawyers").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getLawyer");
+  return row ? toLawyer(row) : undefined;
 }
 
-export function removeLawyer(id: string): void {
-  const s = store();
-  s.lawyers = s.lawyers.filter((l) => l.id !== id);
+export async function upsertLawyer(lawyer: Lawyer): Promise<void> {
+  const res = await serverDb().from("lawyers").upsert({
+    id: lawyer.id,
+    firm: lawyer.firm,
+    contact_name: lawyer.contactName,
+    location: lawyer.location,
+    fee_estimate: lawyer.feeEstimate,
+    blurb: lawyer.blurb,
+  });
+  unwrap(res as any, "upsertLawyer");
+}
+
+export async function removeLawyer(id: string): Promise<void> {
+  const res = await serverDb().from("lawyers").delete().eq("id", id);
+  unwrap(res as any, "removeLawyer");
 }
 
 // ---- Viewing slots + viewings --------------------------------------------
 
-export function slotsForHome(homeId: string): ViewingSlot[] {
-  return store()
-    .slots.filter((sl) => sl.homeId === homeId)
-    .sort((a, b) => a.start.localeCompare(b.start));
+function toSlot(row: any): ViewingSlot {
+  return {
+    id: row.id,
+    homeId: row.home_id,
+    start: row.starts_at,
+    end: row.ends_at,
+    bookedBy: row.booked_by ?? null,
+  };
 }
 
-export function getSlot(id: string): ViewingSlot | undefined {
-  return store().slots.find((sl) => sl.id === id);
+export async function slotsForHome(homeId: string): Promise<ViewingSlot[]> {
+  const res = await serverDb()
+    .from("viewing_slots")
+    .select("*")
+    .eq("home_id", homeId)
+    .order("starts_at");
+  return (unwrap(res, "slotsForHome") ?? []).map(toSlot);
 }
 
-export function addSlot(slot: ViewingSlot): void {
-  store().slots.push(slot);
+export async function getSlot(id: string): Promise<ViewingSlot | undefined> {
+  const res = await serverDb().from("viewing_slots").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getSlot");
+  return row ? toSlot(row) : undefined;
 }
 
-export function removeSlot(id: string): void {
-  const s = store();
-  s.slots = s.slots.filter((sl) => sl.id !== id || sl.bookedBy !== null);
+export async function addSlot(slot: ViewingSlot): Promise<void> {
+  const res = await serverDb().from("viewing_slots").insert({
+    id: slot.id,
+    home_id: slot.homeId,
+    starts_at: slot.start,
+    ends_at: slot.end,
+    booked_by: slot.bookedBy,
+  });
+  unwrap(res as any, "addSlot");
 }
 
-export function viewingsForSeeker(seekerId: string): Viewing[] {
-  return store().viewings.filter((v) => v.seekerId === seekerId);
+export async function updateSlot(slot: ViewingSlot): Promise<void> {
+  const res = await serverDb()
+    .from("viewing_slots")
+    .update({ booked_by: slot.bookedBy })
+    .eq("id", slot.id);
+  unwrap(res as any, "updateSlot");
 }
 
-export function viewingsForHome(homeId: string): Viewing[] {
-  return store().viewings.filter((v) => v.homeId === homeId);
+/** Only removes unbooked slots — a booked one is somebody's appointment. */
+export async function removeSlot(id: string): Promise<void> {
+  const res = await serverDb()
+    .from("viewing_slots")
+    .delete()
+    .eq("id", id)
+    .is("booked_by", null);
+  unwrap(res as any, "removeSlot");
 }
 
-export function getViewing(id: string): Viewing | undefined {
-  return store().viewings.find((v) => v.id === id);
+function toViewing(row: any): Viewing {
+  return {
+    id: row.id,
+    homeId: row.home_id,
+    seekerId: row.seeker_id,
+    slotId: row.slot_id,
+    start: row.starts_at,
+    end: row.ends_at,
+    status: row.status,
+    feedback: row.feedback ?? undefined,
+    stillInterested: row.still_interested ?? null,
+  };
 }
 
-export function upsertViewing(viewing: Viewing): void {
-  const s = store();
-  const i = s.viewings.findIndex((v) => v.id === viewing.id);
-  if (i >= 0) s.viewings[i] = viewing;
-  else s.viewings.push(viewing);
+export async function viewingsForSeeker(seekerId: string): Promise<Viewing[]> {
+  const res = await serverDb().from("viewings").select("*").eq("seeker_id", seekerId);
+  return (unwrap(res, "viewingsForSeeker") ?? []).map(toViewing);
+}
+
+export async function viewingsForHome(homeId: string): Promise<Viewing[]> {
+  const res = await serverDb().from("viewings").select("*").eq("home_id", homeId);
+  return (unwrap(res, "viewingsForHome") ?? []).map(toViewing);
+}
+
+export async function getViewing(id: string): Promise<Viewing | undefined> {
+  const res = await serverDb().from("viewings").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getViewing");
+  return row ? toViewing(row) : undefined;
+}
+
+export async function upsertViewing(viewing: Viewing): Promise<void> {
+  const res = await serverDb().from("viewings").upsert({
+    id: viewing.id,
+    home_id: viewing.homeId,
+    seeker_id: viewing.seekerId,
+    slot_id: viewing.slotId,
+    starts_at: viewing.start,
+    ends_at: viewing.end,
+    status: viewing.status,
+    feedback: viewing.feedback ?? null,
+    still_interested: viewing.stillInterested ?? null,
+  });
+  unwrap(res as any, "upsertViewing");
 }
 
 // ---- Offers ---------------------------------------------------------------
 
-export function offersForHome(homeId: string): Offer[] {
-  return store().offers.filter((o) => o.homeId === homeId);
+function toOffer(row: any): Offer {
+  return {
+    id: row.id,
+    homeId: row.home_id,
+    seekerId: row.seeker_id,
+    lawyerId: row.lawyer_id,
+    amount: Number(row.amount),
+    note: row.note ?? undefined,
+    status: row.status,
+    counterAmount: row.counter_amount ? Number(row.counter_amount) : undefined,
+    history: row.history ?? [],
+    createdAt: row.created_at,
+    missivesConcludedAt: row.missives_concluded_at ?? undefined,
+  };
 }
 
-export function offersForSeeker(seekerId: string): Offer[] {
-  return store().offers.filter((o) => o.seekerId === seekerId);
+function fromOffer(offer: Offer) {
+  return {
+    id: offer.id,
+    home_id: offer.homeId,
+    seeker_id: offer.seekerId,
+    lawyer_id: offer.lawyerId,
+    amount: offer.amount,
+    note: offer.note ?? null,
+    status: offer.status,
+    counter_amount: offer.counterAmount ?? null,
+    history: offer.history,
+    missives_concluded_at: offer.missivesConcludedAt ?? null,
+  };
 }
 
-export function allOffers(): Offer[] {
-  return store().offers;
+export async function offersForHome(homeId: string): Promise<Offer[]> {
+  const res = await serverDb().from("offers").select("*").eq("home_id", homeId);
+  return (unwrap(res, "offersForHome") ?? []).map(toOffer);
 }
 
-export function getOffer(id: string): Offer | undefined {
-  return store().offers.find((o) => o.id === id);
+export async function offersForSeeker(seekerId: string): Promise<Offer[]> {
+  const res = await serverDb().from("offers").select("*").eq("seeker_id", seekerId);
+  return (unwrap(res, "offersForSeeker") ?? []).map(toOffer);
 }
 
-export function upsertOffer(offer: Offer): void {
-  const s = store();
-  const i = s.offers.findIndex((o) => o.id === offer.id);
-  if (i >= 0) s.offers[i] = offer;
-  else s.offers.push(offer);
+export async function allOffers(): Promise<Offer[]> {
+  const res = await serverDb()
+    .from("offers")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "allOffers") ?? []).map(toOffer);
+}
+
+export async function getOffer(id: string): Promise<Offer | undefined> {
+  const res = await serverDb().from("offers").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getOffer");
+  return row ? toOffer(row) : undefined;
+}
+
+export async function upsertOffer(offer: Offer): Promise<void> {
+  const res = await serverDb().from("offers").upsert(fromOffer(offer));
+  unwrap(res as any, "upsertOffer");
 }
 
 // ---- Invoices -------------------------------------------------------------
 
-export function invoicesForUser(userId: string): Invoice[] {
-  return store().invoices.filter((i) => i.userId === userId);
+export async function invoicesForUser(userId: string): Promise<Invoice[]> {
+  const res = await serverDb()
+    .from("invoices")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "invoicesForUser") ?? []).map(toInvoice);
 }
 
-export function allInvoices(): Invoice[] {
-  return store().invoices;
+export async function allInvoices(): Promise<Invoice[]> {
+  const res = await serverDb()
+    .from("invoices")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "allInvoices") ?? []).map(toInvoice);
 }
 
-export function getInvoice(id: string): Invoice | undefined {
-  return store().invoices.find((i) => i.id === id);
+export async function getInvoice(id: string): Promise<Invoice | undefined> {
+  const res = await serverDb().from("invoices").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getInvoice");
+  return row ? toInvoice(row) : undefined;
 }
 
-export function upsertInvoice(invoice: Invoice): void {
-  const s = store();
-  const i = s.invoices.findIndex((x) => x.id === invoice.id);
-  if (i >= 0) s.invoices[i] = invoice;
-  else s.invoices.push(invoice);
+export async function upsertInvoice(invoice: Invoice): Promise<void> {
+  const res = await serverDb().from("invoices").upsert(fromInvoice(invoice));
+  unwrap(res as any, "upsertInvoice");
 }
 
 // ---- Matchlist (saved homes) ---------------------------------------------
 
-export function savedForSeeker(seekerId: string): SavedHome[] {
-  return store().saved.filter((sv) => sv.seekerId === seekerId);
+export async function savedForSeeker(seekerId: string): Promise<SavedHome[]> {
+  const res = await serverDb().from("saved_homes").select("*").eq("seeker_id", seekerId);
+  return (unwrap(res, "savedForSeeker") ?? []).map((r: any) => ({
+    seekerId: r.seeker_id,
+    homeId: r.home_id,
+    savedAt: r.saved_at,
+  }));
 }
 
-export function toggleSaved(seekerId: string, homeId: string): boolean {
-  const s = store();
-  const i = s.saved.findIndex(
-    (sv) => sv.seekerId === seekerId && sv.homeId === homeId,
-  );
-  if (i >= 0) {
-    s.saved.splice(i, 1);
+export async function toggleSaved(seekerId: string, homeId: string): Promise<boolean> {
+  const db = serverDb();
+  const existing = await db
+    .from("saved_homes")
+    .select("home_id")
+    .eq("seeker_id", seekerId)
+    .eq("home_id", homeId)
+    .maybeSingle();
+  if (existing.data) {
+    await db.from("saved_homes").delete().eq("seeker_id", seekerId).eq("home_id", homeId);
     return false;
   }
-  s.saved.push({ seekerId, homeId, savedAt: new Date().toISOString() });
+  await db.from("saved_homes").insert({ seeker_id: seekerId, home_id: homeId });
   return true;
 }
 
 // ---- Notifications --------------------------------------------------------
 
-export function notificationsForUser(userId: string): AppNotification[] {
-  return store()
-    .notifications.filter((n) => n.userId === userId)
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+function toNotification(row: any): AppNotification {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    kind: row.kind,
+    title: row.title,
+    body: row.body,
+    href: row.href ?? undefined,
+    createdAt: row.created_at,
+    readAt: row.read_at ?? null,
+  };
 }
 
-export function pushNotification(
+export async function notificationsForUser(userId: string): Promise<AppNotification[]> {
+  const res = await serverDb()
+    .from("notifications")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "notificationsForUser") ?? []).map(toNotification);
+}
+
+export async function pushNotification(
   n: Omit<AppNotification, "id" | "createdAt" | "readAt">,
-): void {
-  store().notifications.push({
-    ...n,
-    id: newId("n"),
-    createdAt: new Date().toISOString(),
-    readAt: null,
+): Promise<void> {
+  const res = await serverDb().from("notifications").insert({
+    user_id: n.userId,
+    kind: n.kind,
+    title: n.title,
+    body: n.body,
+    href: n.href ?? null,
   });
+  unwrap(res as any, "pushNotification");
 }
 
-export function markNotificationsRead(userId: string): void {
-  const now = new Date().toISOString();
-  for (const n of store().notifications) {
-    if (n.userId === userId && !n.readAt) n.readAt = now;
-  }
+export async function markNotificationsRead(userId: string): Promise<void> {
+  const res = await serverDb()
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .is("read_at", null);
+  unwrap(res as any, "markNotificationsRead");
 }
 
-// ---- Email outbox (simulated sends) ---------------------------------------
+// ---- Email log ------------------------------------------------------------
 
-export function recordEmail(email: Omit<OutboxEmail, "id" | "createdAt">): void {
-  store().emails.push({
-    ...email,
-    id: newId("mail"),
-    createdAt: new Date().toISOString(),
+export async function recordEmail(
+  email: Omit<OutboxEmail, "id" | "createdAt"> & {
+    providerMessageId?: string;
+    error?: string;
+  },
+): Promise<void> {
+  const res = await serverDb().from("emails").insert({
+    to_address: email.to,
+    subject: email.subject,
+    body: email.body,
+    provider_message_id: email.providerMessageId ?? null,
+    error: email.error ?? null,
   });
+  unwrap(res as any, "recordEmail");
 }
 
-export function allEmails(): OutboxEmail[] {
-  return [...store().emails].reverse(); // newest first
+export async function allEmails(): Promise<OutboxEmail[]> {
+  const res = await serverDb()
+    .from("emails")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  return (unwrap(res, "allEmails") ?? []).map(toEmail);
 }
 
 // ---- Purchase orders ------------------------------------------------------
 
-export function allPurchaseOrders(): PurchaseOrder[] {
-  return [...store().purchaseOrders].sort((a, b) =>
-    b.createdAt.localeCompare(a.createdAt),
-  );
+export async function allPurchaseOrders(): Promise<PurchaseOrder[]> {
+  const res = await serverDb()
+    .from("purchase_orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "allPurchaseOrders") ?? []).map(toPO);
 }
 
-export function getPurchaseOrder(id: string): PurchaseOrder | undefined {
-  return store().purchaseOrders.find((p) => p.id === id);
+export async function getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined> {
+  const res = await serverDb().from("purchase_orders").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getPurchaseOrder");
+  return row ? toPurchaseOrder(row) : undefined;
 }
 
-export function upsertPurchaseOrder(po: PurchaseOrder): void {
-  const s = store();
-  const i = s.purchaseOrders.findIndex((p) => p.id === po.id);
-  if (i >= 0) s.purchaseOrders[i] = po;
-  else s.purchaseOrders.push(po);
+export async function upsertPurchaseOrder(po: PurchaseOrder): Promise<void> {
+  const res = await serverDb().from("purchase_orders").upsert(fromPurchaseOrder(po));
+  unwrap(res as any, "upsertPurchaseOrder");
+}
+
+/** Next purchase-order reference (PO-1042), allocated by Postgres so two
+ *  simultaneous orders can never share a number. */
+export async function nextPurchaseOrderRef(): Promise<string> {
+  const res = await serverDb().rpc("next_purchase_order_ref");
+  if (res.error) throw new Error(`nextPurchaseOrderRef: ${res.error.message}`);
+  return res.data as unknown as string;
 }
 
 // ---- "Possible match" alert dedupe ---------------------------------------
 
-export function hasAlerted(userId: string, key: string): boolean {
-  return store().sentAlerts.some((a) => a.userId === userId && a.key === key);
+export async function hasAlerted(userId: string, key: string): Promise<boolean> {
+  const res = await serverDb()
+    .from("sent_alerts")
+    .select("alert_key")
+    .eq("user_id", userId)
+    .eq("alert_key", key)
+    .maybeSingle();
+  return Boolean(unwrap(res, "hasAlerted"));
 }
 
-export function recordAlert(userId: string, key: string): void {
-  if (hasAlerted(userId, key)) return;
-  store().sentAlerts.push({ userId, key, sentAt: new Date().toISOString() });
+export async function recordAlert(userId: string, key: string): Promise<void> {
+  // Primary key is (user_id, alert_key), so a duplicate is simply ignored.
+  serverDb()
+    .from("sent_alerts")
+    .upsert({ user_id: userId, alert_key: key }, { onConflict: "user_id,alert_key" });
 }
 
 // ---- Seen matches (no repeat "It's a match" fanfare) ----------------------
 
-export function hasSeenMatch(userId: string, key: string): boolean {
-  return store().seenMatches.some(
-    (m) => m.userId === userId && m.key === key,
-  );
+export async function hasSeenMatch(userId: string, key: string): Promise<boolean> {
+  const res = await serverDb()
+    .from("seen_matches")
+    .select("match_key")
+    .eq("user_id", userId)
+    .eq("match_key", key)
+    .maybeSingle();
+  return Boolean(unwrap(res, "hasSeenMatch"));
 }
 
-export function recordSeenMatch(userId: string, key: string, pct: number): void {
-  if (hasSeenMatch(userId, key)) return;
-  store().seenMatches.push({
-    userId,
-    key,
-    pct,
-    seenAt: new Date().toISOString(),
-  });
+export async function recordSeenMatch(
+  userId: string,
+  key: string,
+  pct: number,
+): Promise<void> {
+  serverDb()
+    .from("seen_matches")
+    .upsert(
+      { user_id: userId, match_key: key, pct },
+      { onConflict: "user_id,match_key" },
+    );
 }
 
 // ---- Match weights (admin-tunable) ---------------------------------------
 
-export function matchWeights(): MatchWeights {
-  return store().weights;
+export async function matchWeights(): Promise<MatchWeights> {
+  const res = await serverDb().from("match_weights").select("*").eq("id", 1).maybeSingle();
+  const row = unwrap(res, "matchWeights");
+  if (!row) return DEFAULT_WEIGHTS;
+  return {
+    location: row.location,
+    price: row.price,
+    beds: row.beds,
+    type: row.type,
+    baths: row.baths,
+    garden: row.garden,
+    other: row.other,
+  };
 }
 
-export function setMatchWeights(w: MatchWeights): void {
-  store().weights = w;
+export async function setMatchWeights(w: MatchWeights): Promise<void> {
+  const res = await serverDb().from("match_weights").upsert({ id: 1, ...w });
+  unwrap(res as any, "setMatchWeights");
 }
