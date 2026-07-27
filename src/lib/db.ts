@@ -29,6 +29,7 @@ import type {
   MatchWeights,
   Offer,
   OutboxEmail,
+  PurchaseOrder,
   SavedHome,
   SeekerBrief,
   SeenMatch,
@@ -52,6 +53,8 @@ interface Store {
   seenMatches: SeenMatch[];
   /** Simulated outbound email log (newest last). */
   emails: OutboxEmail[];
+  /** Purchase orders raised to surveyors for paid Home Reports. */
+  purchaseOrders: PurchaseOrder[];
   /** Dedupe for "possible match" alerts: one per user per pairing key. */
   sentAlerts: { userId: string; key: string; sentAt: string }[];
   weights: MatchWeights;
@@ -74,6 +77,7 @@ function seed(): Store {
     introductions: sampleIntroductions,
     seenMatches: [] as SeenMatch[],
     emails: [] as OutboxEmail[],
+    purchaseOrders: [] as PurchaseOrder[],
     sentAlerts: [] as { userId: string; key: string; sentAt: string }[],
     weights: DEFAULT_WEIGHTS,
     counter: 1000,
@@ -191,6 +195,19 @@ export function homesBySeller(sellerId: string): HushHome[] {
 export function liveHomes(): HushHome[] {
   return store().homes.filter(
     (h) => h.status === "live" || h.status === "under-offer",
+  );
+}
+
+/**
+ * Preview listings: agreement signed, owner chose "Home Report later" —
+ * shown as description + hazed photos only, never fully live.
+ */
+export function previewHomes(): HushHome[] {
+  return store().homes.filter(
+    (h) =>
+      h.previewListed === true &&
+      h.contract !== null &&
+      (h.status === "draft" || h.status === "pending-approval"),
   );
 }
 
@@ -370,6 +387,25 @@ export function recordEmail(email: Omit<OutboxEmail, "id" | "createdAt">): void 
 
 export function allEmails(): OutboxEmail[] {
   return [...store().emails].reverse(); // newest first
+}
+
+// ---- Purchase orders ------------------------------------------------------
+
+export function allPurchaseOrders(): PurchaseOrder[] {
+  return [...store().purchaseOrders].sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt),
+  );
+}
+
+export function getPurchaseOrder(id: string): PurchaseOrder | undefined {
+  return store().purchaseOrders.find((p) => p.id === id);
+}
+
+export function upsertPurchaseOrder(po: PurchaseOrder): void {
+  const s = store();
+  const i = s.purchaseOrders.findIndex((p) => p.id === po.id);
+  if (i >= 0) s.purchaseOrders[i] = po;
+  else s.purchaseOrders.push(po);
 }
 
 // ---- "Possible match" alert dedupe ---------------------------------------

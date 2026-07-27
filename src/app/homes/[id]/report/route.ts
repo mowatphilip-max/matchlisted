@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
 import { getBrief, getHome } from "@/lib/db";
 import { currentUser } from "@/lib/session";
+import { HOME_REPORT_SUPPLIERS } from "@/lib/site";
 
 export async function GET(
   _req: Request,
@@ -30,7 +31,7 @@ export async function GET(
     "",
     `Property: ${home.headline}`,
     `File: ${home.homeReport.fileName ?? "home-report.pdf"}`,
-    `Surveyor: ${home.homeReport.supplier === "graham-sibbald" ? "Graham + Sibbald" : "Allied Surveyors Scotland"}`,
+    `Surveyor: ${HOME_REPORT_SUPPLIERS.find((s) => s.id === home.homeReport.supplier)?.name ?? "TBC"}`,
     `Verified: ${home.homeReport.verifiedAt ?? ""}`,
     "",
     "In production this endpoint streams the genuine uploaded PDF from",

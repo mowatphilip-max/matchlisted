@@ -36,7 +36,11 @@ import {
 } from "@/lib/actions";
 import { areaLabel } from "@/lib/areas";
 import { formatMoney, formatPrice, formatTimeRange, formatDate } from "@/lib/format";
-import { HOME_REPORT_MARGIN, HOME_REPORT_SUPPLIERS, WITHDRAWAL_FEE, withVat } from "@/lib/site";
+import {
+  HOME_REPORT_SUPPLIERS,
+  WITHDRAWAL_FEE,
+  homeReportQuote,
+} from "@/lib/site";
 
 export const metadata: Metadata = { title: "My Hush Home" };
 
@@ -171,43 +175,79 @@ export default async function SellerHomePage({
           <div className="mt-5 rounded-2xl bg-blue-tint p-4">
             <p className="text-sm">
               <strong>Next: your Home Report.</strong> Your listing cannot go
-              live without one — it verifies your home&apos;s value and anchors
-              every Match %. Order through Matchlisted from a trusted surveyor
-              (their fee + our £{HOME_REPORT_MARGIN} arrangement margin, all +
-              VAT):
+              fully live without one — it verifies your home&apos;s value and
+              anchors every Match %. Fees are banded on your estimate of{" "}
+              <strong>{formatPrice(home.price)}</strong> (corrected later if
+              the report says otherwise). You pay here; the surveyor bills us.
             </p>
-            <form
-              action={orderHomeReport}
-              className="mt-4 grid gap-3 sm:grid-cols-2"
-            >
-              <input type="hidden" name="homeId" value={home.id} />
-              {HOME_REPORT_SUPPLIERS.map((s, i) => (
-                <label
-                  key={s.id}
-                  className="cursor-pointer rounded-2xl border border-hairline bg-white p-4 text-sm transition-colors has-[:checked]:border-blue-deep has-[:checked]:bg-white"
-                >
+            {homeReportQuote("allied-surveyors", home.price) ? (
+              <form
+                action={orderHomeReport}
+                className="mt-4 grid gap-3 sm:grid-cols-3"
+              >
+                <input type="hidden" name="homeId" value={home.id} />
+                {HOME_REPORT_SUPPLIERS.map((s, i) => {
+                  const q = homeReportQuote(s.id, home.price);
+                  if (!q) return null;
+                  return (
+                    <label
+                      key={s.id}
+                      className="cursor-pointer rounded-2xl border border-hairline bg-white p-4 text-sm transition-colors has-[:checked]:border-blue-deep has-[:checked]:ring-1 has-[:checked]:ring-blue-deep"
+                    >
+                      <input
+                        type="radio"
+                        name="supplier"
+                        value={s.id}
+                        defaultChecked={i === 0}
+                        className="mr-2 accent-[var(--color-blue-deep)]"
+                      />
+                      <span className="font-bold">{s.name}</span>
+                      <span className="mt-1 block text-xs text-charcoal-soft">
+                        {s.blurb}
+                      </span>
+                      <span className="mt-3 block font-display text-2xl font-bold">
+                        {formatMoney(q.total)}
+                      </span>
+                      <span className="mt-1 block text-xs text-charcoal-soft">
+                        {formatMoney(q.base)} fee + {formatMoney(q.vat)} VAT +{" "}
+                        {formatMoney(q.margin)} arrangement
+                        {s.indicative ? " · indicative" : ""}
+                      </span>
+                    </label>
+                  );
+                })}
+                <div className="sm:col-span-3">
+                  <label htmlFor="hr-phone" className="block text-sm font-semibold">
+                    Your phone number
+                  </label>
+                  <p className="text-xs text-charcoal-soft">
+                    The surveyor calls you directly to arrange the visit.
+                  </p>
                   <input
-                    type="radio"
-                    name="supplier"
-                    value={s.id}
-                    defaultChecked={i === 0}
-                    className="mr-2 accent-[var(--color-blue-deep)]"
+                    id="hr-phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    defaultValue={user.phone ?? ""}
+                    placeholder="07700 900123"
+                    className="mt-1.5 min-h-11 w-full max-w-xs rounded-xl border border-hairline bg-white px-4 text-sm outline-none focus:border-blue-deep"
                   />
-                  <span className="font-bold">{s.name}</span>
-                  <span className="mt-1 block text-charcoal-soft">{s.blurb}</span>
-                  <span className="mt-2 block font-display text-lg font-bold">
-                    {formatMoney(withVat(s.priceFrom + HOME_REPORT_MARGIN))}
-                    <span className="text-xs font-normal text-charcoal-soft">
-                      {" "}
-                      inc. VAT, from
-                    </span>
-                  </span>
-                </label>
-              ))}
-              <div className="sm:col-span-2">
-                <Button type="submit">Order & pay for my Home Report</Button>
-              </div>
-            </form>
+                </div>
+                <div className="sm:col-span-3">
+                  <Button type="submit">Book & pay for my Home Report</Button>
+                </div>
+              </form>
+            ) : (
+              <p className="mt-4 rounded-xl bg-white p-4 text-sm">
+                <strong>Homes estimated over £1,500,000 are quoted by
+                negotiation.</strong>{" "}
+                We&apos;ll arrange your Home Report personally — email{" "}
+                <a href="mailto:office@matchlisted.com" className="font-semibold text-blue-deep underline">
+                  office@matchlisted.com
+                </a>{" "}
+                and we&apos;ll come back with a fixed quote.
+              </p>
+            )}
           </div>
         )}
 
@@ -226,11 +266,15 @@ export default async function SellerHomePage({
         {report.status === "ordered" && (
           <div className="mt-5 rounded-2xl bg-blue-tint p-4">
             <p className="text-sm">
-              <strong>Home Report in progress.</strong> Ordered{" "}
-              {report.orderedAt ? formatDate(report.orderedAt) : ""} from{" "}
-              {HOME_REPORT_SUPPLIERS.find((s) => s.id === report.supplier)?.name}
-              . When the surveyor sends you the completed report, upload it
-              here — it becomes downloadable to registered Quiet Seekers only.
+              <strong>Home Report booked & paid</strong>
+              {report.poId ? ` (ref ${report.poId})` : ""}.{" "}
+              {HOME_REPORT_SUPPLIERS.find((s) => s.id === report.supplier)?.name}{" "}
+              were instructed{" "}
+              {report.orderedAt ? formatDate(report.orderedAt) : ""} and will
+              phone you to arrange the visit. When the completed report
+              arrives, upload it here — once verified, your home goes fully
+              live and the report becomes downloadable to registered Quiet
+              Seekers.
             </p>
             <form
               action={uploadHomeReport}

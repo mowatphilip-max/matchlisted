@@ -6,7 +6,7 @@ import {
   HushHomesBrowser,
   type BrowserHome,
 } from "@/components/hush-homes/browser";
-import { getBrief, liveHomes } from "@/lib/db";
+import { getBrief, liveHomes, previewHomes } from "@/lib/db";
 import { currentUser } from "@/lib/session";
 import { HOME_REPORT_SUPPLIERS, WITHDRAWAL_FEE } from "@/lib/site";
 
@@ -27,23 +27,41 @@ export default async function HushHomesPage() {
 
   // Ship each viewer ONLY the fields they may see — the gate is server-side,
   // not a CSS trick over complete data.
-  const homes: BrowserHome[] = liveHomes().map((h) => ({
-    id: h.id,
-    areaId: h.areaId,
-    price: h.price,
-    beds: h.beds,
-    type: h.type,
-    status: h.status === "under-offer" ? "under-offer" : "live",
-    photo: h.photos[0] ?? null,
-    ...(registered
-      ? {
-          headline: h.headline,
-          baths: h.baths,
-          garden: h.garden,
-          reportReady: h.homeReport.status === "verified",
-        }
-      : {}),
-  }));
+  const homes: BrowserHome[] = [
+    ...liveHomes().map(
+      (h): BrowserHome => ({
+        id: h.id,
+        areaId: h.areaId,
+        price: h.price,
+        beds: h.beds,
+        type: h.type,
+        status: h.status === "under-offer" ? "under-offer" : "live",
+        photo: h.photos[0] ?? null,
+        ...(registered
+          ? {
+              headline: h.headline,
+              baths: h.baths,
+              garden: h.garden,
+              reportReady: h.homeReport.status === "verified",
+            }
+          : {}),
+      }),
+    ),
+    // Preview listings ("Home Report later"): story + hazed photos for all.
+    ...previewHomes().map(
+      (h): BrowserHome => ({
+        id: h.id,
+        areaId: h.areaId,
+        price: h.price,
+        beds: h.beds,
+        type: h.type,
+        status: "preview",
+        photo: h.photos[0] ?? null,
+        headline: h.headline,
+        description: h.description,
+      }),
+    ),
+  ];
 
   return (
     <>
@@ -84,7 +102,7 @@ export default async function HushHomesPage() {
               {
                 icon: FileCheck2,
                 title: "A Home Report before going live",
-                body: `Buy it through Matchlisted from ${HOME_REPORT_SUPPLIERS[0].name} or ${HOME_REPORT_SUPPLIERS[1].name}. It verifies your home's value, anchors your Match %, and is downloadable only by registered Quiet Seekers.`,
+                body: `Buy it through Matchlisted from ${HOME_REPORT_SUPPLIERS.map((s) => s.name).join(", ")}. Fees are banded on your estimate of value; it verifies your home's worth, anchors your Match %, and is downloadable only by registered Quiet Seekers. Not ready yet? List as a preview — description and hazed photos — and do the report when you are.`,
               },
               {
                 icon: ShieldCheck,

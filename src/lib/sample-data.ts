@@ -707,6 +707,8 @@ export const sampleHomes: HushHome[] = [
     homeReport: { status: "none" },
     contract: sig("Struan Kerr", "2026-07-10T10:20:00Z", "seller-v1.0-2026-07"),
     status: "draft",
+    // Struan ticked "I'll do the Home Report later" — preview listing.
+    previewListed: true,
     createdAt: "2026-07-10T10:20:00Z",
   },
   {

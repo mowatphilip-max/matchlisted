@@ -27,6 +27,7 @@ import { scoreMatch, matchLine } from "@/lib/match";
 import { bookViewing } from "@/lib/actions";
 import { areaLabel } from "@/lib/areas";
 import { formatPrice, formatTimeRange } from "@/lib/format";
+import { HOME_REPORT_SUPPLIERS } from "@/lib/site";
 import { FEATURE_TAGS, PROPERTY_TYPES } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Hush Home" };
@@ -205,9 +206,9 @@ export default async function HomeProfilePage({
             )}
             <p className="mt-2 text-xs text-charcoal-soft">
               Professionally surveyed value —{" "}
-              {home.homeReport.supplier === "graham-sibbald"
-                ? "Graham + Sibbald"
-                : "Allied Surveyors Scotland"}
+              {HOME_REPORT_SUPPLIERS.find(
+                (s) => s.id === home.homeReport.supplier,
+              )?.name ?? "surveyor TBC"}
               .
             </p>
           </div>

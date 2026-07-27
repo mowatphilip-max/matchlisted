@@ -122,12 +122,41 @@ export type HomeReportStatus = "none" | "ordered" | "uploaded" | "verified";
 
 export interface HomeReportInfo {
   status: HomeReportStatus;
-  supplier?: "allied-surveyors" | "graham-sibbald";
+  supplier?: "allied-surveyors" | "graham-sibbald" | "shepherd";
   orderedAt?: string;
   invoiceId?: string;
+  /** The purchase order raised when the owner paid. */
+  poId?: string;
   fileName?: string;
   uploadedAt?: string;
   verifiedAt?: string;
+}
+
+/**
+ * A purchase order to a surveyor, raised the moment the owner pays for
+ * their Home Report on the site. The surveyor bills US against this number;
+ * the owner has already paid.
+ *
+ *   instructed — PO emailed to the surveyor with the job details
+ *   billed     — the surveyor's invoice has arrived
+ *   settled    — we've paid the surveyor
+ */
+export interface PurchaseOrder {
+  id: string; // e.g. "PO-1042" — quoted on all correspondence
+  homeId: string;
+  sellerId: string;
+  supplier: "allied-surveyors" | "graham-sibbald" | "shepherd";
+  /** The owner's value estimate the fee band was quoted from. */
+  estimatedValue: number;
+  base: number; // surveyor fee ex VAT (what they bill us)
+  vat: number;
+  margin: number; // our arrangement fee
+  total: number; // paid by the owner on the site
+  invoiceId: string;
+  status: "instructed" | "billed" | "settled";
+  createdAt: string;
+  billedAt?: string;
+  settledAt?: string;
 }
 
 export type HomeStatus =
@@ -156,6 +185,12 @@ export interface HushHome {
   homeReport: HomeReportInfo;
   contract: ContractSignature | null;
   status: HomeStatus;
+  /**
+   * "I'll do the Home Report later": with the agreement signed, the home
+   * appears on the site as a PREVIEW — description and hazed-out photos
+   * only. It cannot go fully live until the Home Report is verified.
+   */
+  previewListed?: boolean;
   createdAt: string;
 }
 

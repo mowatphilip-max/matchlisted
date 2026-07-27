@@ -109,7 +109,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label htmlFor="price" className="block text-sm font-semibold">
-            Asking price (£)
+            Your estimate of your home&apos;s value (£)
           </label>
           <input
             id="price"
@@ -121,6 +121,10 @@ export function HomeForm({ home }: { home: HushHome | null }) {
             defaultValue={home?.price}
             className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
           />
+          <p className="mt-1 text-xs text-charcoal-soft">
+            Your honest best guess — it prices your Home Report and can be
+            corrected once the report is done.
+          </p>
         </div>
         <div>
           <label htmlFor="beds" className="block text-sm font-semibold">
@@ -221,6 +225,29 @@ export function HomeForm({ home }: { home: HushHome | null }) {
         Photography and floor plans can be added any time from your home&apos;s
         page — they&apos;re optional, though profiles with photos get more
         Introductions.
+      </div>
+
+      {/* Home Report later = preview listing until the report is verified */}
+      <div className="rounded-2xl bg-blue-tint/60 p-4 ring-1 ring-blue-deep/15">
+        <label className="flex cursor-pointer items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            name="previewLater"
+            defaultChecked={home?.previewListed}
+            className="mt-0.5 h-4 w-4 accent-[var(--color-blue-deep)]"
+          />
+          <span>
+            <span className="font-semibold">
+              I&apos;ll do the Home Report later
+            </span>
+            <span className="mt-0.5 block text-charcoal-soft">
+              We&apos;ll show your home as a <strong>preview</strong> in the
+              meantime — description and hazed-out photos only. It can&apos;t
+              go fully live (clear photos, downloadable report, viewings)
+              until a Home Report bought through Matchlisted is verified.
+            </span>
+          </span>
+        </label>
       </div>
 
       <div className="border-t border-hairline pt-6">
