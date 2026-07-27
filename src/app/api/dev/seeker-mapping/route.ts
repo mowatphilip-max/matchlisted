@@ -4,12 +4,15 @@
 // itself renders.
 
 import { NextResponse } from "next/server";
+import { requireDevEnvironment } from "@/lib/dev-only";
 import { townToAreaId } from "@/lib/mowatt-bridge";
 import { fetchMowattSeekers } from "@/lib/mowatt-seekers";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  // LOCAL DEVELOPMENT ONLY — dumps the full seeker dataset.
+  requireDevEnvironment();
   const { seekers, skipped, failedRegions } = await fetchMowattSeekers();
 
   const rows = seekers.map((s) => ({

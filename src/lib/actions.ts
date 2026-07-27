@@ -411,6 +411,17 @@ export async function uploadHomeReport(formData: FormData) {
   if (!fileName || home.homeReport.status !== "ordered") {
     redirect(`/dashboard/home/${home.id}?error=report`);
   }
+  // A Home Report is a PDF and they run large — reject anything else before
+  // it reaches storage. (Storage itself is still to be built; see GO-LIVE.)
+  const MAX_REPORT_BYTES = 25 * 1024 * 1024;
+  if (file instanceof File) {
+    const looksPdf =
+      file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+    if (!looksPdf) redirect(`/dashboard/home/${home.id}?error=report-type`);
+    if (file.size > MAX_REPORT_BYTES) {
+      redirect(`/dashboard/home/${home.id}?error=report-size`);
+    }
+  }
   home.homeReport = {
     ...home.homeReport,
     status: "uploaded",

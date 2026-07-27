@@ -3,6 +3,7 @@
 // picker/band 76). Dev aid only — not linked from anywhere.
 
 import type { Metadata } from "next";
+import { requireDevEnvironment } from "@/lib/dev-only";
 import { Container } from "@/components/ui/container";
 import {
   PropertyTypeIcon,
@@ -15,6 +16,7 @@ export const metadata: Metadata = { title: "Dev — property type icons" };
 const SIZES = [52, 64, 76] as const;
 
 export default function IconsPreviewPage() {
+  requireDevEnvironment();
   return (
     <Container className="py-12">
       <h1 className="text-3xl">Property-type icon library</h1>
