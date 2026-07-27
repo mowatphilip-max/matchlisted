@@ -44,12 +44,20 @@ import {
   upsertInvoice,
   upsertLawyer,
   upsertOffer,
+  upsertUser,
   upsertViewing,
   markNotificationsRead,
 } from "./db";
 import { alertSeekersAboutHome, alertSellersAboutBrief } from "./alerts";
 import { areaLabel } from "./areas";
 import { uploadHomeReportFile } from "./storage";
+import { fulfilHomeReportOrder } from "./fulfilment";
+import {
+  assertKeyMatchesEnvironment,
+  stripe,
+  stripeConfigured,
+  toPence,
+} from "./stripe";
 import {
   clearSession,
   currentUser,
@@ -357,6 +365,8 @@ export async function orderHomeReport(formData: FormData) {
     status: "due",
     createdAt: new Date().toISOString(),
   };
+  // The order exists in our database BEFORE any money moves, so a payment
+  // can never arrive with nothing attached to it.
   await upsertInvoice(invoice);
   home.homeReport = {
     status: "none",
@@ -364,8 +374,48 @@ export async function orderHomeReport(formData: FormData) {
     invoiceId: invoice.id,
   };
   await upsertHome(home);
-  refresh();
-  redirect(`/pay/${invoice.id}`);
+  await upsertUser(user); // keep the phone number the surveyor will ring
+
+  if (!stripeConfigured()) {
+    // No card processing configured — fall back to the demo checkout so
+    // local work isn't blocked. Never reachable in production.
+    refresh();
+    redirect(`/pay/${invoice.id}`);
+  }
+
+  assertKeyMatchesEnvironment();
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const total = invoice.net + invoice.vat;
+
+  const session = await stripe().checkout.sessions.create({
+    mode: "payment",
+    customer_email: user.email,
+    client_reference_id: invoice.id,
+    // Everything fulfilment needs, carried by Stripe and handed back to
+    // the webhook — we never trust values from the browser.
+    metadata: { invoiceId: invoice.id, homeId: home.id, sellerId: user.id },
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "gbp",
+          unit_amount: toPence(total),
+          product_data: {
+            name: `Home Report — ${supplier.name}`,
+            description: `${home.addressLine || home.headline}. Includes the surveyor's fee, VAT and our £${quote.margin} arrangement fee.`,
+          },
+        },
+      },
+    ],
+    success_url: `${site}/pay/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${site}/dashboard/home/${home.id}?payment=cancelled`,
+  });
+
+  invoice.stripeCheckoutId = session.id;
+  await upsertInvoice(invoice);
+
+  if (!session.url) redirect(`/dashboard/home/${home.id}?error=checkout`);
+  redirect(session.url);
 }
 
 /**
@@ -479,124 +529,23 @@ export async function payInvoice(formData: FormData) {
   const invoice = await getInvoice(String(formData.get("invoiceId") ?? ""));
   if (!invoice || invoice.userId !== user.id) redirect("/dashboard");
   if (invoice.status === "paid") redirect("/dashboard");
+
+  // Local demo checkout only — real cards go through Stripe, and real
+  // fulfilment happens on the signed webhook. This exists so the flow can
+  // be exercised without card processing configured.
+  if (stripeConfigured()) redirect("/dashboard");
+
+  if (invoice.kind === "home-report" && invoice.homeId) {
+    // Exactly the same path the webhook uses — one implementation only.
+    await fulfilHomeReportOrder(invoice.id);
+    refresh();
+    redirect(`/dashboard/home/${invoice.homeId}?ordered=1`);
+  }
+
   invoice.status = "paid";
   invoice.paidAt = new Date().toISOString();
   await upsertInvoice(invoice);
 
-  if (invoice.kind === "home-report" && invoice.homeId) {
-    const home = await getHome(invoice.homeId);
-    if (home) {
-      const now = new Date().toISOString();
-      const supplier = HOME_REPORT_SUPPLIERS.find(
-        (s) => s.id === home.homeReport.supplier,
-      );
-      const quote = supplier ? homeReportQuote(supplier.id, home.price) : null;
-
-      // Raise the purchase order: the owner has paid US; the surveyor does
-      // the job and bills US against this number.
-      if (supplier && quote) {
-        const po: PurchaseOrder = {
-          id: await nextPurchaseOrderRef(),
-          homeId: home.id,
-          sellerId: user.id,
-          supplier: supplier.id,
-          estimatedValue: home.price,
-          base: quote.base,
-          vat: quote.vat,
-          margin: quote.margin,
-          total: quote.total,
-          invoiceId: invoice.id,
-          status: "instructed",
-          createdAt: now,
-        };
-        await upsertPurchaseOrder(po);
-        home.homeReport = {
-          ...home.homeReport,
-          status: "ordered",
-          orderedAt: now,
-          poId: po.id,
-        };
-        await upsertHome(home);
-
-        const address = `${home.addressLine || home.headline}, ${areaLabel(home.areaId)}`;
-
-        // 1) Instruct the surveyor.
-        await recordEmail({
-          to: supplier.email,
-          subject: `HOME REPORT INSTRUCTION — ${po.id} — ${address}`,
-          body: [
-            `Purchase order: ${po.id}`,
-            "",
-            `Please carry out a Home Report for the following property. This instruction is CONFIRMED and PAID on our side — invoice ${SITE_NAME} (quoting ${po.id}) for your fee of £${po.base} + VAT.`,
-            "",
-            `Property address: ${address}`,
-            `Owner's estimate of value: £${po.estimatedValue.toLocaleString("en-GB")}`,
-            "",
-            `Owner: ${user.name}`,
-            `Owner email: ${user.email}`,
-            `Owner phone: ${user.phone ?? "not supplied"}`,
-            "",
-            "Please contact the owner directly to arrange access and timings, and send the completed Home Report to both the owner and ourselves.",
-            "",
-            `— ${SITE_NAME}`,
-          ].join("\n"),
-        });
-
-        // 2) Tell the owner the surveyor has been instructed.
-        await pushNotification({
-          userId: user.id,
-          kind: "system",
-          title: "Your Home Report is booked",
-          body: `${supplier.name} have been instructed (ref ${po.id}) and will be in touch to arrange the visit.`,
-          href: `/dashboard/home/${home.id}`,
-        });
-        await recordEmail({
-          to: user.email,
-          subject: `Your Home Report is booked — ${supplier.name} will be in touch`,
-          body: [
-            `Hello ${user.name.split(" ")[0]},`,
-            "",
-            `Good news — your Home Report for ${address} is booked and paid.`,
-            "",
-            `We have instructed ${supplier.name} (our reference ${po.id}). They will contact you directly on ${user.phone ?? user.email} to arrange a convenient time to visit the property.`,
-            "",
-            "Once the completed report is uploaded and verified, your Hush Home goes fully live on the Matchlist — photos unblurred, report downloadable by registered Quiet Seekers, and possible-match alerts sent.",
-            "",
-            `— ${SITE_NAME}`,
-          ].join("\n"),
-        });
-
-        // 3) Send the owner their receipt.
-        await recordEmail({
-          to: user.email,
-          subject: `Receipt — Home Report payment (${po.id})`,
-          body: [
-            `Hello ${user.name.split(" ")[0]},`,
-            "",
-            `Thank you for your payment. Your receipt:`,
-            "",
-            `  Home Report (${supplier.name})       £${po.base.toFixed(2)}`,
-            `  VAT (20%)                            £${po.vat.toFixed(2)}`,
-            `  ${SITE_NAME} arrangement fee          £${po.margin.toFixed(2)}`,
-            `  --------------------------------------------`,
-            `  Total paid                           £${po.total.toFixed(2)}`,
-            "",
-            `Property: ${address}`,
-            `Reference: ${po.id}`,
-            `Date: ${new Date().toLocaleDateString("en-GB")}`,
-            "",
-            `— ${SITE_NAME}`,
-          ].join("\n"),
-        });
-      } else {
-        // Fallback (shouldn't happen): keep the old behaviour.
-        home.homeReport = { ...home.homeReport, status: "ordered", orderedAt: now };
-        await upsertHome(home);
-      }
-    }
-    refresh();
-    redirect(`/dashboard/home/${invoice.homeId}?ordered=1`);
-  }
   if (invoice.kind === "conveyancing-deposit" && invoice.homeId) {
     refresh();
     redirect(`/homes/${invoice.homeId}/offer?deposit=paid`);
@@ -604,9 +553,6 @@ export async function payInvoice(formData: FormData) {
   refresh();
   redirect("/dashboard");
 }
-
-// ---- Viewing slots + viewings --------------------------------------------
-
 export async function addViewingSlot(formData: FormData) {
   const user = await requireUser();
   const home = await getHome(String(formData.get("homeId") ?? ""));

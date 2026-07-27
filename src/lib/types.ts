@@ -289,6 +289,12 @@ export interface Invoice {
   status: "due" | "paid";
   createdAt: string;
   paidAt?: string;
+  /** Stripe Checkout session, set when the customer is sent to pay. */
+  stripeCheckoutId?: string;
+  /** Stripe payment intent, set on successful payment. */
+  stripePaymentIntent?: string;
+  refundedAt?: string;
+  refundAmount?: number;
 }
 
 export type NotificationKind = "match" | "viewing" | "offer" | "system";

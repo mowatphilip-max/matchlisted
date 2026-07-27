@@ -261,6 +261,10 @@ export function toInvoice(row: Row): Invoice {
     status: row.status,
     createdAt: row.created_at,
     paidAt: row.paid_at ?? undefined,
+    stripeCheckoutId: row.stripe_checkout_id ?? undefined,
+    stripePaymentIntent: row.stripe_payment_intent ?? undefined,
+    refundedAt: row.refunded_at ?? undefined,
+    refundAmount: row.refund_amount != null ? Number(row.refund_amount) : undefined,
   };
 }
 
@@ -277,6 +281,10 @@ export function fromInvoice(invoice: Invoice): Row {
     vat: invoice.vat,
     status: invoice.status,
     paid_at: invoice.paidAt ?? null,
+    stripe_checkout_id: invoice.stripeCheckoutId ?? null,
+    stripe_payment_intent: invoice.stripePaymentIntent ?? null,
+    refunded_at: invoice.refundedAt ?? null,
+    refund_amount: invoice.refundAmount ?? null,
   };
 }
 
