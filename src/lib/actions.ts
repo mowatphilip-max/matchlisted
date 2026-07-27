@@ -49,6 +49,7 @@ import {
 } from "./db";
 import { alertSeekersAboutHome, alertSellersAboutBrief } from "./alerts";
 import { areaLabel } from "./areas";
+import { uploadHomeReportFile } from "./storage";
 import {
   clearSession,
   currentUser,
@@ -430,21 +431,31 @@ export async function uploadHomeReport(formData: FormData) {
   if (!fileName || home.homeReport.status !== "ordered") {
     redirect(`/dashboard/home/${home.id}?error=report`);
   }
-  // A Home Report is a PDF and they run large — reject anything else before
-  // it reaches storage. (Storage itself is still to be built; see GO-LIVE.)
+  // A Home Report is a PDF and they run large — reject anything else
+  // before it reaches storage.
   const MAX_REPORT_BYTES = 25 * 1024 * 1024;
-  if (file instanceof File) {
-    const looksPdf =
-      file.type === "application/pdf" || /\.pdf$/i.test(file.name);
-    if (!looksPdf) redirect(`/dashboard/home/${home.id}?error=report-type`);
-    if (file.size > MAX_REPORT_BYTES) {
-      redirect(`/dashboard/home/${home.id}?error=report-size`);
-    }
+  if (!(file instanceof File) || file.size === 0) {
+    redirect(`/dashboard/home/${home.id}?error=report`);
   }
+  const looksPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+  if (!looksPdf) redirect(`/dashboard/home/${home.id}?error=report-type`);
+  if (file.size > MAX_REPORT_BYTES) {
+    redirect(`/dashboard/home/${home.id}?error=report-size`);
+  }
+
+  // Store the actual document in the private bucket. If this fails the
+  // listing must NOT advance — a report that isn't stored isn't a report.
+  const stored = await uploadHomeReportFile(home.id, file);
+  if (!stored.ok) {
+    console.error("home report upload failed:", stored.message);
+    redirect(`/dashboard/home/${home.id}?error=report-upload`);
+  }
+
   home.homeReport = {
     ...home.homeReport,
     status: "uploaded",
     fileName,
+    storagePath: stored.path,
     uploadedAt: new Date().toISOString(),
   };
   home.status = "pending-approval";

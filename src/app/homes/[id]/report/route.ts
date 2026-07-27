@@ -1,12 +1,19 @@
-// Home Report download — gated to registered (contract-signed) Quiet Seekers,
-// the seller, and admin. The prototype serves a placeholder document; in
-// production this streams the uploaded PDF from private Supabase Storage.
+// Home Report download.
+//
+// The document contains the full address, the surveyor's valuation and
+// details about the seller, so it is never publicly reachable. The file
+// lives in a private bucket; this route checks permission on every single
+// request and only then mints a signed link that expires in two minutes.
+//
+// Allowed: registered (contract-signed) Quiet Seekers, the home's own
+// seller, and admin. Everyone else gets 403 — including signed-in users
+// who haven't completed their brief.
 
 import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
 import { getBrief, getHome } from "@/lib/db";
 import { currentUser } from "@/lib/session";
-import { HOME_REPORT_SUPPLIERS } from "@/lib/site";
+import { signedHomeReportUrl } from "@/lib/storage";
 
 export async function GET(
   _req: Request,
@@ -18,7 +25,7 @@ export async function GET(
   if (!home || home.homeReport.status !== "verified") notFound();
 
   const isSeller = user?.id === home.sellerId;
-  const registered = user ? Boolean(await (await getBrief(user.id))?.contract) : false;
+  const registered = user ? Boolean((await getBrief(user.id))?.contract) : false;
   if (!user || (!registered && !isSeller && !user.isAdmin)) {
     return new NextResponse(
       "Home Reports are available to registered Quiet Seekers only.",
@@ -26,22 +33,25 @@ export async function GET(
     );
   }
 
-  const body = [
-    "MATCHLISTED — HOME REPORT (PROTOTYPE PLACEHOLDER)",
-    "",
-    `Property: ${home.headline}`,
-    `File: ${home.homeReport.fileName ?? "home-report.pdf"}`,
-    `Surveyor: ${HOME_REPORT_SUPPLIERS.find((s) => s.id === home.homeReport.supplier)?.name ?? "TBC"}`,
-    `Verified: ${home.homeReport.verifiedAt ?? ""}`,
-    "",
-    "In production this endpoint streams the genuine uploaded PDF from",
-    "private storage, still gated to registered Quiet Seekers.",
-  ].join("\n");
+  const path = home.homeReport.storagePath;
+  if (!path) {
+    // Verified but no stored document — a data problem worth shouting about
+    // rather than quietly serving nothing.
+    console.error(`home ${home.id}: report verified but no file stored`);
+    return new NextResponse(
+      "That Home Report isn't available to download yet. Please contact us.",
+      { status: 404 },
+    );
+  }
 
-  return new NextResponse(body, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${home.homeReport.fileName ?? "home-report.txt"}"`,
-    },
-  });
+  const url = await signedHomeReportUrl(path);
+  if (!url) {
+    return new NextResponse("Could not prepare that download. Try again.", {
+      status: 503,
+    });
+  }
+
+  // Redirect to the short-lived signed link rather than proxying the file:
+  // the link dies in two minutes and cannot be shared usefully.
+  return NextResponse.redirect(url);
 }

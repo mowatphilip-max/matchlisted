@@ -151,6 +151,8 @@ export interface HomeReportInfo {
   /** The purchase order raised when the owner paid. */
   poId?: string;
   fileName?: string;
+  /** Path inside the private storage bucket. Never exposed to the browser. */
+  storagePath?: string;
   uploadedAt?: string;
   verifiedAt?: string;
 }
