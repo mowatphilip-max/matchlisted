@@ -27,8 +27,10 @@ import {
   getBriefByPublicRef,
   homesBySeller,
 } from "@/lib/db";
+import { findMowattSeeker, toBriefLike } from "@/lib/mowatt-bridge";
+import { fetchMowattSeekers } from "@/lib/mowatt-seekers";
 import { currentUser } from "@/lib/session";
-import { FEATURE_TAGS, PROPERTY_TYPES } from "@/lib/types";
+import { FEATURE_TAGS, PROPERTY_TYPES, type SeekerBrief } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -38,17 +40,31 @@ const GARDEN_LABELS = {
   "must-have": "Must have",
 } as const;
 
+/** Resolve a ref: native contract-signed brief first, then the live sheets. */
+async function resolveSeeker(rawRef: string): Promise<{
+  brief: SeekerBrief;
+  sheet: boolean;
+  matched: boolean;
+} | null> {
+  const ref = decodeURIComponent(rawRef);
+  const native = getBriefByPublicRef(ref);
+  if (native?.contract) return { brief: native, sheet: false, matched: false };
+  const mowatt = await findMowattSeeker(ref);
+  if (!mowatt) return null;
+  return { brief: toBriefLike(mowatt), sheet: true, matched: !mowatt.active };
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ ref: string }>;
 }): Promise<Metadata> {
   const { ref } = await params;
-  const brief = getBriefByPublicRef(decodeURIComponent(ref));
-  if (!brief?.contract) return { title: "Quiet Seeker not found" };
+  const resolved = await resolveSeeker(ref);
+  if (!resolved) return { title: "Quiet Seeker not found" };
   return {
-    title: `${brief.publicRef} — ${brief.headline}`,
-    description: brief.story.slice(0, 155),
+    title: `${resolved.brief.publicRef} — ${resolved.brief.headline}`,
+    description: resolved.brief.story.slice(0, 155),
   };
 }
 
@@ -61,22 +77,39 @@ export default async function SeekerProfilePage({
 }) {
   const { ref } = await params;
   const { interested } = await searchParams;
-  const brief = getBriefByPublicRef(decodeURIComponent(ref));
-  // Only contract-signed seekers are public — same rule as the directory.
-  if (!brief?.contract) notFound();
+  const resolved = await resolveSeeker(ref);
+  if (!resolved) notFound();
+  const { brief, sheet, matched } = resolved;
 
   const user = await currentUser();
   const isSelf = user?.id === brief.userId;
   const existing = user ? findIntroduction(brief.userId, user.id) : undefined;
   const hasHome = user ? homesBySeller(user.id).length > 0 : false;
 
-  const others = activeBriefs()
-    .filter(
-      (b) =>
-        b.publicRef !== brief.publicRef &&
-        b.areas.some((a) => brief.areas.includes(a)),
-    )
-    .slice(0, 3);
+  // Nearby seekers: native briefs by shared area id, or for sheet seekers,
+  // other live sheet profiles that share a town.
+  let others: SeekerBrief[];
+  if (sheet) {
+    const { seekers } = await fetchMowattSeekers();
+    const mine = seekers.find((s) => s.ref === brief.publicRef);
+    others = seekers
+      .filter(
+        (s) =>
+          s.active &&
+          s.ref !== brief.publicRef &&
+          s.towns.some((t) => mine?.towns.includes(t)),
+      )
+      .slice(0, 3)
+      .map(toBriefLike);
+  } else {
+    others = activeBriefs()
+      .filter(
+        (b) =>
+          b.publicRef !== brief.publicRef &&
+          b.areas.some((a) => brief.areas.includes(a)),
+      )
+      .slice(0, 3);
+  }
 
   const criteria = [
     {
@@ -126,7 +159,9 @@ export default async function SeekerProfilePage({
                   </p>
                   <p className="flex items-center gap-1.5 text-xs font-medium text-charcoal-soft">
                     <BadgeCheck className="h-3.5 w-3.5 text-blue-deep" />
-                    Verified — agreement signed {formatDate(brief.contract.signedAt)}
+                    {brief.contract
+                      ? `Verified — agreement signed ${formatDate(brief.contract.signedAt)}`
+                      : "Registered buyer on the Mowatt Matchlist"}
                   </p>
                 </div>
               </div>
@@ -202,7 +237,23 @@ export default async function SeekerProfilePage({
 
               {/* The one door: register a Hush Home to reach this seeker. */}
               <div className="mt-5 rounded-[var(--radius-lg)] bg-charcoal-deep p-6 text-white">
-                {isSelf ? (
+                {matched ? (
+                  <>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-white">
+                      <Check className="h-5 w-5" />
+                    </span>
+                    <h2 className="mt-3 text-xl text-white">
+                      This buyer has found their home.
+                    </h2>
+                    <p className="mt-2 text-sm leading-relaxed text-white/70">
+                      Matched through the Matchlist — the quiet route works.
+                      Plenty of other verified buyers are still looking.
+                    </p>
+                    <ButtonLink href="/seekers" className="mt-5 w-full" variant="onDark">
+                      See who&apos;s still looking
+                    </ButtonLink>
+                  </>
+                ) : isSelf ? (
                   <>
                     <h2 className="text-xl text-white">
                       This is your public profile.

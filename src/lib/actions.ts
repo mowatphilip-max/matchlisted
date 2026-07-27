@@ -152,6 +152,15 @@ export async function register(formData: FormData) {
     refresh();
     redirect(`/dashboard/home/new?seeker=${encodeURIComponent(seekerRef)}`);
   }
+  if (seekerRef && !target) {
+    const { findMowattSeeker } = await import("./mowatt-bridge");
+    const mowatt = await findMowattSeeker(seekerRef);
+    if (mowatt?.active) {
+      recordInterest(`mowatt:${seekerRef}`, user.id, null);
+      refresh();
+      redirect(`/dashboard/home/new?seeker=${encodeURIComponent(seekerRef)}`);
+    }
+  }
 
   refresh();
   redirect(intent === "seller" ? "/dashboard/home/new" : "/dashboard/brief");
@@ -814,8 +823,18 @@ export async function expressInterestInSeeker(formData: FormData) {
   const user = await requireUser();
   const ref = String(formData.get("seekerRef") ?? "").trim();
   const brief = getBriefByPublicRef(ref);
-  if (!brief?.contract || brief.userId === user.id) redirect("/seekers");
-  recordInterest(brief.userId, user.id, null);
+  if (brief?.contract) {
+    if (brief.userId === user.id) redirect("/seekers");
+    recordInterest(brief.userId, user.id, null);
+  } else {
+    // Live Mowatt sheet seeker: validate the ref against the sheets, then
+    // record the interest under a mowatt: id — the Mowatt team makes the
+    // approach offline, since sheet seekers have no site account yet.
+    const { findMowattSeeker } = await import("./mowatt-bridge");
+    const mowatt = await findMowattSeeker(ref);
+    if (!mowatt || !mowatt.active) redirect("/seekers");
+    recordInterest(`mowatt:${ref}`, user.id, null);
+  }
   refresh();
   redirect(`/seekers/${encodeURIComponent(ref)}?interested=1`);
 }

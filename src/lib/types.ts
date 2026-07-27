@@ -111,7 +111,12 @@ export interface SeekerBrief {
   garden: GardenPreference;
   types: PropertyType[]; // empty = open to anything
   features: FeatureTag[];
-  position: BuyingPosition;
+  /**
+   * Buying position. Native briefs use the BuyingPosition enum; bridged
+   * Mowatt sheet seekers may carry a plain display label instead (the card
+   * falls back to rendering unknown values verbatim).
+   */
+  position: BuyingPosition | (string & {});
   notes?: string;
   contract: ContractSignature | null;
   createdAt: string;

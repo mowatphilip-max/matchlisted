@@ -15,8 +15,10 @@ import { SeekerCard } from "@/components/seeker-card";
 import { ConceptReel } from "@/components/home/concept-reel";
 import { AreaFinder } from "@/components/home/area-finder";
 import { LiveTicker } from "@/components/home/live-ticker";
-import { activeBriefs, getBrief, homesBySeller, liveHomes } from "@/lib/db";
+import { getBrief, homesBySeller, liveHomes } from "@/lib/db";
 import { matchesForHome, matchesForSeeker } from "@/lib/matches";
+import { mowattAreaStats, toBriefLike } from "@/lib/mowatt-bridge";
+import { fetchMowattSeekers } from "@/lib/mowatt-seekers";
 import { areaSeekerStats, matchlistPulse } from "@/lib/pulse";
 import { currentUser } from "@/lib/session";
 import { areaShortLabel } from "@/lib/areas";
@@ -77,16 +79,19 @@ function personalHero(userId: string, name: string) {
 export default async function HomePage() {
   const user = await currentUser();
   const hero = user ? personalHero(user.id, user.name) : null;
-  const stats = areaSeekerStats();
   const pulse = matchlistPulse();
+
+  // Quiet Seeker numbers come live from the shared Mowatt sheets.
+  const { seekers } = await fetchMowattSeekers();
+  const liveSeekers = seekers.filter((s) => s.active);
+  const stats =
+    liveSeekers.length > 0 ? mowattAreaStats(seekers) : areaSeekerStats();
+  const seekerTeasers = liveSeekers.slice(0, 3).map(toBriefLike);
+  const seekerCount = liveSeekers.length;
 
   const teasers = liveHomes()
     .filter((h) => h.status === "live")
     .slice(0, 3);
-  const seekerTeasers = activeBriefs()
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, 3);
-  const seekerCount = activeBriefs().length;
 
   return (
     <>

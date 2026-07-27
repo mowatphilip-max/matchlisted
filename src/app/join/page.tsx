@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { register } from "@/lib/actions";
 import { getBriefByPublicRef } from "@/lib/db";
+import { findMowattSeeker, toBriefLike } from "@/lib/mowatt-bridge";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Join Matchlisted" };
@@ -15,7 +16,15 @@ export default async function JoinPage({
   searchParams: Promise<{ as?: string; error?: string; seeker?: string }>;
 }) {
   const { as, error, seeker } = await searchParams;
-  const seekerBrief = seeker ? getBriefByPublicRef(seeker) : undefined;
+  let seekerBrief = seeker ? getBriefByPublicRef(seeker) : undefined;
+  let sheetSeeker = false;
+  if (seeker && !seekerBrief?.contract) {
+    const mowatt = await findMowattSeeker(seeker);
+    if (mowatt?.active) {
+      seekerBrief = toBriefLike(mowatt);
+      sheetSeeker = true;
+    }
+  }
   const intent = as === "seller" || seekerBrief ? "seller" : "seeker";
 
   return (
@@ -27,7 +36,7 @@ export default async function JoinPage({
           brief. Start with whichever fits today.
         </p>
 
-        {seekerBrief?.contract && (
+        {seekerBrief && (seekerBrief.contract || sheetSeeker) && (
           <div className="mt-6 rounded-2xl bg-blue-tint p-5 ring-1 ring-blue-deep/20">
             <p className="text-sm font-bold text-blue-deep">
               You&apos;re one step from reaching {seekerBrief.publicRef}
@@ -103,7 +112,7 @@ export default async function JoinPage({
           className="mt-6 space-y-4 rounded-2xl bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline"
         >
           <input type="hidden" name="intent" value={intent} />
-          {seekerBrief?.contract && (
+          {seekerBrief && (seekerBrief.contract || sheetSeeker) && (
             <input type="hidden" name="seeker" value={seekerBrief.publicRef} />
           )}
           <div>

@@ -77,9 +77,12 @@ export default function AdminIntroductionsPage() {
                     <p className="flex items-center gap-2 font-bold">
                       <Heart className="h-4 w-4 fill-orange text-orange" />
                       {seller?.name ?? "Unknown seller"} →{" "}
-                      {seeker?.publicRef ?? "?"}{" "}
+                      {seeker?.publicRef ??
+                        intro.seekerId.replace("mowatt:", "#")}{" "}
                       <span className="font-normal text-charcoal-soft">
-                        ({seekerUser?.name})
+                        {intro.seekerId.startsWith("mowatt:")
+                          ? "(Mowatt sheet seeker — approach offline)"
+                          : `(${seekerUser?.name})`}
                       </span>
                     </p>
                     <p className="mt-1 text-sm text-charcoal-soft">
