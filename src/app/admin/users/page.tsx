@@ -3,7 +3,7 @@ import { allUsers, getBrief, homesBySeller, invoicesForUser } from "@/lib/db";
 import { areaShortLabel } from "@/lib/areas";
 import { formatBudget, formatDate } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Admin — users" };
+export const metadata: Metadata = { title: "Admin · users" };
 
 export default async function AdminUsersPage() {
   const users = await allUsers();
@@ -23,7 +23,7 @@ export default async function AdminUsersPage() {
     <>
       <h1 className="text-3xl">Users</h1>
       <p className="mt-2 text-charcoal-soft">
-        Every account, both sides of it. Sellers see seekers anonymised — you
+        Every account, both sides of it. Sellers see seekers anonymised; you
         don&apos;t.
       </p>
       <div className="mt-8 overflow-x-auto rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline">
@@ -67,7 +67,7 @@ export default async function AdminUsersPage() {
                         )}
                       </span>
                     ) : (
-                      <span className="text-charcoal-soft">—</span>
+                      <span className="text-charcoal-soft">–</span>
                     )}
                   </td>
                   <td className="px-5 py-3">
@@ -81,7 +81,7 @@ export default async function AdminUsersPage() {
                         </span>
                       ))
                     ) : (
-                      <span className="text-charcoal-soft">—</span>
+                      <span className="text-charcoal-soft">–</span>
                     )}
                   </td>
                   <td className="px-5 py-3">

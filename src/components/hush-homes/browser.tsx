@@ -33,7 +33,7 @@ export interface BrowserHome {
   price: number;
   beds: number;
   type: PropertyType;
-  status: "live" | "under-offer" | "preview";
+  status: "live" | "under-offer";
   photo: string | null;
   /** Preview listings show their story to everyone — it's all they have. */
   description?: string;
@@ -133,15 +133,13 @@ export function HushHomesBrowser({
 
       <p className="mt-4 text-sm text-charcoal-soft">
         {shown.length} of {homes.length} Hush Home{homes.length === 1 ? "" : "s"}
-        {registered ? "" : " — anonymised until you register"}
+        {registered ? "" : " · anonymised until you register"}
       </p>
 
       {/* Grid */}
       <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((h) =>
-          h.status === "preview" ? (
-            <PreviewCard key={h.id} home={h} registered={registered} />
-          ) : registered ? (
+          registered ? (
             <FullCard key={h.id} home={h} />
           ) : (
             <LockedCard key={h.id} home={h} />
@@ -151,7 +149,7 @@ export function HushHomesBrowser({
 
       {shown.length === 0 && (
         <p className="mt-6 rounded-2xl bg-soft p-6 text-sm text-charcoal-soft">
-          Nothing matches those filters — loosen one and try again. New Hush
+          Nothing matches those filters. Loosen one and try again. New Hush
           Homes arrive quietly all the time.
         </p>
       )}
@@ -218,68 +216,6 @@ function FullCard({ home }: { home: BrowserHome }) {
           </a>
         </div>
       )}
-    </article>
-  );
-}
-
-/**
- * Preview listing: the owner is doing their Home Report later. Everyone —
- * registered or not — sees the story with hazed-out photos; the home cannot
- * go fully live until the report is verified.
- */
-function PreviewCard({
-  home,
-  registered,
-}: {
-  home: BrowserHome;
-  registered: boolean;
-}) {
-  const area = getArea(home.areaId);
-  return (
-    <article className="relative overflow-hidden rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline">
-      <div className="relative overflow-hidden rounded-t-[var(--radius-lg)]">
-        <div className="blur-md" aria-hidden="true">
-          <PropertyImage
-            src={home.photo}
-            alt=""
-            placeholderKey={home.id}
-            className="aspect-[4/3] w-full scale-110"
-          />
-        </div>
-        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-orange-deep shadow-sm">
-          Preview — Home Report being arranged
-        </span>
-      </div>
-      <div className="p-5 pt-4">
-        <p className="flex items-center gap-1.5 text-xs font-medium text-charcoal-soft">
-          <MapPin className="h-3.5 w-3.5 text-blue-deep" />
-          {area ? `${area.place}, ${area.councilName}` : ""}
-        </p>
-        <h3 className="mt-1.5 text-base leading-snug">
-          {home.headline ?? `A quietly listed ${typeLabel(home.type).toLowerCase()}`}
-        </h3>
-        <p className="mt-2 font-display text-lg font-bold text-charcoal">
-          {formatPrice(home.price)}
-          <span className="ml-1.5 text-xs font-normal text-charcoal-soft">
-            owner&apos;s estimate
-          </span>
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-charcoal-soft">
-          <span className="inline-flex items-center gap-1">
-            <BedDouble className="h-3.5 w-3.5" /> {home.beds} beds
-          </span>
-          <span>{typeLabel(home.type)}</span>
-        </div>
-        {home.description && (
-          <p className="mt-3 line-clamp-3 border-t border-hairline pt-3 text-xs leading-relaxed text-charcoal-soft">
-            {home.description}
-          </p>
-        )}
-        <p className="mt-3 text-xs font-semibold text-orange-deep">
-          Photos unlock when its Home Report is verified
-          {registered ? "" : " — register free to be first in line"}
-        </p>
-      </div>
     </article>
   );
 }

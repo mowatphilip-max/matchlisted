@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3000",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "next start --port 3000",
+    "lint": "eslint",
+    "test": "vitest run",
+    "sync-board": "node scripts/sync-board.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
@@ -31,6 +33,7 @@
     "eslint-config-next": "16.2.9",
     "pg": "^8.22.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

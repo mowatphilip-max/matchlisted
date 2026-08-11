@@ -23,7 +23,7 @@ import { respondToIntroduction, saveAlertPref } from "@/lib/actions";
 import { DEFAULT_ALERT_PCT } from "@/lib/alerts";
 import {
   getBrief,
-  getHome,
+  getHomeUnscoped,
   homesBySeller,
   introductionsBySeller,
   introductionsForSeeker,
@@ -45,7 +45,7 @@ import { BUYING_POSITIONS, PROPERTY_TYPES } from "@/lib/types";
 export const metadata: Metadata = { title: "Your dashboard" };
 
 const statusLabels: Record<string, { label: string; cls: string }> = {
-  draft: { label: "Draft — not yet live", cls: "bg-soft text-charcoal-soft" },
+  draft: { label: "Draft · not yet live", cls: "bg-soft text-charcoal-soft" },
   "pending-approval": {
     label: "Home Report under review",
     cls: "bg-blue-tint text-blue-deep",
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
   const introOfferHomes = new Map(
     await Promise.all(
       introOffers.map(
-        async (i) => [i.id, i.homeId ? await getHome(i.homeId) : undefined] as const,
+        async (i) => [i.id, i.homeId ? await getHomeUnscoped(i.homeId) : undefined] as const,
       ),
     ),
   );
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
                 <MatchRing pct={m.result.pct} size="sm" animate />
                 <span className="text-sm">
                   <strong>{m.home.headline}</strong> in{" "}
-                  {areaShortLabel(m.home.areaId)} — {matchLine(m.result.pct)}
+                  {areaShortLabel(m.home.areaId)}: {matchLine(m.result.pct)}
                 </span>
                 <Link
                   href={`/homes/${m.home.id}`}
@@ -187,13 +187,13 @@ export default async function DashboardPage() {
               in <strong>{areaShortLabel(home.areaId)}</strong> at{" "}
               <strong>{formatPrice(home.price)}</strong> saw your Quiet Seeker
               profile and thinks their home could be the one. Want to see it?
-              Entirely your choice — say no and neither of you is ever named.
+              Entirely your choice: say no and neither of you is ever named.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <form action={respondToIntroduction}>
                 <input type="hidden" name="introId" value={intro.id} />
                 <input type="hidden" name="answer" value="yes" />
-                <Button type="submit">Yes — show me the home</Button>
+                <Button type="submit">Yes, show me the home</Button>
               </form>
               <form action={respondToIntroduction}>
                 <input type="hidden" name="introId" value={intro.id} />
@@ -217,7 +217,7 @@ export default async function DashboardPage() {
             >
               <p className="text-sm">
                 <strong>How was your viewing?</strong> Tell the seller what you
-                thought — and whether you&apos;re still interested.
+                thought, and whether you&apos;re still interested.
               </p>
               <ButtonLink
                 href={`/viewings/${v.id}/feedback`}
@@ -236,7 +236,7 @@ export default async function DashboardPage() {
               <p className="flex items-center gap-2 text-sm">
                 <Receipt className="h-4 w-4 text-charcoal-soft" />
                 <span>
-                  <strong>{formatMoney(inv.net + inv.vat)}</strong> due —{" "}
+                  <strong>{formatMoney(inv.net + inv.vat)}</strong> due:{" "}
                   {inv.description}
                 </span>
               </p>
@@ -246,7 +246,7 @@ export default async function DashboardPage() {
                 </ButtonLink>
               ) : (
                 <span className="text-xs text-charcoal-soft">
-                  Invoiced — payable by bank transfer
+                  Invoiced · payable by bank transfer
                 </span>
               )}
             </div>
@@ -283,7 +283,7 @@ export default async function DashboardPage() {
           <div className="mt-4 rounded-2xl bg-soft p-6">
             <p className="text-sm text-charcoal-soft">
               {brief
-                ? "Your brief is saved but unsigned — sign the Quiet Seeker agreement to activate matching."
+                ? "Your brief is saved but unsigned. Sign the Quiet Seeker agreement to activate matching."
                 : "Build your Quiet Seeker brief and the Matchlist will rate every Hush Home in Scotland against it."}
             </p>
             <ButtonLink
@@ -339,7 +339,7 @@ export default async function DashboardPage() {
           {myHomes.length === 0 ? (
             <div className="mt-4">
               <p className="text-sm text-charcoal-soft">
-                Nothing listed yet. Listing is free — your home&apos;s perfect
+                Nothing listed yet. There&apos;s no listing fee, and your home&apos;s perfect
                 match is already looking.
               </p>
               <ButtonLink href="/dashboard/home/new" variant="seller" className="mt-4">
@@ -394,7 +394,7 @@ export default async function DashboardPage() {
           {!brief ? (
             <div className="mt-4">
               <p className="text-sm text-charcoal-soft">
-                No brief yet. Tell the Matchlist what you&apos;re looking for —
+                No brief yet. Tell the Matchlist what you&apos;re looking for,
                 anywhere in Scotland.
               </p>
               <ButtonLink href="/dashboard/brief" variant="seeker" className="mt-4">
@@ -452,7 +452,7 @@ export default async function DashboardPage() {
                 >
                   {brief.contract
                     ? `Signed ${new Date(brief.contract.signedAt).toLocaleDateString("en-GB")}`
-                    : "Not signed — matching paused"}
+                    : "Not signed · matching paused"}
                 </dd>
               </div>
             </dl>
@@ -488,12 +488,12 @@ export default async function DashboardPage() {
               defaultValue={user.matchAlertPct ?? DEFAULT_ALERT_PCT}
               className="min-h-11 cursor-pointer rounded-xl border border-hairline bg-white px-4 text-sm font-semibold outline-none focus:border-orange-deep"
             >
-              <option value={95}>95%+ — only the near-perfect</option>
-              <option value={90}>90%+ — “It&apos;s a match” level</option>
-              <option value={80}>80%+ — strong contenders</option>
-              <option value={70}>70%+ — cast the net wider</option>
-              <option value={50}>50%+ — anything worth a look</option>
-              <option value={0}>Off — no alerts</option>
+              <option value={95}>95%+: only the near-perfect</option>
+              <option value={90}>90%+: “It&apos;s a match” level</option>
+              <option value={80}>80%+: strong contenders</option>
+              <option value={70}>70%+: cast the net wider</option>
+              <option value={50}>50%+: anything worth a look</option>
+              <option value={0}>Off: no alerts</option>
             </select>
             <Button type="submit" className="min-h-11 px-5">
               Save
@@ -518,15 +518,25 @@ export default async function DashboardPage() {
             <ul className="mt-4 space-y-2 text-sm">
               {outgoingIntros.map((intro) => {
                 const seekerBrief = outgoingSeekerBriefs.get(intro.id);
+                // A hand raised pre-live stays queued: the seeker hears
+                // nothing until the home is live (s.101 — no pre-live
+                // marketing to anyone). Tell the seller exactly that.
+                const introHome =
+                  myHomes.find((h) => h.id === intro.homeId) ?? myHomes[0];
+                const introHomeLive =
+                  introHome &&
+                  ["live", "under-offer", "sold"].includes(introHome.status);
                 const label =
                   intro.status === "new"
                     ? myHomes.length === 0
                       ? "Waiting on your home profile"
-                      : "With Matchlisted — preparing the offer"
+                      : introHomeLive
+                        ? "With Matchlisted, preparing the offer"
+                        : "They're interested. Order your Home Report and we'll make the introduction within 48 hours."
                     : intro.status === "offered"
-                      ? "Offered — waiting on their answer"
+                      ? "Offered, waiting on their answer"
                       : intro.status === "accepted"
-                        ? "Accepted — you're introduced"
+                        ? "Accepted, you're introduced"
                         : "They passed this time";
                 return (
                   <li
@@ -537,7 +547,7 @@ export default async function DashboardPage() {
                       href={`/seekers/${seekerBrief?.publicRef ?? ""}`}
                       className="font-medium hover:underline"
                     >
-                      {seekerBrief?.publicRef} — {seekerBrief?.headline}
+                      {seekerBrief?.publicRef} · {seekerBrief?.headline}
                     </Link>
                     <span
                       className={
@@ -595,7 +605,7 @@ export default async function DashboardPage() {
                     className="flex items-center justify-between gap-3 rounded-xl bg-soft px-4 py-3"
                   >
                     <span>
-                      {formatPrice(o.amount)} —{" "}
+                      {formatPrice(o.amount)} ·{" "}
                       <span className="capitalize">{o.status}</span>
                       {o.status === "countered" && o.counterAmount
                         ? ` at ${formatPrice(o.counterAmount)}`

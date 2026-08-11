@@ -1,18 +1,39 @@
 import Link from "next/link";
-import { Wordmark } from "./logo";
+import { LogoMark, Wordmark } from "./logo";
 import { Container } from "./ui/container";
+import { LEGAL } from "@/lib/site";
+
+// BUILD-BRIEF.md §9 + Phase 1 review item 4: the exact trading-name
+// construction. Facts still to be supplied render as bracketed markers —
+// honest placeholders, never invented numbers.
+const legalSentence =
+  `${LEGAL.tradingName} is a trading name of ${LEGAL.companyName}, ` +
+  `registered in Scotland no. ${LEGAL.companyNumber ?? "[SC______]"}. ` +
+  `Registered office: ${LEGAL.registeredOffice ?? "[address to follow]"}. ` +
+  `VAT registration no. ${LEGAL.vatNumber ?? "[______]"}. ` +
+  `Member of ${LEGAL.redressSchemeName ?? "[redress scheme]"} no. ${LEGAL.redressSchemeNumber ?? "[______]"}. ` +
+  `Supervised by HMRC for anti-money-laundering purposes, no. ${LEGAL.amlSupervisionNumber ?? "[______]"}. ` +
+  `ICO registration no. ${LEGAL.icoRegistration ?? "[______]"}.`;
+
+const policyLinks = [
+  { href: "/terms", label: "Terms" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/cookies", label: "Cookies" },
+  { href: "/complaints", label: "Complaints" },
+];
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-hairline bg-charcoal-deep text-white">
       <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="inline-block rounded-xl bg-white p-3">
-            <Wordmark className="h-8" />
+          <LogoMark className="h-14 w-auto text-white" />
+          <div className="mt-4 inline-block rounded-xl bg-white p-2.5">
+            <Wordmark className="h-6" />
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
             Where Quiet Seekers meet Hush Homes. No boards. No portals. Just
-            Introductions — across all of Scotland.
+            Introductions, across all of Scotland.
           </p>
         </div>
         <div>
@@ -20,7 +41,7 @@ export function SiteFooter() {
             Sellers
           </h3>
           <ul className="mt-4 space-y-2 text-sm text-white/80">
-            <li><Link href="/hush-homes" className="hover:text-white">List a Hush Home — free</Link></li>
+            <li><Link href="/hush-homes" className="hover:text-white">List a Hush Home</Link></li>
             <li><Link href="/#fees" className="hover:text-white">Home Reports</Link></li>
             <li><Link href="/join?as=seller" className="hover:text-white">Create a seller account</Link></li>
           </ul>
@@ -33,7 +54,7 @@ export function SiteFooter() {
             <li><Link href="/quiet-seekers" className="hover:text-white">Become a Quiet Seeker</Link></li>
             <li><Link href="/seekers" className="hover:text-white">Browse live Quiet Seekers</Link></li>
             <li><Link href="/#how-it-works" className="hover:text-white">How matching works</Link></li>
-            <li><Link href="/#fees" className="hover:text-white">The 0.8% sourcing fee</Link></li>
+            <li><Link href="/#fees" className="hover:text-white">The £300 buyer fee</Link></li>
           </ul>
         </div>
         <div>
@@ -47,9 +68,20 @@ export function SiteFooter() {
         </div>
       </Container>
       <div className="border-t border-white/10">
-        <Container className="flex flex-col gap-2 py-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 Matchlisted.com — all fees quoted + VAT.</p>
-          <p>Flirtatious about homes. Serious about money.</p>
+        <Container className="space-y-3 py-6 text-xs text-white/50">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p>© 2026 Matchlisted.com · all fees quoted + VAT.</p>
+            <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Legal">
+              {policyLinks.map((l) => (
+                <Link key={l.href} href={l.href} className="hover:text-white">
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <p className="max-w-4xl leading-relaxed text-white/35">
+            {legalSentence}
+          </p>
         </Container>
       </div>
     </footer>

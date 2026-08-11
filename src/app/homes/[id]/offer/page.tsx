@@ -7,7 +7,7 @@ import { currentUser } from "@/lib/session";
 import {
   allLawyers,
   getBrief,
-  getHome,
+  getHomeFor,
   getLawyer,
   getOffer,
   invoicesForUser,
@@ -15,7 +15,7 @@ import {
 import { acceptCounter, appointLawyer, submitOffer } from "@/lib/actions";
 import { areaShortLabel } from "@/lib/areas";
 import { formatMoney, formatPrice } from "@/lib/format";
-import { CONVEYANCING_DEPOSIT, sourcingFee, withVat } from "@/lib/site";
+import { BUYER_FEE, CONVEYANCING_DEPOSIT, withVat } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Make an offer" };
 
@@ -30,7 +30,8 @@ export default async function OfferPage({
   if (!user) redirect("/login");
   const { id } = await params;
   const { counter, error } = await searchParams;
-  const home = await getHome(id);
+  // §3 scope: an offer page for a home the viewer may not see is a leak.
+  const home = await getHomeFor(id, user);
   if (!home) notFound();
   const brief = await getBrief(user.id);
   if (!brief?.contract) redirect("/dashboard/brief");
@@ -86,7 +87,7 @@ export default async function OfferPage({
                 </Button>
               </form>
               <p className="mt-3 text-xs text-charcoal-soft">
-                Or submit a fresh offer below — it replaces this negotiation.
+                Or submit a fresh offer below. It replaces this negotiation.
               </p>
             </div>
           )}
@@ -100,7 +101,7 @@ export default async function OfferPage({
             </h2>
             <p className="mt-2 text-sm text-charcoal-soft">
               An offer with a solicitor behind it is an offer sellers take
-              seriously. Choose from the Matchlisted panel — appointing costs a{" "}
+              seriously. Choose from the Matchlisted panel. Appointing costs a{" "}
               {formatMoney(withVat(CONVEYANCING_DEPOSIT))} deposit (inc. VAT),
               credited against their fee.
             </p>
@@ -143,7 +144,7 @@ export default async function OfferPage({
             <p className="mt-6 flex items-center gap-2 rounded-2xl bg-green-tint p-4 text-sm text-green-deep">
               <ShieldCheck className="h-5 w-5" />
               <span>
-                <strong>{appointedLawyer.firm}</strong> appointed — deposit
+                <strong>{appointedLawyer.firm}</strong> appointed and deposit
                 paid. An accepted offer goes straight to them to conclude the
                 sale.
               </span>
@@ -182,9 +183,9 @@ export default async function OfferPage({
               />
               <p className="mt-4 rounded-xl bg-soft p-4 text-xs text-charcoal-soft">
                 Reminder from your Quiet Seeker agreement: on conclusion of
-                missives the 0.8% (+ VAT) sourcing fee applies — at{" "}
-                {formatPrice(home.price)} that&apos;s{" "}
-                {formatPrice(sourcingFee(home.price))} (+ VAT).
+                missives the fixed £{BUYER_FEE} (+ VAT) buyer fee applies —{" "}
+                {formatPrice(withVat(BUYER_FEE))} in total, whatever the
+                price.
               </p>
               <Button type="submit" className="mt-4 w-full">
                 Send my offer to the seller

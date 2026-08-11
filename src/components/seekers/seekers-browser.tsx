@@ -137,7 +137,7 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
       className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-charcoal px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-charcoal-deep"
     >
       {label} <X className="h-3 w-3" aria-hidden="true" />
-      <span className="sr-only">— remove filter</span>
+      <span className="sr-only">, remove filter</span>
     </button>
   );
 
@@ -378,7 +378,7 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
             No Quiet Seekers match those filters yet.
           </p>
           <p className="mx-auto mt-2 max-w-md text-sm text-charcoal-soft">
-            New buyers register all the time — widen the search, or list your
+            New buyers register all the time. Widen the search, or list your
             home and we&apos;ll alert you the moment a matching buyer arrives.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
@@ -411,7 +411,7 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
                 {shownMatched.length} recently matched
               </h2>
               <p className="mt-1 text-sm text-charcoal-soft">
-                These buyers found their home through the Matchlist — proof
+                These buyers found their home through the Matchlist. Proof
                 the quiet route works.
               </p>
               <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

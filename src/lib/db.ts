@@ -8,12 +8,15 @@
 import { serverDb } from "./supabase";
 import {
   fromBrief,
+  fromCharge,
   fromHome,
   fromIntroduction,
   fromInvoice,
   fromPurchaseOrder,
   fromUser,
+  toAuditEntry,
   toBrief,
+  toCharge,
   toEmail,
   toHome,
   toIntroduction,
@@ -25,6 +28,8 @@ import {
 import { DEFAULT_WEIGHTS } from "./match";
 import type {
   AppNotification,
+  AuditEntry,
+  Charge,
   HushHome,
   Introduction,
   Invoice,
@@ -241,8 +246,51 @@ export async function upsertIntroduction(intro: Introduction): Promise<void> {
 }
 
 // ---- Homes ----------------------------------------------------------------
+//
+// THE LEGAL GATE (docs/BUILD-BRIEF.md §3, Housing (Scotland) Act 2006
+// ss.98/101): no listing, and no attribute of one, may be exposed to anyone
+// but its owner or an admin until the Home Report is received and verified.
+// Every viewer-facing read goes through getHomeFor(); getHomeUnscoped() is
+// for owner-checked, admin-gated, or system code paths ONLY — if you are
+// rendering a home to a user, you want getHomeFor.
 
-export async function getHome(id: string): Promise<HushHome | undefined> {
+/** Statuses a registered Quiet Seeker may ever see (BUILD-BRIEF.md §5). */
+export const PUBLIC_HOME_STATUSES = ["live", "under-offer", "sold"] as const;
+
+function isPublicStatus(status: HushHome["status"]): boolean {
+  return (PUBLIC_HOME_STATUSES as readonly string[]).includes(status);
+}
+
+/**
+ * The §3 visibility scope. Returns the home only when the viewer is allowed
+ * to know it exists: anyone if the status is public (live / under-offer /
+ * sold); the owner or an admin, always.
+ *
+ * There are NO other exceptions. s.101(3) Housing (Scotland) Act 2006
+ * catches communication of availability to ANY person, with no consent
+ * carve-out, and the Home Report must exist at the moment of the act — so
+ * an Introduction, however consented, cannot open a pre-live home. A
+ * raised hand on a pre-live home is queued and fires when the home goes
+ * live (see offerQueuedIntroductions).
+ */
+export async function getHomeFor(
+  id: string,
+  viewer: { id: string; isAdmin?: boolean } | null,
+): Promise<HushHome | undefined> {
+  const home = await getHomeUnscoped(id);
+  if (!home) return undefined;
+  if (isPublicStatus(home.status)) return home;
+  if (!viewer) return undefined;
+  if (viewer.isAdmin || home.sellerId === viewer.id) return home;
+  return undefined;
+}
+
+/**
+ * Raw read with NO visibility scope. Owner-checked actions, admin-gated
+ * pages and system jobs only. Never hand its result to a viewer without a
+ * check — use getHomeFor for that.
+ */
+export async function getHomeUnscoped(id: string): Promise<HushHome | undefined> {
   const res = await serverDb().from("hush_homes").select("*").eq("id", id).maybeSingle();
   const row = unwrap(res, "getHome");
   return row ? toHome(row) : undefined;
@@ -266,20 +314,11 @@ export async function liveHomes(): Promise<HushHome[]> {
   return (unwrap(res, "liveHomes") ?? []).map(toHome);
 }
 
-/**
- * Preview listings: agreement signed, owner chose "Home Report later" —
- * shown as description + hazed photos only, never fully live.
- */
-export async function previewHomes(): Promise<HushHome[]> {
-  const res = await serverDb()
-    .from("hush_homes")
-    .select("*")
-    .eq("preview_listed", true)
-    .not("contract_signed_at", "is", null)
-    .in("status", ["draft", "pending-approval"])
-    .order("created_at", { ascending: false });
-  return (unwrap(res, "previewHomes") ?? []).map(toHome);
-}
+// previewHomes() is gone (4 Aug 2026). It exposed pre-Home-Report listings
+// to seekers as hazed "preview" cards, which BUILD-BRIEF.md §3 forbids
+// outright: nothing pre-live may be communicated to any section of the
+// public. The preview_listed column stays in the schema but nothing reads
+// it for display any more.
 
 export async function allHomes(): Promise<HushHome[]> {
   const res = await serverDb()
@@ -721,4 +760,141 @@ export async function matchWeights(): Promise<MatchWeights> {
 export async function setMatchWeights(w: MatchWeights): Promise<void> {
   const res = await serverDb().from("match_weights").upsert({ id: 1, ...w });
   unwrap(res as any, "setMatchWeights");
+}
+
+// ---- Charges: the fee ledger (BUILD-BRIEF.md §4, Phase 1) -----------------
+//
+// A charge is an obligation, not a payment. Phase 1 lands the model and the
+// accessors; the Phase 3 trigger engine is what moves statuses around.
+
+export async function createCharge(
+  input: Omit<Charge, "id" | "createdAt" | "updatedAt">,
+): Promise<Charge> {
+  const now = new Date().toISOString();
+  const charge: Charge = {
+    ...input,
+    id: newId(),
+    createdAt: now,
+    updatedAt: now,
+  };
+  const res = await serverDb().from("charges").insert(fromCharge(charge));
+  unwrap(res as any, "createCharge");
+  await audit(null, "charge.created", "charge", charge.id, {
+    type: charge.type,
+    status: charge.status,
+    gross: charge.grossAmount,
+    payer: charge.payerUserId,
+  });
+  return charge;
+}
+
+export async function getCharge(id: string): Promise<Charge | undefined> {
+  const res = await serverDb().from("charges").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getCharge");
+  return row ? toCharge(row) : undefined;
+}
+
+export async function chargesForPayer(payerUserId: string): Promise<Charge[]> {
+  const res = await serverDb()
+    .from("charges")
+    .select("*")
+    .eq("payer_user_id", payerUserId)
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "chargesForPayer") ?? []).map(toCharge);
+}
+
+export async function chargesForSubject(
+  subjectType: Charge["subjectType"],
+  subjectId: string,
+): Promise<Charge[]> {
+  const res = await serverDb()
+    .from("charges")
+    .select("*")
+    .eq("subject_type", subjectType)
+    .eq("subject_id", subjectId)
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "chargesForSubject") ?? []).map(toCharge);
+}
+
+/** Admin collections view. Filters land with the Phase 3 screen. */
+export async function allCharges(): Promise<Charge[]> {
+  const res = await serverDb()
+    .from("charges")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "allCharges") ?? []).map(toCharge);
+}
+
+/**
+ * Every charge state change goes through here so the transition is audited.
+ * No state machine yet — Phase 3's trigger engine owns which moves are legal.
+ */
+export async function updateCharge(
+  id: string,
+  patch: Partial<
+    Pick<
+      Charge,
+      | "status"
+      | "trigger"
+      | "dueAt"
+      | "collectionRoute"
+      | "stripePaymentIntent"
+      | "mandateId"
+      | "notes"
+    >
+  >,
+  actorId: string | null,
+): Promise<void> {
+  const before = await getCharge(id);
+  if (!before) throw new Error(`updateCharge: no charge ${id}`);
+  const after: Charge = { ...before, ...patch, updatedAt: new Date().toISOString() };
+  const res = await serverDb().from("charges").update(fromCharge(after)).eq("id", id);
+  unwrap(res as any, "updateCharge");
+  await audit(actorId, "charge.updated", "charge", id, {
+    from: before.status,
+    to: after.status,
+    patch,
+  });
+}
+
+// ---- Audit log (append-only) ----------------------------------------------
+
+/**
+ * Record who did what to what. Never throws — an audit failure must not
+ * take down the action it was recording; it logs loudly instead.
+ */
+export async function audit(
+  actorId: string | null,
+  action: string,
+  subjectType: string,
+  subjectId: string,
+  meta: Record<string, unknown> = {},
+): Promise<void> {
+  try {
+    const res = await serverDb().from("audit_log").insert({
+      actor_id: actorId,
+      action,
+      subject_type: subjectType,
+      subject_id: subjectId,
+      meta,
+    });
+    unwrap(res as any, "audit");
+  } catch (err) {
+    console.error(`AUDIT WRITE FAILED (${action} on ${subjectType}/${subjectId}):`, err);
+  }
+}
+
+export async function auditForSubject(
+  subjectType: string,
+  subjectId: string,
+  limit = 100,
+): Promise<AuditEntry[]> {
+  const res = await serverDb()
+    .from("audit_log")
+    .select("*")
+    .eq("subject_type", subjectType)
+    .eq("subject_id", subjectId)
+    .order("at", { ascending: false })
+    .limit(limit);
+  return (unwrap(res, "auditForSubject") ?? []).map(toAuditEntry);
 }

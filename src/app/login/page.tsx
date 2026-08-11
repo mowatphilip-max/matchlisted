@@ -26,7 +26,7 @@ export default async function LoginPage({
 
         {registered && (
           <p className="mt-6 rounded-xl bg-green-tint px-4 py-3 text-sm font-medium text-green-deep">
-            Account created — check your email to confirm the address, then
+            Account created. Check your email to confirm the address, then
             sign in.
           </p>
         )}

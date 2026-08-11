@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { matchWeights } from "@/lib/db";
 import { adminSaveWeights } from "@/lib/actions";
 
-export const metadata: Metadata = { title: "Admin — matching weights" };
+export const metadata: Metadata = { title: "Admin · matching weights" };
 
 const fields: { key: string; label: string; hint: string }[] = [
-  { key: "location", label: "Location", hint: "Heaviest by design — a miss caps the match at 15%" },
+  { key: "location", label: "Location", hint: "Heaviest by design: a miss caps the match at 15%" },
   { key: "price", label: "Price vs budget", hint: ">10% over budget caps the match at 25%" },
   { key: "beds", label: "Bedrooms", hint: "One short scores 40%" },
   { key: "type", label: "Property type", hint: "Non-preferred type scores 20%" },
@@ -33,7 +33,7 @@ export default async function AdminSettingsPage({
       </p>
       {saved && (
         <p className="mt-4 w-fit rounded-xl bg-green-tint px-4 py-2 text-sm font-medium text-green-deep">
-          Weights saved — every Match % on the site now uses them.
+          Weights saved. Every Match % on the site now uses them.
         </p>
       )}
       <form

@@ -1,27 +1,34 @@
 @import "tailwindcss";
 
 /*
-  Matchlisted brand design tokens.
-  A dating site for homes: playful warmth, serious money. White-dominant,
-  soft shadows, rounded cards. Charcoal structure, Match Orange hearts and
-  CTAs, Seeker Blue links and seeker-side UI.
+  Matchlisted brand design tokens — the BUILD-BRIEF.md palette (adopted in
+  the Phase 1 review): Anchor #3D4F61 · Charcoal Mid #5F7080 · Signal
+  #E8693A · Precision #3AADDA · Ground #F8F8F6.
+
+  Derived steps (mechanical shades, not new brand colours):
+  - charcoal-deep = darker Anchor for dark grounds/footer.
+  - orange-deep/cta-hover = darker Signal so text and CTA fills reach 4.5:1.
+  - blue-deep = #1E8FC4 per the review: interactive elements and large text
+    (3.6:1 — passes the 3:1 UI-component bar, NOT 4.5:1 small-text AA; see
+    the Phase 1 close-out note).
+  - Precision #3AADDA itself is decoration and large fills only.
 */
 @theme {
   /* Core brand */
-  --color-charcoal: #34393f; /* headings, text, structure */
-  --color-charcoal-deep: #23272b; /* dark section grounds, footer */
-  --color-charcoal-soft: #565d66; /* AA-safe secondary text on white */
-  --color-orange: #f37c24; /* Match Orange: the heart, rings, badges */
-  --color-orange-deep: #b4530c; /* AA-safe orange for text + CTA bg (4.5:1+) */
-  --color-orange-cta-hover: #9a4708;
-  --color-orange-tint: #fef1e7; /* tint panels, heart hover fills */
-  --color-blue: #2fa2ce; /* Seeker Blue accents, 50-89% rings */
-  --color-blue-deep: #1d7096; /* AA-safe blue for links and text */
-  --color-blue-tint: #eaf6fb;
-  --color-soft: #f5f6f7; /* Soft Grey section backgrounds */
+  --color-charcoal: #3d4f61; /* Anchor: headings, text, structure */
+  --color-charcoal-deep: #2c3947; /* dark section grounds, footer */
+  --color-charcoal-soft: #5f7080; /* Charcoal Mid: secondary text on white */
+  --color-orange: #e8693a; /* Signal: the heart, rings, badges */
+  --color-orange-deep: #b94a1c; /* AA-safe Signal for text + CTA bg (4.5:1+) */
+  --color-orange-cta-hover: #9f3f17;
+  --color-orange-tint: #fcefe8; /* tint panels, heart hover fills */
+  --color-blue: #3aadda; /* Precision: large fills + decoration ONLY */
+  --color-blue-deep: #1e8fc4; /* Precision interactive step (see note above) */
+  --color-blue-tint: #e9f5fb;
+  --color-soft: #f8f8f6; /* Ground: section backgrounds */
   --color-paper: #ffffff; /* cards */
-  --color-hairline: #e4e7ea;
-  --color-muted: #6c737b;
+  --color-hairline: #e1e6ea;
+  --color-muted: #647482;
 
   /* Supporting */
   --color-green: #2e9e6b; /* Verified Green: home report verified, contracts */
@@ -42,9 +49,9 @@
   --radius-xl: 1.75rem;
 
   /* Card shadows — one consistent elevation scale */
-  --shadow-card: 0 1px 2px rgb(52 57 63 / 0.05), 0 8px 24px -6px rgb(52 57 63 / 0.1);
-  --shadow-card-hover: 0 2px 4px rgb(52 57 63 / 0.06), 0 20px 44px -10px rgb(52 57 63 / 0.18);
-  --shadow-glow: 0 0 0 1px rgb(243 124 36 / 0.25), 0 10px 40px -8px rgb(243 124 36 / 0.35);
+  --shadow-card: 0 1px 2px rgb(61 79 97 / 0.05), 0 8px 24px -6px rgb(61 79 97 / 0.1);
+  --shadow-card-hover: 0 2px 4px rgb(61 79 97 / 0.06), 0 20px 44px -10px rgb(61 79 97 / 0.18);
+  --shadow-glow: 0 0 0 1px rgb(232 105 58 / 0.25), 0 10px 40px -8px rgb(232 105 58 / 0.35);
 }
 
 @layer base {
@@ -101,6 +108,101 @@
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* The LogoMark: the house-heart as live linework (src/components/     */
+/* logo.tsx). House strokes take currentColor; the heart is always     */
+/* Match Orange. `.logo-armed` hides the strokes for a draw entrance;  */
+/* `.logo-drawn` traces the house first, then the heart sweeps through */
+/* in one stroke and gives a single heartbeat.                         */
+/* ------------------------------------------------------------------ */
+.logo-mark .lm-house,
+.logo-mark .lm-heart {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.logo-mark .lm-house {
+  stroke: currentColor;
+  stroke-width: 13;
+}
+.logo-mark .lm-heart {
+  stroke: var(--color-orange);
+  stroke-width: 12;
+}
+
+.logo-armed .lm-house,
+.logo-armed .lm-heart {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+@keyframes logo-trace {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes logo-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.08);
+  }
+  55% {
+    transform: scale(0.99);
+  }
+  75% {
+    transform: scale(1.04);
+  }
+}
+.logo-drawn .lm-house {
+  animation: logo-trace 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.logo-drawn .lm-house:nth-of-type(2) {
+  animation-delay: 0.18s;
+}
+.logo-drawn .lm-house:nth-of-type(3) {
+  animation-delay: 0.3s;
+}
+.logo-drawn .lm-heart {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    logo-trace 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both,
+    logo-beat 0.9s ease-in-out 1.6s;
+}
+
+/* Header lockup: the heart beats when you hover home. */
+@media (hover: hover) {
+  .logo-home-link:hover .lm-heart {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: logo-beat 0.9s ease-in-out;
+  }
+}
+
+/* Nav links: Match Orange underline sweeps in from the left. */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-orange);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-link:hover::after,
+.nav-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
 /* Gentle fade-up for scroll reveals. */
 @keyframes fadeup {
   from {
@@ -123,8 +225,8 @@
 /* Hero ground: warm radial washes on white, quiet but not flat. */
 .hero-ground {
   background:
-    radial-gradient(52rem 30rem at 85% -10%, rgb(243 124 36 / 0.1), transparent 60%),
-    radial-gradient(40rem 26rem at -10% 110%, rgb(47 162 206 / 0.09), transparent 60%),
+    radial-gradient(52rem 30rem at 85% -10%, rgb(232 105 58 / 0.1), transparent 60%),
+    radial-gradient(40rem 26rem at -10% 110%, rgb(58 173 218 / 0.09), transparent 60%),
     var(--color-soft);
 }
 
@@ -190,7 +292,7 @@
   border-radius: 9999px;
   background: #fff;
   border: 3px solid var(--color-orange);
-  box-shadow: 0 1px 4px rgb(52 57 63 / 0.25);
+  box-shadow: 0 1px 4px rgb(61 79 97 / 0.25);
   cursor: grab;
 }
 .dual-range::-moz-range-thumb {
@@ -200,7 +302,7 @@
   border-radius: 9999px;
   background: #fff;
   border: 3px solid var(--color-orange);
-  box-shadow: 0 1px 4px rgb(52 57 63 / 0.25);
+  box-shadow: 0 1px 4px rgb(61 79 97 / 0.25);
   cursor: grab;
 }
 .dual-range::-moz-range-track {

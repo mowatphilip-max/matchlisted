@@ -184,13 +184,22 @@ export interface PurchaseOrder {
   settledAt?: string;
 }
 
+/**
+ * The listing lifecycle (BUILD-BRIEF.md §5):
+ *   draft → shadow → hr_ordered → live → under-offer → sold
+ * with withdrawn reachable from anywhere and expired at the longstop.
+ * ONLY live / under-offer / sold are ever visible to seekers (§3).
+ */
 export type HomeStatus =
   | "draft" // being built by the seller
-  | "pending-approval" // report uploaded, awaiting admin verification
+  | "shadow" // built; owner sees their Match Report; nobody else sees anything
+  | "hr_ordered" // Home Report instructed; still invisible to seekers
+  | "pending-approval" // report uploaded, awaiting admin verification (legacy step)
   | "live"
   | "under-offer"
   | "sold"
-  | "withdrawn";
+  | "withdrawn"
+  | "expired"; // longstop passed without a sale
 
 export interface HushHome {
   id: string;
@@ -210,11 +219,15 @@ export interface HushHome {
   homeReport: HomeReportInfo;
   contract: ContractSignature | null;
   status: HomeStatus;
-  /**
-   * "I'll do the Home Report later": with the agreement signed, the home
-   * appears on the site as a PREVIEW — description and hazed-out photos
-   * only. It cannot go fully live until the Home Report is verified.
-   */
+  /** The owner's own value estimate: drives the Match Report + HR fee band. */
+  ownerEstimate?: number | null;
+  goLiveAt?: string | null;
+  /** goLiveAt + CONFIG.longstopMonths. Null until live. */
+  expiresAt?: string | null;
+  /** Admin approval hard gate (§6.2). */
+  approvalStatus?: "pending" | "approved" | "changes_requested";
+  approvalNotes?: string | null;
+  /** Legacy preview flag — never set or displayed since 4 Aug 2026 (§3). */
   previewListed?: boolean;
   createdAt: string;
 }
@@ -360,4 +373,73 @@ export interface SeenMatch {
   key: string; // `${homeId}:${seekerId}`
   pct: number;
   seenAt: string;
+}
+
+// ---- Phase 1, BUILD-BRIEF.md §4: the fee ledger and the audit trail -------
+
+export type ChargeType =
+  | "home_report"
+  | "withdrawal_fee"
+  | "rightmove_addon"
+  | "photography_addon"
+  | "buyer_fee"
+  | "conveyancing_commission";
+
+export type ChargeStatus =
+  | "pending"
+  | "due"
+  | "mandated"
+  | "invoiced"
+  | "paid"
+  | "written_off";
+
+export type ChargeTrigger =
+  | "missives_concluded"
+  | "withdrawn"
+  | "listed_elsewhere"
+  | "longstop"
+  | "purchased";
+
+export type CollectionRoute =
+  | "solicitor_mandate"
+  | "card"
+  | "stripe_checkout"
+  | "invoice";
+
+/**
+ * A charge is an obligation, not a payment. It is created `pending` when the
+ * commitment is made (e.g. Home Report ordered), becomes `due` when a
+ * trigger fires (missives concluded, withdrawal, longstop), and settles via
+ * its collection route. If a card fails the charge moves to `invoiced` and
+ * enters dunning — it never disappears.
+ */
+export interface Charge {
+  id: string;
+  subjectType: "listing" | "transaction";
+  subjectId: string;
+  payerUserId: string;
+  type: ChargeType;
+  netAmount: number;
+  vatAmount: number;
+  grossAmount: number;
+  status: ChargeStatus;
+  trigger?: ChargeTrigger;
+  dueAt?: string;
+  collectionRoute?: CollectionRoute;
+  stripePaymentIntent?: string;
+  mandateId?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Append-only audit trail. actorId null = system or a deleted account. */
+export interface AuditEntry {
+  id: string;
+  actorId: string | null;
+  action: string;
+  subjectType: string;
+  subjectId: string;
+  meta: Record<string, unknown>;
+  at: string;
 }

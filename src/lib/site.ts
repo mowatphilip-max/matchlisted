@@ -12,15 +12,100 @@ export const VAT_RATE = 0.2;
 export const HOME_REPORT_MARGIN = 100; // our margin per Home Report, £
 export const WITHDRAWAL_FEE = 300; // seller lists elsewhere on the open market, £
 export const CONVEYANCING_DEPOSIT = 100; // to appoint a lawyer before offering, £
-export const SOURCING_FEE_RATE = 0.008; // 0.8% of purchase price, on missives
+
+/**
+ * The buyer fee: £300 + VAT, FIXED, on conclusion of missives — every
+ * transaction, regardless of price (Phase 1 review decision, replacing both
+ * the old 0.8% sourcing fee and the brief's £495).
+ */
+export const BUYER_FEE = 300;
+
+// ---- Build-brief config (docs/BUILD-BRIEF.md) ------------------------------
+//
+// Every number the brief marks [config], in one place. The constants above
+// are the CURRENT running model; the values below are the January 2027
+// deferred-fee model, adopted phase by phase. When a phase switches a flow
+// over, it must read from here — never inline a fee or threshold.
+export const CONFIG = {
+  fees: {
+    /** Home Report charge, £ inc VAT. Deferred: solicitor at settlement, or stored card on withdrawal/expiry. */
+    homeReportGross: 580,
+    /** Withdrawal fee, £ ex VAT. Stored card, after notice. */
+    withdrawalNet: 300,
+    /** Rightmove listing add-on, £ ex VAT. Stripe Checkout, upfront. */
+    rightmoveAddonNet: 200,
+    /** Professional photography add-on, £ ex VAT. Stripe Checkout, upfront. */
+    photographyAddonNet: 295,
+    /** Buyer fee, £ ex VAT, fixed, every transaction. Solicitor at settlement. */
+    buyerFeeNet: 300,
+  },
+  /**
+   * Listing-claim copy (CAP Code / DMCCA). NEVER write a bare "free" claim
+   * for the listing anywhere — use these strings. The sub-line flips to the
+   * deferred wording when Phase 3 switches collection over (one-line edit).
+   */
+  copy: {
+    listingHeadline: "No listing fee. No commission.",
+    listingSubline: "You pay only for your Home Report.",
+    // Phase 3: listingSubline becomes "Pay for your Home Report when you sell."
+  },
+  /** goLiveAt + this many months → expired (longstop). Under legal review — may be switched off. */
+  longstopMonths: 12,
+  /** Days a listing is live with no 90%+ match before the Rightmove nudge. */
+  nudgeAfterDays: 42,
+  /** Days of written notice before any stored-card charge. */
+  cardNoticeDays: 14,
+  /** AML verification validity, months, before re-verification. */
+  amlRevalidateMonths: 12,
+  /** Listing approval minimum standards. */
+  listingStandards: {
+    minPhotos: 6,
+    minPhotoLongEdgePx: 1200,
+    minDescriptionWords: 150,
+  },
+  /** Town hub pages (/looking-in/[town]) require at least this many live seekers. */
+  townHubMinSeekers: 3,
+  /** Never send more than this many match emails per user per day. */
+  maxMatchEmailsPerUserPerDay: 1,
+  matchBands: {
+    match: 90, // ≥ this: "It's a match", both sides notified
+    worthALook: 50, // ≥ this: "Worth a look"; below: not surfaced
+  },
+  /** Value bands for the public Match Report (§6.1). mid drives scoring. */
+  valueBands: [
+    { id: "to250", label: "Up to £250,000", mid: 200000 },
+    { id: "250-400", label: "£250,000 – £400,000", mid: 325000 },
+    { id: "400-600", label: "£400,000 – £600,000", mid: 500000 },
+    { id: "600-900", label: "£600,000 – £900,000", mid: 750000 },
+    { id: "900plus", label: "£900,000+", mid: 1100000 },
+  ],
+} as const;
+
+// ---- Legal entity (footer + policy pages) ----------------------------------
+//
+// Matchlisted.com is a TRADING NAME of Mowatt – Move Smarter Ltd; Mowatt's
+// existing redress, HMRC AML and ICO registrations are treated as covering
+// it (Phase 1 review decision). Facts still null are open items — Phil
+// supplies them; never invent. The footer renders bracketed "to follow"
+// markers until they are filled in.
+export const LEGAL = {
+  tradingName: "Matchlisted.com",
+  companyName: "Mowatt – Move Smarter Ltd",
+  /** e.g. "SC123456" */
+  companyNumber: null as string | null,
+  registeredOffice: null as string | null,
+  vatNumber: null as string | null,
+  /** e.g. "The Property Ombudsman" */
+  redressSchemeName: null as string | null,
+  redressSchemeNumber: null as string | null,
+  amlSupervisionNumber: null as string | null,
+  icoRegistration: null as string | null,
+} as const;
 
 export function withVat(net: number): number {
   return Math.round(net * (1 + VAT_RATE) * 100) / 100;
 }
 
-export function sourcingFee(purchasePrice: number): number {
-  return Math.round(purchasePrice * SOURCING_FEE_RATE);
-}
 
 export const CONTRACT_VERSIONS = {
   seeker: "seeker-v1.0-2026-07",

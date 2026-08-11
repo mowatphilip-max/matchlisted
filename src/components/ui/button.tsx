@@ -9,13 +9,13 @@ import { cn } from "@/lib/utils";
 type Variant = "primary" | "seller" | "seeker" | "secondary" | "ghost" | "onDark";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold tracking-wide transition-all duration-200 min-h-11 px-6 py-3 cursor-pointer select-none active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:pointer-events-none motion-reduce:active:scale-100";
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold tracking-wide transition-all duration-200 min-h-11 px-6 py-3 cursor-pointer select-none active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:pointer-events-none motion-reduce:active:scale-100";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-orange-deep text-white shadow-[0_2px_10px_-2px_rgb(180_83_12/0.5)] hover:bg-orange-cta-hover hover:shadow-[0_4px_18px_-4px_rgb(180_83_12/0.6)] focus-visible:outline-orange-deep",
+    "bg-orange-deep text-white shadow-[0_2px_10px_-2px_rgb(185_74_28/0.5)] hover:bg-orange-cta-hover hover:shadow-[0_4px_18px_-4px_rgb(185_74_28/0.6)] focus-visible:outline-orange-deep",
   seller:
-    "bg-charcoal text-white shadow-[0_2px_10px_-2px_rgb(35_39_43/0.45)] hover:bg-charcoal-deep hover:shadow-[0_4px_18px_-4px_rgb(35_39_43/0.55)] focus-visible:outline-charcoal",
+    "bg-charcoal text-white shadow-[0_2px_10px_-2px_rgb(44_57_71/0.45)] hover:bg-charcoal-deep hover:shadow-[0_4px_18px_-4px_rgb(44_57_71/0.55)] focus-visible:outline-charcoal",
   seeker:
     "bg-transparent text-blue-deep ring-1 ring-inset ring-blue-deep/60 hover:bg-blue-tint hover:ring-blue-deep focus-visible:outline-blue-deep",
   secondary:

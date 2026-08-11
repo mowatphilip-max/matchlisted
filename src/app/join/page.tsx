@@ -42,7 +42,7 @@ export default async function JoinPage({
               You&apos;re one step from reaching {seekerBrief.publicRef}
             </p>
             <p className="mt-1.5 text-sm leading-relaxed text-charcoal-soft">
-              &ldquo;{seekerBrief.headline}&rdquo; — create your free account
+              &ldquo;{seekerBrief.headline}&rdquo;. Create your free account
               and we&apos;ll note your interest right away. Once your Hush
               Home profile and Home Report are in place, we&apos;ll offer
               them the introduction.
@@ -116,7 +116,7 @@ export default async function JoinPage({
               I&apos;m selling a home
             </span>
             <span className="block text-xs text-charcoal-soft">
-              List a Hush Home — free
+              List a Hush Home
             </span>
           </Link>
         </div>
@@ -177,8 +177,8 @@ export default async function JoinPage({
               : "Create account & build my brief"}
           </Button>
           <p className="text-center text-xs text-charcoal-soft">
-            Free to join. Contracts are signed later, at listing or briefing —
-            nothing is owed today. Already registered?{" "}
+            Free to join. Contracts are signed later, at listing or briefing.
+            Nothing is owed today. Already registered?{" "}
             <Link href="/login" className="text-blue-deep underline">
               Sign in
             </Link>

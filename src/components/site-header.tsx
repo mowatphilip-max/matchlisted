@@ -3,13 +3,16 @@ import { Bell, Menu } from "lucide-react";
 import { currentUser } from "@/lib/session";
 import { notificationsForUser } from "@/lib/db";
 import { signOut } from "@/lib/actions";
-import { LogoHorizontal } from "./logo";
+import { LogoHorizontal, LogoMark } from "./logo";
 import { ButtonLink } from "./ui/button";
 
+// IA per BUILD-BRIEF.md Phase 1: audience-first labels. "For sellers" and
+// "For buyers" are the pitch pages; "Who's looking" is the live seeker list.
 const nav = [
   { href: "/#how-it-works", label: "How it works" },
-  { href: "/hush-homes", label: "Hush Homes" },
-  { href: "/seekers", label: "Quiet Seekers" },
+  { href: "/hush-homes", label: "For sellers" },
+  { href: "/quiet-seekers", label: "For buyers" },
+  { href: "/seekers", label: "Who's looking" },
   { href: "/#fees", label: "Fees" },
 ];
 
@@ -20,14 +23,15 @@ export async function SiteHeader() {
     : 0;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-hairline bg-white/92 shadow-[0_1px_12px_rgb(52_57_63/0.05)] backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-hairline bg-white/92 shadow-[0_1px_12px_rgb(61_79_97/0.05)] backdrop-blur-md">
       <div className="mx-auto flex h-[4.25rem] w-full max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
         <Link
           href="/"
-          className="flex items-center transition-opacity hover:opacity-80"
+          className="logo-home-link flex shrink-0 items-center gap-2 transition-opacity hover:opacity-90"
           aria-label="Matchlisted home"
         >
-          <LogoHorizontal className="h-10" />
+          <LogoMark className="h-8 w-auto text-charcoal sm:h-9" />
+          <LogoHorizontal className="hidden h-8 min-[420px]:block sm:h-10" />
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-charcoal-soft md:flex">
@@ -35,7 +39,7 @@ export async function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="transition-colors hover:text-charcoal"
+              className="nav-link transition-colors hover:text-charcoal"
             >
               {item.label}
             </Link>
@@ -75,7 +79,7 @@ export async function SiteHeader() {
             <>
               <Link
                 href="/login"
-                className="px-2 text-sm font-medium text-blue-deep hover:underline"
+                className="whitespace-nowrap px-2 text-sm font-medium text-blue-deep hover:underline"
               >
                 Sign in
               </Link>

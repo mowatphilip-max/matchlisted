@@ -42,7 +42,7 @@ export default async function NotificationsPage() {
 
         {items.length === 0 ? (
           <p className="mt-8 rounded-2xl bg-soft p-6 text-sm text-charcoal-soft">
-            Nothing yet — when the Matchlist finds something, you&apos;ll hear
+            Nothing yet. When the Matchlist finds something, you&apos;ll hear
             about it here first.
           </p>
         ) : (

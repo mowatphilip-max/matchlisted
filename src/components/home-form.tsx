@@ -29,7 +29,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
           Profile headline
         </label>
         <p className="text-xs text-charcoal-soft">
-          Like a dating profile — lead with what makes it lovable.
+          Like a dating profile: lead with what makes it lovable.
         </p>
         <input
           id="headline"
@@ -45,7 +45,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
         <div>
           <label className="block text-sm font-semibold">Area</label>
           <p className="text-xs text-charcoal-soft">
-            This is what seekers see — the street address stays private.
+            This is what seekers see. The street address stays private.
           </p>
           {areaId ? (
             <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-orange-tint px-4 py-2 text-sm font-medium text-orange-deep">
@@ -122,7 +122,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
             className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
           />
           <p className="mt-1 text-xs text-charcoal-soft">
-            Your honest best guess — it prices your Home Report and can be
+            Your honest best guess. It prices your Home Report and can be
             corrected once the report is done.
           </p>
         </div>
@@ -223,31 +223,16 @@ export function HomeForm({ home }: { home: HushHome | null }) {
 
       <div className="rounded-2xl bg-soft p-4 text-sm text-charcoal-soft">
         Photography and floor plans can be added any time from your home&apos;s
-        page — they&apos;re optional, though profiles with photos get more
+        page. They&apos;re optional, though profiles with photos get more
         Introductions.
       </div>
 
-      {/* Home Report later = preview listing until the report is verified */}
-      <div className="rounded-2xl bg-blue-tint/60 p-4 ring-1 ring-blue-deep/15">
-        <label className="flex cursor-pointer items-start gap-3 text-sm">
-          <input
-            type="checkbox"
-            name="previewLater"
-            defaultChecked={home?.previewListed}
-            className="mt-0.5 h-4 w-4 accent-[var(--color-blue-deep)]"
-          />
-          <span>
-            <span className="font-semibold">
-              I&apos;ll do the Home Report later
-            </span>
-            <span className="mt-0.5 block text-charcoal-soft">
-              We&apos;ll show your home as a <strong>preview</strong> in the
-              meantime — description and hazed-out photos only. It can&apos;t
-              go fully live (clear photos, downloadable report, viewings)
-              until a Home Report bought through Matchlisted is verified.
-            </span>
-          </span>
-        </label>
+      {/* Preview listings are gone (BUILD-BRIEF.md §3): nothing may be shown
+          to seekers, hazed or otherwise, before the Home Report is verified. */}
+      <div className="rounded-2xl bg-blue-tint/60 p-4 text-sm text-charcoal-soft ring-1 ring-blue-deep/15">
+        Your home stays completely private while you build it. It becomes
+        visible to registered Quiet Seekers only once its Home Report is
+        verified and the listing is approved.
       </div>
 
       <div className="border-t border-hairline pt-6">

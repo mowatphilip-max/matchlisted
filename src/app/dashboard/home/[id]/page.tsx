@@ -18,7 +18,7 @@ import { SeekerMatchCard } from "@/components/seeker-match-card";
 import { currentUser } from "@/lib/session";
 import {
   getInvoice,
-  getHome,
+  getHomeUnscoped,
   usersById,
   offersForHome,
   slotsForHome,
@@ -93,7 +93,7 @@ export default async function SellerHomePage({
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
-  const home = await getHome(id);
+  const home = await getHomeUnscoped(id);
   if (!home || home.sellerId !== user.id) notFound();
 
   const report = home.homeReport;
@@ -158,8 +158,8 @@ export default async function SellerHomePage({
         {!contractSigned && (
           <div className="mt-5 rounded-2xl bg-orange-tint p-4">
             <p className="text-sm">
-              <strong>Next: sign your seller agreement.</strong> Listing is
-              free — you agree to sell only through Matchlisted, with a £
+              <strong>Next: sign your seller agreement.</strong> No listing
+              fee, no commission. You agree to sell only through Matchlisted, with a £
               {WITHDRAWAL_FEE} (+ VAT) fee only if you withdraw to the open
               market.
             </p>
@@ -177,7 +177,7 @@ export default async function SellerHomePage({
           <div className="mt-5 rounded-2xl bg-blue-tint p-4">
             <p className="text-sm">
               <strong>Next: your Home Report.</strong> Your listing cannot go
-              fully live without one — it verifies your home&apos;s value and
+              fully live without one: it verifies your home&apos;s value and
               anchors every Match %. Fees are banded on your estimate of{" "}
               <strong>{formatPrice(home.price)}</strong> (corrected later if
               the report says otherwise). You pay here; the surveyor bills us.
@@ -243,7 +243,7 @@ export default async function SellerHomePage({
               <p className="mt-4 rounded-xl bg-white p-4 text-sm">
                 <strong>Homes estimated over £1,500,000 are quoted by
                 negotiation.</strong>{" "}
-                We&apos;ll arrange your Home Report personally — email{" "}
+                We&apos;ll arrange your Home Report personally. Email{" "}
                 <a href="mailto:office@matchlisted.com" className="font-semibold text-blue-deep underline">
                   office@matchlisted.com
                 </a>{" "}
@@ -256,7 +256,7 @@ export default async function SellerHomePage({
         {awaitingPayment && reportInvoice && (
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-orange-tint p-4">
             <p className="text-sm">
-              <strong>Home Report ordered — payment pending.</strong>{" "}
+              <strong>Home Report ordered, payment pending.</strong>{" "}
               {reportInvoice.description}
             </p>
             <ButtonLink href={`/pay/${reportInvoice.id}`} className="min-h-9 px-4 py-1.5">
@@ -274,7 +274,7 @@ export default async function SellerHomePage({
               were instructed{" "}
               {report.orderedAt ? formatDate(report.orderedAt) : ""} and will
               phone you to arrange the visit. When the completed report
-              arrives, upload it here — once verified, your home goes fully
+              arrives, upload it here. Once verified, your home goes fully
               live and the report becomes downloadable to registered Quiet
               Seekers.
             </p>
@@ -299,7 +299,7 @@ export default async function SellerHomePage({
 
         {report.status === "uploaded" && (
           <p className="mt-5 rounded-2xl bg-blue-tint p-4 text-sm">
-            <strong>Report uploaded — under review.</strong> The Matchlisted
+            <strong>Report uploaded and under review.</strong> The Matchlisted
             team verifies every Home Report before a listing goes live.
             You&apos;ll be notified the moment it clears.
           </p>
@@ -310,8 +310,8 @@ export default async function SellerHomePage({
             <FileCheck2 className="h-5 w-5" />
             <span>
               <strong>Home Report verified</strong>
-              {report.fileName ? ` (${report.fileName})` : ""} — downloadable by
-              registered Quiet Seekers.
+              {report.fileName ? ` (${report.fileName})` : ""} and downloadable
+              by registered Quiet Seekers.
             </span>
           </p>
         )}
@@ -321,7 +321,7 @@ export default async function SellerHomePage({
       <section id="photos" className="mt-10 scroll-mt-20">
         <h2 className="text-2xl">Photos</h2>
         <p className="mt-1 text-sm text-charcoal-soft">
-          Upload your own photos whenever you like — before the Home Report is
+          Upload your own photos whenever you like, before the Home Report is
           even ordered. They only show to buyers once the listing is live, and
           profiles with photos get more Introductions.
         </p>
@@ -389,7 +389,7 @@ export default async function SellerHomePage({
       <section className="mt-10">
         <h2 className="text-2xl">Quiet Seekers matching this home</h2>
         <p className="mt-1 text-sm text-charcoal-soft">
-          Anonymised — sellers never see names or contact details.
+          Anonymised: sellers never see names or contact details.
         </p>
         {matches.length > 0 ? (
           <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -399,7 +399,7 @@ export default async function SellerHomePage({
           </div>
         ) : (
           <p className="mt-4 rounded-2xl bg-soft p-6 text-sm text-charcoal-soft">
-            No matching briefs yet — new Quiet Seekers register all the time.
+            No matching briefs yet. New Quiet Seekers register all the time.
           </p>
         )}
       </section>
@@ -415,7 +415,7 @@ export default async function SellerHomePage({
             <h3 className="text-base font-bold">Open slots</h3>
             {slots.filter((s) => !s.bookedBy).length === 0 ? (
               <p className="mt-2 text-sm text-charcoal-soft">
-                No open slots — add some below.
+                No open slots. Add some below.
               </p>
             ) : (
               <ul className="mt-3 space-y-2">
@@ -505,7 +505,7 @@ export default async function SellerHomePage({
                       </>
                     ) : (
                       <p className="mt-1 text-charcoal-soft">
-                        Booked — feedback comes after the viewing.
+                        Booked. Feedback comes after the viewing.
                       </p>
                     )}
                   </li>
@@ -521,8 +521,8 @@ export default async function SellerHomePage({
         <h2 className="text-2xl">Offers</h2>
         {offers.length === 0 ? (
           <p className="mt-4 rounded-2xl bg-soft p-6 text-sm text-charcoal-soft">
-            No offers yet. Offers arrive here the moment a seeker submits one
-            — you can accept, decline or counter.
+            No offers yet. Offers arrive here the moment a seeker submits one,
+            and you can accept, decline or counter.
           </p>
         ) : (
           <ul className="mt-6 space-y-4">
@@ -548,12 +548,12 @@ export default async function SellerHomePage({
                   </div>
                   <p className="mt-1 text-sm text-charcoal-soft">
                     From {o.status === "accepted" && seeker ? seeker.name : "a registered Quiet Seeker"}
-                    {o.note ? ` — “${o.note}”` : ""}
+                    {o.note ? `: “${o.note}”` : ""}
                   </p>
                   <ul className="mt-3 space-y-1 text-xs text-charcoal-soft">
                     {o.history.map((h) => (
                       <li key={h.at}>
-                        {formatDate(h.at)} — {h.event}
+                        {formatDate(h.at)} · {h.event}
                       </li>
                     ))}
                   </ul>

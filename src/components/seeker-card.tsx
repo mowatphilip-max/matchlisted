@@ -68,7 +68,7 @@ export function SeekerCard({
             <Wallet className="h-4 w-4 text-blue-deep" />
             {brief.budgetMax > 0
               ? formatBudget(brief.budgetMin, brief.budgetMax)
-              : "Substantial budget — undisclosed"}
+              : "Substantial budget · undisclosed"}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-charcoal-soft">
             <span className="inline-flex items-center gap-1">

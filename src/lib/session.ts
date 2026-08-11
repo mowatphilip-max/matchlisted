@@ -69,10 +69,18 @@ export async function signInWithPassword(
   return { ok: true };
 }
 
+/**
+ * Creates the login account. When the project requires email confirmation,
+ * Supabase returns a user but no session — the caller must send them to
+ * confirm rather than on to a signed-in page they cannot reach.
+ */
 export async function signUpWithPassword(
   email: string,
   password: string,
-): Promise<{ ok: true; userId: string } | { ok: false; message: string }> {
+): Promise<
+  | { ok: true; userId: string; needsConfirmation: boolean }
+  | { ok: false; message: string }
+> {
   const supabase = await authClient();
   const { data, error } = await supabase.auth.signUp({
     email: email.trim().toLowerCase(),
@@ -81,7 +89,11 @@ export async function signUpWithPassword(
   if (error || !data.user) {
     return { ok: false, message: error?.message ?? "Could not create that account." };
   }
-  return { ok: true, userId: data.user.id };
+  return {
+    ok: true,
+    userId: data.user.id,
+    needsConfirmation: !data.session,
+  };
 }
 
 export async function sendPasswordReset(email: string): Promise<void> {

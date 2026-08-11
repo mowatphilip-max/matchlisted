@@ -49,7 +49,7 @@ export default async function PaymentSuccessPage({
             </span>
             <h1 className="mt-5 text-3xl">Payment received</h1>
             <p className="mt-3 text-charcoal-soft">
-              Thank you — {formatMoney(total)} paid. Your surveyor has been
+              Thank you. {formatMoney(total)} paid. Your surveyor has been
               instructed and will contact you directly to arrange the visit.
               A receipt is on its way to {user.email}.
             </p>
@@ -61,8 +61,8 @@ export default async function PaymentSuccessPage({
             </span>
             <h1 className="mt-5 text-3xl">Payment going through</h1>
             <p className="mt-3 text-charcoal-soft">
-              Your card has been accepted and we&apos;re just confirming it —
-              this usually takes a few seconds. Your money is safe and nothing
+              Your card has been accepted and we&apos;re just confirming it.
+              This usually takes a few seconds. Your money is safe and nothing
               is lost if you close this page; refresh in a moment, or check
               your dashboard shortly.
             </p>

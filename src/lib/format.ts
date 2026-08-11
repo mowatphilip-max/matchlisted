@@ -18,7 +18,14 @@ export function formatMoney(value: number): string {
   return Number.isInteger(value) ? gbp.format(value) : gbpPence.format(value);
 }
 
+/**
+ * A seeker's budget line. Sheet-sourced seekers who keep their budget
+ * private arrive as 0/0 — never render that as "£0 – £0" (the bug fixed in
+ * BUILD-BRIEF.md Phase 1); use the site's established undisclosed wording.
+ */
 export function formatBudget(min: number, max: number): string {
+  if (max <= 0) return "Substantial budget · undisclosed";
+  if (min <= 0 || min === max) return `Up to ${gbp.format(max)}`;
   return `${gbp.format(min)} – ${gbp.format(max)}`;
 }
 

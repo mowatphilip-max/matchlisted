@@ -53,7 +53,7 @@ export default async function PayPage({
                 <CreditCard className="h-4 w-4" /> Demo payment
               </p>
               <p className="mt-1">
-                The prototype simulates the card step — production uses Stripe
+                The prototype simulates the card step; production uses Stripe
                 Checkout here. Clicking pay marks the invoice paid and moves
                 your journey forward.
               </p>

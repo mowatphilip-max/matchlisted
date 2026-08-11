@@ -12,6 +12,7 @@ import {
   liveHomes,
   matchWeights,
   pushNotification,
+  PUBLIC_HOME_STATUSES,
   recordAlert,
   recordEmail,
 } from "./db";
@@ -36,13 +37,13 @@ async function deliver(user: User, pct: number, href: string, bodyLines: string[
   await pushNotification({
     userId: user.id,
     kind: "match",
-    title: `You have a possible match — ${pct}%`,
+    title: `You have a possible match: ${pct}%`,
     body: bodyLines[0],
     href,
   });
   await recordEmail({
     to: user.email,
-    subject: `YOU HAVE A POSSIBLE MATCH — ${pct}% on the Matchlist`,
+    subject: `YOU HAVE A POSSIBLE MATCH: ${pct}% on the Matchlist`,
     body: [
       `Hello ${user.name.split(" ")[0]},`,
       "",
@@ -50,14 +51,20 @@ async function deliver(user: User, pct: number, href: string, bodyLines: string[
       "",
       `See it here: ${href}`,
       "",
-      "You chose to hear about matches at this level — change your alert level any time from your dashboard.",
-      "— Matchlisted",
+      "You chose to hear about matches at this level. Change your alert level any time from your dashboard.",
+      "Matchlisted",
     ].join("\n"),
   });
 }
 
 /** A Hush Home has just gone live: tell every seeker it matches. */
 export async function alertSeekersAboutHome(home: HushHome): Promise<number> {
+  // Defence in depth for the §3 legal gate: this job runs outside every
+  // request-scoped guard, so it re-checks the gate itself rather than
+  // trusting its caller. A pre-live home alerts nobody, ever.
+  if (!(PUBLIC_HOME_STATUSES as readonly string[]).includes(home.status)) {
+    return 0;
+  }
   const weights = await matchWeights();
   let sent = 0;
   for (const brief of await activeBriefs()) {
@@ -71,7 +78,7 @@ export async function alertSeekersAboutHome(home: HushHome): Promise<number> {
     if (await hasAlerted(user.id, key)) continue;
     await recordAlert(user.id, key);
     deliver(user, pct, `/homes/${home.id}`, [
-      `A new Hush Home has just gone live in ${areaShortLabel(home.areaId)} — and it scores ${pct}% against your brief.`,
+      `A new Hush Home has just gone live in ${areaShortLabel(home.areaId)}, and it scores ${pct}% against your brief.`,
       `${home.beds} beds · ${home.baths} baths · ${formatPrice(home.price)}.`,
     ]);
     sent += 1;
@@ -97,7 +104,7 @@ export async function alertSellersAboutBrief(brief: SeekerBrief): Promise<number
     if (await hasAlerted(seller.id, key)) continue;
     await recordAlert(seller.id, key);
     deliver(seller, pct, `/dashboard`, [
-      `A new Quiet Seeker has just registered — and they score ${pct}% against ${home.headline}.`,
+      `A new Quiet Seeker has just registered, and they score ${pct}% against ${home.headline}.`,
       `${position} · budget ${formatBudget(brief.budgetMin, brief.budgetMax)} · looking in ${brief.areas.map(areaShortLabel).join(", ")}. Anonymised until a viewing is booked.`,
     ]);
     sent += 1;

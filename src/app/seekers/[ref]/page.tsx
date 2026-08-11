@@ -64,7 +64,7 @@ export async function generateMetadata({
   const resolved = await resolveSeeker(ref);
   if (!resolved) return { title: "Quiet Seeker not found" };
   return {
-    title: `${resolved.brief.publicRef} — ${resolved.brief.headline}`,
+    title: `${resolved.brief.publicRef} · ${resolved.brief.headline}`,
     description: resolved.brief.story.slice(0, 155),
   };
 }
@@ -161,7 +161,7 @@ export default async function SeekerProfilePage({
                   <p className="flex items-center gap-1.5 text-xs font-medium text-charcoal-soft">
                     <BadgeCheck className="h-3.5 w-3.5 text-blue-deep" />
                     {brief.contract
-                      ? `Verified — agreement signed ${formatDate(brief.contract.signedAt)}`
+                      ? `Verified: agreement signed ${formatDate(brief.contract.signedAt)}`
                       : "Registered buyer on the Mowatt Matchlist"}
                   </p>
                 </div>
@@ -247,7 +247,7 @@ export default async function SeekerProfilePage({
                       This buyer has found their home.
                     </h2>
                     <p className="mt-2 text-sm leading-relaxed text-white/70">
-                      Matched through the Matchlist — the quiet route works.
+                      Matched through the Matchlist. The quiet route works.
                       Plenty of other verified buyers are still looking.
                     </p>
                     <ButtonLink href="/seekers" className="mt-5 w-full" variant="onDark">
@@ -279,17 +279,17 @@ export default async function SeekerProfilePage({
                     </span>
                     <h2 className="mt-3 text-xl text-white">
                       {existing?.status === "accepted"
-                        ? "They said yes — you're introduced."
+                        ? "They said yes. You're introduced."
                         : existing?.status === "declined"
                           ? "They passed this time."
-                          : "Noted — we'll make the approach."}
+                          : "Noted. We'll make the approach."}
                     </h2>
                     <p className="mt-2 text-sm leading-relaxed text-white/70">
                       {existing?.status === "accepted"
                         ? "This seeker accepted the introduction to your home. Watch your notifications for viewings and next steps."
                         : existing?.status === "declined"
                           ? "This seeker decided your home wasn't quite the one. Your details were never shared. The Matchlist keeps scoring your home against every other live seeker."
-                          : "Once your Hush Home profile is complete and its Home Report is verified, we'll offer this seeker the introduction. It's their choice — and neither side's identity is shared until you're both ready."}
+                          : "Once your Hush Home profile is complete and its Home Report is verified, we'll offer this seeker the introduction. It's their choice, and neither side's identity is shared until you're both ready."}
                     </p>
                     {!hasHome && existing?.status === "new" && (
                       <ButtonLink href="/dashboard/home/new" className="mt-5 w-full">
@@ -305,8 +305,8 @@ export default async function SeekerProfilePage({
                     </h2>
                     <p className="mt-2 text-sm leading-relaxed text-white/70">
                       If you think this seeker might want to buy your home,
-                      raise your hand. You can&apos;t contact them directly —
-                      list your home as a Hush Home (free) and we&apos;ll
+                      raise your hand. You can&apos;t contact them directly,
+                      but list your home as a Hush Home (no listing fee) and we&apos;ll
                       offer them the introduction once your profile and Home
                       Report are in place.
                     </p>
@@ -331,7 +331,7 @@ export default async function SeekerProfilePage({
                     )}
                     <p className="mt-3 flex items-start gap-1.5 text-xs text-white/60">
                       <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      Their identity stays hidden, and so does yours — the
+                      Their identity stays hidden, and so does yours. The
                       introduction only happens when both sides are registered
                       and they say yes.
                     </p>

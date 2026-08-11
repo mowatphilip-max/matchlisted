@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   allIntroductions,
   getBrief,
-  getHome,
+  getHomeUnscoped,
   getUser,
   homesBySeller,
 } from "@/lib/db";
@@ -13,7 +13,7 @@ import { areaLabel } from "@/lib/areas";
 import { formatDate, formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Admin — Introductions" };
+export const metadata: Metadata = { title: "Admin · Introductions" };
 
 const STATUS_LABELS = {
   new: "Awaiting gate",
@@ -43,7 +43,7 @@ export default async function AdminIntroductionsPage() {
   const rows = await Promise.all(
     intros.map(async (intro) => {
       const homes = await homesBySeller(intro.sellerId);
-      const home = intro.homeId ? await getHome(intro.homeId) : homes[0];
+      const home = intro.homeId ? await getHomeUnscoped(intro.homeId) : homes[0];
       return {
         intro,
         seeker: await getBrief(intro.seekerId),
@@ -60,9 +60,11 @@ export default async function AdminIntroductionsPage() {
       <p className="mt-2 max-w-3xl text-charcoal-soft">
         Every &ldquo;they might want my home&rdquo; click lands here. The
         seeker is only offered the introduction when the gate is met: seller
-        registered, home profile complete with a signed agreement — and
-        ideally a verified Home Report. Nobody&apos;s identity crosses the
-        line until the seeker says yes.
+        registered, home profile complete with a signed agreement, and the
+        home <strong>live</strong> — a pre-live introduction is marketing
+        without a Home Report (s.101), so queued hands fire automatically at
+        go-live. Nobody&apos;s identity crosses the line until the seeker
+        says yes.
       </p>
 
       {intros.length === 0 ? (
@@ -75,7 +77,10 @@ export default async function AdminIntroductionsPage() {
             const hasProfile = Boolean(home);
             const hasContract = Boolean(home?.contract);
             const reportVerified = home?.homeReport.status === "verified";
-            const gateMet = hasProfile && hasContract;
+            const homeLive =
+              !!home && ["live", "under-offer", "sold"].includes(home.status);
+            // The legal gate: no introduction may be offered pre-live.
+            const gateMet = hasProfile && hasContract && homeLive;
 
             return (
               <li
@@ -91,7 +96,7 @@ export default async function AdminIntroductionsPage() {
                         intro.seekerId.replace("mowatt:", "#")}{" "}
                       <span className="font-normal text-charcoal-soft">
                         {intro.seekerId.startsWith("mowatt:")
-                          ? "(Mowatt sheet seeker — approach offline)"
+                          ? "(Mowatt sheet seeker, approach offline)"
                           : `(${seekerUser?.name})`}
                       </span>
                     </p>
@@ -110,6 +115,7 @@ export default async function AdminIntroductionsPage() {
                       <Gate ok={hasProfile} label="Home profile complete" />
                       <Gate ok={hasContract} label="Seller agreement signed" />
                       <Gate ok={reportVerified} label="Home Report verified" />
+                      <Gate ok={homeLive} label="Home live" />
                     </ul>
                   </div>
 
@@ -137,8 +143,9 @@ export default async function AdminIntroductionsPage() {
                         </Button>
                         {!gateMet && (
                           <p className="mt-1.5 max-w-45 text-xs text-charcoal-soft">
-                            Gate not met yet — chase the seller&apos;s profile
-                            first.
+                            {hasProfile && hasContract && !homeLive
+                              ? "Queued. Fires automatically when the home goes live."
+                              : "Gate not met yet. Chase the seller's profile first."}
                           </p>
                         )}
                       </form>

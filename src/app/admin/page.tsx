@@ -9,7 +9,7 @@ import {
 } from "@/lib/db";
 import { formatMoney } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Admin — overview" };
+export const metadata: Metadata = { title: "Admin · overview" };
 
 export default async function AdminOverviewPage() {
   const homes = await allHomes();

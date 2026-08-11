@@ -21,7 +21,7 @@ import {
   savedForSeeker,
   slotsForHome,
   viewingsForSeeker,
-  getHome,
+  getHomeFor,
 } from "@/lib/db";
 import { scoreMatch, matchLine } from "@/lib/match";
 import { bookViewing } from "@/lib/actions";
@@ -43,21 +43,14 @@ export default async function HomeProfilePage({
   if (!user) redirect("/login");
   const { id } = await params;
   const { booked, offer } = await searchParams;
-  const home = await getHome(id);
+  // getHomeFor is the §3 visibility scope: public statuses, the owner, an
+  // admin, or a seeker whose accepted Introduction opens this exact door.
+  const home = await getHomeFor(id, user);
   if (!home) notFound();
   const isSeller = home.sellerId === user.id;
-  // An accepted introduction opens the door to a home that is not yet
-  // publicly live — that is the whole point of the offer.
   const introduced = (await introductionsForSeeker(user.id)).some(
     (i) => i.homeId === home.id && i.status === "accepted",
   );
-  if (
-    !isSeller &&
-    !introduced &&
-    home.status !== "live" &&
-    home.status !== "under-offer"
-  )
-    notFound();
 
   const brief = await getBrief(user.id);
   const registered = Boolean(brief?.contract);
@@ -80,13 +73,13 @@ export default async function HomeProfilePage({
     <Container className="py-10">
       {booked && (
         <p className="mb-6 rounded-2xl bg-green-tint p-4 text-sm font-medium text-green-deep">
-          Viewing booked — the seller has been told. After the viewing,
+          Viewing booked, and the seller has been told. After the viewing,
           we&apos;ll ask how it went.
         </p>
       )}
       {offer === "submitted" && (
         <p className="mb-6 rounded-2xl bg-green-tint p-4 text-sm font-medium text-green-deep">
-          Offer submitted — it&apos;s with the seller now. You&apos;ll hear the
+          Offer submitted. It&apos;s with the seller now, and you&apos;ll hear the
           moment they respond.
         </p>
       )}
@@ -111,7 +104,7 @@ export default async function HomeProfilePage({
             <div>
               <p className="flex items-center gap-1.5 text-sm font-medium text-charcoal-soft">
                 <MapPin className="h-4 w-4 text-blue-deep" />
-                {areaLabel(home.areaId)} — exact address shared at viewing
+                {areaLabel(home.areaId)} · exact address shared at viewing
               </p>
               <h1 className="mt-2 text-3xl">{home.headline}</h1>
               <p className="mt-2 font-display text-2xl font-bold">
@@ -205,7 +198,7 @@ export default async function HomeProfilePage({
               </p>
             )}
             <p className="mt-2 text-xs text-charcoal-soft">
-              Professionally surveyed value —{" "}
+              Professionally surveyed value by{" "}
               {HOME_REPORT_SUPPLIERS.find(
                 (s) => s.id === home.homeReport.supplier,
               )?.name ?? "surveyor TBC"}
@@ -227,7 +220,7 @@ export default async function HomeProfilePage({
                 </p>
               ) : openSlots.length === 0 ? (
                 <p className="mt-2 text-sm text-charcoal-soft">
-                  No open slots right now — save the home and we&apos;ll nudge
+                  No open slots right now. Save the home and we&apos;ll nudge
                   you when new times appear.
                 </p>
               ) : (
@@ -264,7 +257,7 @@ export default async function HomeProfilePage({
               {canOffer ? (
                 <>
                   <p className="mt-2 text-sm text-charcoal-soft">
-                    You&apos;ve viewed and you&apos;re still interested —
+                    You&apos;ve viewed and you&apos;re still interested, so
                     appoint your lawyer and make it official.
                   </p>
                   <ButtonLink href={`/homes/${home.id}/offer`} className="mt-3 w-full">
@@ -273,7 +266,7 @@ export default async function HomeProfilePage({
                 </>
               ) : (
                 <p className="mt-2 text-sm text-charcoal-soft">
-                  Offers open after a viewing — tell us you&apos;re still
+                  Offers open after a viewing. Tell us you&apos;re still
                   interested in your post-viewing feedback and the offer flow
                   unlocks here.
                 </p>

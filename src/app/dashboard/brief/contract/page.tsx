@@ -6,7 +6,7 @@ import { currentUser } from "@/lib/session";
 import { getBrief } from "@/lib/db";
 import { signSeekerContract } from "@/lib/actions";
 import { formatPrice } from "@/lib/format";
-import { CONTRACT_VERSIONS, sourcingFee } from "@/lib/site";
+import { BUYER_FEE, CONTRACT_VERSIONS, withVat } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Quiet Seeker agreement" };
 
@@ -42,7 +42,7 @@ export default async function SeekerContractPage({
 
         <div className="mt-8 max-h-96 overflow-y-auto rounded-2xl border border-hairline bg-soft p-6 text-sm leading-relaxed">
           <h2 className="text-base">
-            Quiet Seeker Agreement — {CONTRACT_VERSIONS.seeker}
+            Quiet Seeker Agreement · {CONTRACT_VERSIONS.seeker}
           </h2>
           <ol className="mt-4 list-decimal space-y-3 pl-5">
             <li>
@@ -51,15 +51,14 @@ export default async function SeekerContractPage({
               Reports or book viewings.
             </li>
             <li>
-              <strong>Sourcing fee.</strong> If you successfully purchase a
-              property found through Matchlisted, a sourcing fee of{" "}
-              <strong>0.8% of the purchase price (+ VAT)</strong> is payable to
-              Matchlisted on conclusion of missives. Worked example: a{" "}
-              {formatPrice(200000)} purchase means a fee of{" "}
-              {formatPrice(sourcingFee(200000))} (+ VAT).
+              <strong>Buyer fee.</strong> If you successfully purchase a
+              property found through Matchlisted, a fixed buyer fee of{" "}
+              <strong>£{BUYER_FEE} (+ VAT)</strong> is payable to Matchlisted
+              on conclusion of missives — {formatPrice(withVat(BUYER_FEE))} in
+              total, the same on every home at every price.
             </li>
             <li>
-              <strong>The fee survives the listing.</strong> The sourcing fee
+              <strong>The fee survives the listing.</strong> The buyer fee
               remains payable if you purchase a property first introduced to
               you through Matchlisted at a later date, including after the
               property has left the site.
@@ -103,8 +102,9 @@ export default async function SeekerContractPage({
               className="mt-0.5 h-4 w-4 accent-[var(--color-orange-deep)]"
             />
             <span>
-              I have read the Quiet Seeker Agreement and I agree to the 0.8%
-              (+ VAT) sourcing fee, including after a property leaves the site.
+              I have read the Quiet Seeker Agreement and I agree to the fixed
+              £{BUYER_FEE} (+ VAT) buyer fee, including after a property
+              leaves the site.
             </span>
           </label>
           <Button type="submit">Sign & start matching</Button>

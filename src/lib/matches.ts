@@ -86,7 +86,7 @@ export async function collectFreshHotMatches(userId: string): Promise<{
       await pushNotification({
         userId: m.home.sellerId,
         kind: "match",
-        title: `It's a match — ${m.result.pct}%`,
+        title: `It's a match: ${m.result.pct}%`,
         body: "A registered Quiet Seeker is a strong match with your Hush Home.",
         href: "/dashboard",
       });
@@ -108,7 +108,7 @@ export async function collectFreshHotMatches(userId: string): Promise<{
           await pushNotification({
             userId: match.seekerId,
             kind: "match",
-            title: `It's a match — ${match.result.pct}%`,
+            title: `It's a match: ${match.result.pct}%`,
             body: "A Hush Home matches your brief. This could be the one.",
             href: "/matches",
           });

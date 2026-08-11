@@ -26,11 +26,11 @@ export const metadata: Metadata = {
     template: "%s | Matchlisted",
   },
   description:
-    "The dating site for homes, across all of Scotland. Free Hush Home listings, registered Quiet Seekers, a Match % for every pairing. No boards. No portals. Just Introductions.",
+    "The dating site for homes, across all of Scotland. No listing fees, registered Quiet Seekers, a Match % for every pairing. No boards. No portals. Just Introductions.",
   openGraph: {
-    title: "Matchlisted — Where Quiet Seekers meet Hush Homes",
+    title: "Matchlisted | Where Quiet Seekers meet Hush Homes",
     description:
-      "Every home gets a profile. Every buyer gets a brief. The Matchlist does the rest — across all of Scotland.",
+      "Every home gets a profile. Every buyer gets a brief. The Matchlist does the rest, across all of Scotland.",
     type: "website",
   },
 };

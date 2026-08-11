@@ -4,7 +4,7 @@ import { allLawyers } from "@/lib/db";
 import { adminRemoveLawyer, adminSaveLawyer } from "@/lib/actions";
 import { formatPrice } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Admin — lawyer panel" };
+export const metadata: Metadata = { title: "Admin · lawyer panel" };
 
 export default async function AdminLawyersPage() {
   const lawyers = await allLawyers();

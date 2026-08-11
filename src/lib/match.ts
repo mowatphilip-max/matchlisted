@@ -108,10 +108,10 @@ export function scoreMatch(
   let gardenDetail = "No garden preference";
   if (brief.garden === "must-have") {
     garden = home.garden ? 1 : 0;
-    gardenDetail = home.garden ? "Has the garden they need" : "No garden — a must-have";
+    gardenDetail = home.garden ? "Has the garden they need" : "No garden, and it's a must-have";
   } else if (brief.garden === "nice-to-have") {
     garden = home.garden ? 1 : 0.5;
-    gardenDetail = home.garden ? "Garden — nice to have" : "No garden (nice-to-have)";
+    gardenDetail = home.garden ? "Garden (nice to have)" : "No garden (nice-to-have)";
   }
 
   let other = 1;
@@ -145,7 +145,7 @@ export function scoreMatch(
       detail:
         home.beds >= brief.minBeds
           ? `${home.beds} beds (wanted ${brief.minBeds}+)`
-          : `${home.beds} beds — they asked for ${brief.minBeds}+`,
+          : `${home.beds} beds, but they asked for ${brief.minBeds}+`,
     },
     {
       key: "type",
@@ -167,7 +167,7 @@ export function scoreMatch(
       detail:
         home.baths >= brief.minBaths
           ? `${home.baths} baths (wanted ${brief.minBaths}+)`
-          : `${home.baths} baths — they asked for ${brief.minBaths}+`,
+          : `${home.baths} baths, but they asked for ${brief.minBaths}+`,
     },
     {
       key: "garden",
@@ -194,13 +194,13 @@ export function scoreMatch(
   let gated: string | null = null;
   if (location.score === 0 && brief.areas.length > 0) {
     pct = Math.min(pct, 15);
-    gated = "Capped at 15% — outside their chosen areas";
+    gated = "Capped at 15%: outside their chosen areas";
   } else if (price.farOver) {
     pct = Math.min(pct, 25);
-    gated = "Capped at 25% — more than 10% over budget";
+    gated = "Capped at 25%: more than 10% over budget";
   } else if (brief.garden === "must-have" && !home.garden) {
     pct = Math.min(pct, 49);
-    gated = "Capped at 49% — missing a must-have garden";
+    gated = "Capped at 49%: missing a must-have garden";
   }
 
   return { pct: Math.round(pct), components, gated };
@@ -219,9 +219,9 @@ export function matchBand(pct: number): "hot" | "warm" | "cool" {
 }
 
 export function matchLine(pct: number): string {
-  if (pct >= 95) return `${pct}% match — this could be the one.`;
-  if (pct >= 90) return `${pct}% match — well worth an Introduction.`;
-  if (pct >= 75) return `${pct}% match — a strong contender.`;
-  if (pct >= 50) return `${pct}% match — worth a look.`;
+  if (pct >= 95) return `${pct}% match. This could be the one.`;
+  if (pct >= 90) return `${pct}% match. Well worth an Introduction.`;
+  if (pct >= 75) return `${pct}% match. A strong contender.`;
+  if (pct >= 50) return `${pct}% match. Worth a look.`;
   return `${pct}% match.`;
 }

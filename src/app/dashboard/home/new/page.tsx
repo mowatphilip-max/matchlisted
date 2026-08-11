@@ -14,7 +14,7 @@ export default async function NewHomePage() {
     <Container className="py-10">
       <div className="mx-auto max-w-3xl">
         <p className="text-sm font-bold uppercase tracking-wider text-orange-deep">
-          Hush Home · free listing
+          Hush Home · no listing fee
         </p>
         <h1 className="mt-2 text-3xl">Build your home&apos;s profile</h1>
         <p className="mt-2 text-charcoal-soft">

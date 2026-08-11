@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
+import { LogoMark } from "@/components/logo";
+import { Scribble } from "@/components/scribble";
 import { MatchRing } from "@/components/match-ring";
 import { HomeCard } from "@/components/home-card";
 import { MowattSeekerCard } from "@/components/seekers/mowatt-seeker-card";
@@ -25,10 +27,12 @@ import { areaShortLabel } from "@/lib/areas";
 import { matchLine } from "@/lib/match";
 import { formatPrice } from "@/lib/format";
 import {
+  BUYER_FEE,
+  CONFIG,
   CONVEYANCING_DEPOSIT,
   HOME_REPORT_MARGIN,
   WITHDRAWAL_FEE,
-  sourcingFee,
+  withVat,
 } from "@/lib/site";
 
 /** The personalized hero copy for a signed-in visitor, or null. */
@@ -43,7 +47,7 @@ async function personalHero(userId: string, name: string) {
     if (top && top.result.pct >= 50) {
       return {
         headline: `${first}, a ${top.result.pct}% match is waiting.`,
-        sub: `${top.home.headline} in ${areaShortLabel(top.home.areaId)} — ${matchLine(top.result.pct)}`,
+        sub: `${top.home.headline} in ${areaShortLabel(top.home.areaId)} · ${matchLine(top.result.pct)}`,
         pct: top.result.pct,
         cta: { href: `/homes/${top.home.id}`, label: "Meet the home" },
         cta2: { href: "/matches", label: "All my matches" },
@@ -96,13 +100,17 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="hero-ground overflow-hidden">
-        <Container className="grid grid-cols-1 items-center gap-14 py-20 sm:py-28 lg:grid-cols-[1.05fr_0.95fr]">
+      <section className="hero-ground relative overflow-hidden">
+        {/* The house-heart, watermark-sized — the brand literally behind everything */}
+        <LogoMark
+          className="pointer-events-none absolute -right-24 -top-16 h-[26rem] w-auto -rotate-6 text-charcoal opacity-[0.06] select-none sm:h-[34rem] lg:-right-16 lg:-top-24"
+        />
+        <Container className="relative grid grid-cols-1 items-center gap-14 py-20 sm:py-28 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="fade-up">
             {hero ? (
               <>
-                <p className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-orange-deep shadow-[var(--shadow-card)] ring-1 ring-orange/20">
-                  <Heart className="h-4 w-4 fill-current" />
+                <p className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-orange-deep">
+                  <Heart className="h-5 w-5 fill-current" />
                   The Matchlist has news for you
                 </p>
                 <h1 className="display-xl mt-7">{hero.headline}</h1>
@@ -131,34 +139,17 @@ export default async function HomePage() {
               </>
             ) : (
               <>
-                <p className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-orange-deep shadow-[var(--shadow-card)] ring-1 ring-orange/20">
-                  <Heart className="h-4 w-4 fill-current" />
+                <p className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-orange-deep">
+                  <Heart className="h-5 w-5 fill-current" />
                   The dating site for homes
                 </p>
                 <h1 className="display-xl mt-7">
                   Where Quiet Seekers meet{" "}
-                  <span className="relative whitespace-nowrap">
-                    Hush Homes
-                    <svg
-                      aria-hidden="true"
-                      viewBox="0 0 300 12"
-                      preserveAspectRatio="none"
-                      className="absolute -bottom-1.5 left-0 h-2.5 w-full text-orange"
-                    >
-                      <path
-                        d="M2 9 C 75 2, 225 2, 298 8"
-                        stroke="currentColor"
-                        strokeWidth="5"
-                        strokeLinecap="round"
-                        fill="none"
-                      />
-                    </svg>
-                  </span>
-                  .
+                  <Scribble>Hush Homes</Scribble>.
                 </h1>
                 <p className="mt-6 max-w-xl text-lg leading-relaxed text-charcoal-soft">
                   Every home gets a profile. Every buyer gets a brief. The
-                  Matchlist scores every pairing across all of Scotland — and
+                  Matchlist scores every pairing across all of Scotland, and
                   when the numbers spark, we make the Introduction.
                 </p>
                 <p className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-blue-deep">
@@ -169,7 +160,7 @@ export default async function HomePage() {
                     Find your match
                   </ButtonLink>
                   <ButtonLink href="/join?as=seller" variant="seller" className="px-7 text-base">
-                    List your home — free
+                    List your home
                   </ButtonLink>
                 </div>
                 <AreaFinder stats={stats} />
@@ -197,10 +188,13 @@ export default async function HomePage() {
       {/* How it works */}
       <section id="how-it-works" className="scroll-mt-20 py-20 sm:py-28">
         <Container>
-          <h2 className="display-lg">How the matching works</h2>
+          <h2 className="display-lg">
+            How the <Scribble>matching</Scribble> works
+          </h2>
           <p className="mt-4 max-w-2xl text-lg text-charcoal-soft">
-            Like any good matchmaker, we only introduce people who are serious
-            — sellers with a verified Home Report, buyers with a signed brief.
+            Like any good matchmaker, we only introduce people who are
+            serious: sellers with a verified Home Report, buyers with a signed
+            brief.
           </p>
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {[
@@ -208,13 +202,13 @@ export default async function HomePage() {
                 icon: Heart,
                 n: "01",
                 title: "Make a profile",
-                body: "Sellers build their Hush Home's profile — free. Buyers register as Quiet Seekers with a structured brief: areas anywhere in Scotland, budget range, beds, garden, the lot.",
+                body: "Sellers build their Hush Home's profile, free. Buyers register as Quiet Seekers with a structured brief: areas anywhere in Scotland, budget range, beds, garden, the lot.",
               },
               {
                 icon: Sparkles,
                 n: "02",
                 title: "The Matchlist scores every pairing",
-                body: "Every Hush Home is rated against every Quiet Seeker brief as a Match % — location weighs heaviest, then price, bedrooms, type and the rest. At 90%+, both sides get the “It's a match” moment.",
+                body: "Every Hush Home is rated against every Quiet Seeker brief as a Match %. Location weighs heaviest, then price, bedrooms, type and the rest. At 90%+, both sides get the “It's a match” moment.",
               },
               {
                 icon: CalendarCheck,
@@ -251,7 +245,7 @@ export default async function HomePage() {
               <p className="text-sm">
                 <strong>90%+</strong>
                 <span className="block text-charcoal-soft">
-                  It&apos;s a match — both sides told
+                  It&apos;s a match, both sides told
                 </span>
               </p>
             </div>
@@ -260,7 +254,7 @@ export default async function HomePage() {
               <p className="text-sm">
                 <strong>50–89%</strong>
                 <span className="block text-charcoal-soft">
-                  Worth a look — on your matches list
+                  Worth a look, on your matches list
                 </span>
               </p>
             </div>
@@ -281,7 +275,8 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* Teaser homes */}
+      {/* Teaser homes — hidden entirely until there are live homes to show */}
+      {teasers.length > 0 && (
       <section className="bg-soft py-20 sm:py-28">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -303,6 +298,7 @@ export default async function HomePage() {
           </div>
         </Container>
       </section>
+      )}
 
       {/* Teaser seekers — the buyer side of the Matchlist, equally visible */}
       <section className="py-20 sm:py-28">
@@ -313,7 +309,7 @@ export default async function HomePage() {
                 {seekerCount} Quiet Seekers, quietly looking
               </h2>
               <p className="mt-4 max-w-xl text-lg text-charcoal-soft">
-                Real, verified buyers with signed agreements — anonymised, but
+                Real, verified buyers with signed agreements: anonymised, but
                 genuinely in the market. Think one of them is looking for{" "}
                 <em>your</em> home? Click their profile and raise your hand.
               </p>
@@ -341,7 +337,7 @@ export default async function HomePage() {
             </h2>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-charcoal-soft">
               Every Hush Home must have a completed Home Report from Allied
-              Surveyors or Graham + Sibbald before it goes live — so every
+              Surveyors or Graham + Sibbald before it goes live, so every
               Match % sits on a professionally verified value. Every Quiet
               Seeker signs their agreement before they can view, download or
               offer. Both sides know the other is real.
@@ -362,7 +358,7 @@ export default async function HomePage() {
               {
                 icon: ShieldCheck,
                 title: "Contracts signed on both sides",
-                body: "Sellers commit to selling through the platform; seekers commit to the 0.8% sourcing fee. Everyone plays fair.",
+                body: "Sellers commit to selling through the platform; seekers commit to the fixed £300 (+ VAT) buyer fee when they complete. Everyone plays fair.",
               },
             ].map(({ icon: Icon, title, body }) => (
               <li
@@ -402,8 +398,12 @@ export default async function HomePage() {
               <tbody className="divide-y divide-hairline [&>tr]:transition-colors [&>tr:hover]:bg-soft/60">
                 <tr>
                   <td className="px-6 py-4 font-medium">Hush Home listing</td>
-                  <td className="px-6 py-4 font-display font-bold text-green-deep">Free</td>
-                  <td className="px-6 py-4 text-charcoal-soft">Always</td>
+                  <td className="px-6 py-4 font-display font-bold text-green-deep">
+                    {CONFIG.copy.listingHeadline}
+                  </td>
+                  <td className="px-6 py-4 text-charcoal-soft">
+                    {CONFIG.copy.listingSubline}
+                  </td>
                 </tr>
                 <tr>
                   <td className="px-6 py-4 font-medium">Home Report (our margin)</td>
@@ -426,19 +426,21 @@ export default async function HomePage() {
                   <td className="px-6 py-4 text-charcoal-soft">To appoint a lawyer before offering</td>
                 </tr>
                 <tr>
-                  <td className="px-6 py-4 font-medium">Buyer sourcing fee</td>
-                  <td className="px-6 py-4 font-display font-bold text-orange-deep">0.8% of price</td>
-                  <td className="px-6 py-4 text-charcoal-soft">On conclusion of missives</td>
+                  <td className="px-6 py-4 font-medium">Buyer fee</td>
+                  <td className="px-6 py-4 font-display font-bold text-orange-deep">£{BUYER_FEE} fixed</td>
+                  <td className="px-6 py-4 text-charcoal-soft">On conclusion of missives, whatever the price</td>
                 </tr>
               </tbody>
             </table>
           </div>
           <p className="mt-4 text-sm text-charcoal-soft">
-            Worked example: buy a {formatPrice(200000)} home found on
-            Matchlisted and the sourcing fee is{" "}
-            <strong className="text-charcoal">{formatPrice(sourcingFee(200000))} (+ VAT)</strong>.
-            It stays payable if you buy the same home later, even after it has
-            left the site.
+            Worked example: buy a {formatPrice(300000)} home found on
+            Matchlisted and the buyer fee is{" "}
+            <strong className="text-charcoal">
+              £{BUYER_FEE} + VAT = {formatPrice(withVat(BUYER_FEE))}
+            </strong>
+            , the same on every home at every price. It stays payable if you
+            buy the same home later, even after it has left the site.
           </p>
         </Container>
       </section>
@@ -450,13 +452,14 @@ export default async function HomePage() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(42rem 22rem at 50% 120%, rgb(243 124 36 / 0.22), transparent 65%)",
+              "radial-gradient(42rem 22rem at 50% 120%, rgb(232 105 58 / 0.22), transparent 65%)",
           }}
         />
         <Container className="relative text-center">
-          <Heart className="mx-auto h-9 w-9 fill-orange text-orange" />
-          <h2 className="display-lg mx-auto mt-5 max-w-3xl text-white">
-            Your home&apos;s perfect match is already looking.
+          <LogoMark draw="view" className="mx-auto h-24 w-auto text-white sm:h-28" />
+          <h2 className="display-lg mx-auto mt-6 max-w-3xl text-white">
+            Your home&apos;s <Scribble>perfect match</Scribble> is already
+            looking.
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-lg text-white/70">
             List quietly, match precisely, move smarter. It costs nothing to
@@ -466,7 +469,7 @@ export default async function HomePage() {
             <LiveTicker events={pulse} />
           </div>
           <p className="mt-3 text-sm font-semibold text-white/80">
-            Join them — it&apos;s free.
+            Join them. It&apos;s free.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <ButtonLink href="/join?as=seller">List your Hush Home</ButtonLink>

@@ -55,7 +55,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2104",
     headline: "Golf-mad family chasing the coast",
     story:
-      "We've holidayed on this stretch of coast for fifteen years and the clubs are already in the boot. We're cash buyers with nothing to sell — if the right detached family home comes up near the links, we can move as fast as the seller wants.",
+      "We've holidayed on this stretch of coast for fifteen years and the clubs are already in the boot. We're cash buyers with nothing to sell, so if the right detached family home comes up near the links, we can move as fast as the seller wants.",
     areas: ["east-lothian/gullane", "east-lothian/north-berwick", "east-lothian/aberlady"],
     budgetMin: 600000,
     budgetMax: 900000,
@@ -75,7 +75,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2118",
     headline: "Trading the city for market-town life",
     story:
-      "Selling our city flat and swapping it for somewhere with a bit of history — a cottage or period terrace within walking distance of a good butcher and a better pub. Mortgage agreed in principle; our own sale is under way.",
+      "Selling our city flat and swapping it for somewhere with a bit of history: a cottage or period terrace within walking distance of a good butcher and a better pub. Mortgage agreed in principle; our own sale is under way.",
     areas: ["east-lothian/haddington", "east-lothian/east-linton", "east-lothian/gifford"],
     budgetMin: 350000,
     budgetMax: 500000,
@@ -94,7 +94,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2131",
     headline: "First-timer hunting an honest tenement",
     story:
-      "First-time buyer, deposit saved, mortgage in principle sorted. I want a proper red-sandstone flat with cornicing and a bay window — southside or west end — and I'm not scared of a kitchen that needs doing.",
+      "First-time buyer, deposit saved, mortgage in principle sorted. I want a proper red-sandstone flat with cornicing and a bay window, southside or west end, and I'm not scared of a kitchen that needs doing.",
     areas: ["glasgow/west-end", "glasgow/shawlands", "east-renfrewshire/giffnock"],
     budgetMin: 200000,
     budgetMax: 280000,
@@ -113,7 +113,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2146",
     headline: "Downsizing to a sea view",
     story:
-      "The family house is sold and I'm down to the fun part: a flat where I can see the water from the kitchen table. Cash in the bank once my sale completes — a view of Cumbrae would seal it.",
+      "The family house is sold and I'm down to the fun part: a flat where I can see the water from the kitchen table. Cash in the bank once my sale completes. A view of Cumbrae would seal it.",
     areas: ["north-ayrshire/largs", "north-ayrshire/west-kilbride", "north-ayrshire/millport"],
     budgetMin: 200000,
     budgetMax: 380000,
@@ -133,7 +133,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2152",
     headline: "East Neuk family, sold and ready",
     story:
-      "House sold, mortgage agreed, kids enrolled for August — we just need the house now. Four beds, a garden worth the name, and space for two desks. St Andrews to Anstruther, we know every harbour wall already.",
+      "House sold, mortgage agreed, kids enrolled for August. We just need the house now. Four beds, a garden worth the name, and space for two desks. St Andrews to Anstruther, we know every harbour wall already.",
     areas: ["fife/st-andrews", "fife/elie", "fife/anstruther"],
     budgetMin: 500000,
     budgetMax: 750000,
@@ -152,7 +152,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2167",
     headline: "Stockbridge dreamer with a sale agreed",
     story:
-      "I've rented in Stockbridge for six years and I'm not leaving the postcode without a fight. Sale agreed on my old place, mortgage offer in hand — looking for a period flat with light, cornicing and somewhere to put a piano.",
+      "I've rented in Stockbridge for six years and I'm not leaving the postcode without a fight. Sale agreed on my old place, mortgage offer in hand, looking for a period flat with light, cornicing and somewhere to put a piano.",
     areas: ["edinburgh/stockbridge", "edinburgh/new-town", "edinburgh/marchmont"],
     budgetMin: 400000,
     budgetMax: 520000,
@@ -171,7 +171,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2173",
     headline: "Highland first-timer, new-build keen",
     story:
-      "Moving back north for work after a decade away. First-time buyer with the mortgage agreed — after somewhere warm, low-maintenance and new enough that the weekends stay mine. Inverness or Nairn, either suits.",
+      "Moving back north for work after a decade away. First-time buyer with the mortgage agreed, after somewhere warm, low-maintenance and new enough that the weekends stay mine. Inverness or Nairn, either suits.",
     areas: ["highland/inverness", "highland/nairn"],
     budgetMin: 250000,
     budgetMax: 330000,
@@ -190,7 +190,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2189",
     headline: "Writer wanting hills out the window",
     story:
-      "I work from home and the home can be anywhere — so it may as well be somewhere beautiful. A stone cottage with a real garden, hills from the desk window, and a village with one good coffee shop. Cash once my sale concludes.",
+      "I work from home and the home can be anywhere, so it may as well be somewhere beautiful. A stone cottage with a real garden, hills from the desk window, and a village with one good coffee shop. Cash once my sale concludes.",
     areas: ["perth-kinross/dunkeld", "perth-kinross/pitlochry", "stirling/callander"],
     budgetMin: 300000,
     budgetMax: 420000,
@@ -209,7 +209,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2095",
     headline: "Ayrshire coast, bungalow preferred",
     story:
-      "Sold, packed, and staying with family until we find it — so we're genuinely ready. A bungalow or easy semi near the front at Troon or Prestwick, with a garage for the golf trolleys and the grandkids' bikes.",
+      "Sold, packed, and staying with family until we find it, so we're genuinely ready. A bungalow or easy semi near the front at Troon or Prestwick, with a garage for the golf trolleys and the grandkids' bikes.",
     areas: ["south-ayrshire/troon", "south-ayrshire/prestwick"],
     budgetMin: 300000,
     budgetMax: 360000,
@@ -228,7 +228,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2061",
     headline: "Borders cottage hunter, cash ready",
     story:
-      "Retired early, sold up, and now renting in Melrose while I look — which means no chain, no mortgage, no drama. A stone cottage with a proper garden and period bones; I'll happily take on a project for the right spot.",
+      "Retired early, sold up, and now renting in Melrose while I look, which means no chain, no mortgage, no drama. A stone cottage with a proper garden and period bones; I'll happily take on a project for the right spot.",
     areas: ["scottish-borders/melrose", "scottish-borders/peebles"],
     budgetMin: 350000,
     budgetMax: 450000,
@@ -247,7 +247,7 @@ export const sampleBriefs: SeekerBrief[] = [
     publicRef: "QS-2210",
     headline: "Cash buyer, wide brief, East Lothian coast",
     story:
-      "We're cash buyers with a deliberately wide brief: the right house matters far more to us than the number on it. Anything from a village bungalow to a substantial family home between Longniddry and North Berwick — if it feels right, we can conclude quickly and quietly.",
+      "We're cash buyers with a deliberately wide brief: the right house matters far more to us than the number on it. Anything from a village bungalow to a substantial family home between Longniddry and North Berwick. If it feels right, we can conclude quickly and quietly.",
     areas: [
       "east-lothian/north-berwick",
       "east-lothian/gullane",
@@ -492,9 +492,9 @@ export const sampleHomes: HushHome[] = [
   {
     id: "h-mega-nb",
     sellerId: "u-mowatt",
-    headline: "The MEGA Hush Hush — North Berwick has a secret",
+    headline: "The MEGA Hush Hush: North Berwick has a secret",
     areaId: "east-lothian/north-berwick",
-    addressLine: "Withheld — MEGA Hush Hush",
+    addressLine: "Withheld · MEGA Hush Hush",
     price: 3000000,
     beds: 8,
     baths: 6,
@@ -502,7 +502,7 @@ export const sampleHomes: HushHome[] = [
     garden: true,
     features: ["parking", "garage", "sea-views", "period-features"],
     description:
-      "A home we cannot name, describe or share publicly — what we can say is that it is extraordinary. A beautiful family home that could lend itself to shared or split ownership, for those dreaming of a luxury base in one of Scotland's most coveted golfing destinations. Total discretion; serious enquiries only.",
+      "A home we cannot name, describe or share publicly. What we can say is that it is extraordinary. A beautiful family home that could lend itself to shared or split ownership, for those dreaming of a luxury base in one of Scotland's most coveted golfing destinations. Total discretion; serious enquiries only.",
     photos: [],
     floorPlan: null,
     homeReport: { status: "verified", supplier: "allied-surveyors", fileName: "home-report-mega-hush.pdf", verifiedAt: "2026-07-02T09:00:00Z" },
@@ -515,7 +515,7 @@ export const sampleHomes: HushHome[] = [
     sellerId: "u-mowatt",
     headline: "Room to grow: Gullane family home with garden, gym and multiple reception spaces",
     areaId: "east-lothian/gullane",
-    addressLine: "Withheld until viewing — Gullane",
+    addressLine: "Withheld until viewing · Gullane",
     price: 790000,
     beds: 4,
     baths: 3,
@@ -536,7 +536,7 @@ export const sampleHomes: HushHome[] = [
     sellerId: "u-mowatt",
     headline: "4 bed house at the end of a quiet Longniddry cul-de-sac",
     areaId: "east-lothian/longniddry",
-    addressLine: "Withheld until viewing — Longniddry",
+    addressLine: "Withheld until viewing · Longniddry",
     price: 440000,
     beds: 4,
     baths: 2,
@@ -555,9 +555,9 @@ export const sampleHomes: HushHome[] = [
   {
     id: "h-nb-seaview-flat",
     sellerId: "u-mowatt",
-    headline: "3 bed flat with sea views, garage and shared garden — North Berwick",
+    headline: "3 bed flat with sea views, garage and shared garden in North Berwick",
     areaId: "east-lothian/north-berwick",
-    addressLine: "Withheld until viewing — North Berwick High Street",
+    addressLine: "Withheld until viewing · North Berwick High Street",
     price: 620000,
     beds: 3,
     baths: 1,
@@ -576,9 +576,9 @@ export const sampleHomes: HushHome[] = [
   {
     id: "h-nb-flexible",
     sellerId: "u-mowatt",
-    headline: "Large family home with flexible living arrangement — North Berwick",
+    headline: "Large family home with flexible living arrangement in North Berwick",
     areaId: "east-lothian/north-berwick",
-    addressLine: "Withheld until viewing — North Berwick",
+    addressLine: "Withheld until viewing · North Berwick",
     price: 1200000,
     beds: 5,
     baths: 3,
@@ -599,7 +599,7 @@ export const sampleHomes: HushHome[] = [
     sellerId: "u-mowatt",
     headline: "A future-proof Longniddry home plus self-contained annexe",
     areaId: "east-lothian/longniddry",
-    addressLine: "Withheld until viewing — Longniddry",
+    addressLine: "Withheld until viewing · Longniddry",
     price: 750000,
     beds: 5,
     baths: 3,
@@ -607,7 +607,7 @@ export const sampleHomes: HushHome[] = [
     garden: true,
     features: ["parking", "new-build", "home-office"],
     description:
-      "A contemporary detached four-bedroom home with a one-bed self-contained annexe, minutes from the beach and a quick commute to Edinburgh. Double-height open-plan kitchen, dining and family room with bifold doors to a sun-trap courtyard terrace; German kitchen with granite worktops. The two-storey annexe has its own entrance, terrace and driveway — ideal for guests, multi-generational living or holiday letting.",
+      "A contemporary detached four-bedroom home with a one-bed self-contained annexe, minutes from the beach and a quick commute to Edinburgh. Double-height open-plan kitchen, dining and family room with bifold doors to a sun-trap courtyard terrace; German kitchen with granite worktops. The two-storey annexe has its own entrance, terrace and driveway, ideal for guests, multi-generational living or holiday letting.",
     photos: [],
     floorPlan: null,
     homeReport: { status: "verified", supplier: "allied-surveyors", fileName: "home-report-longniddry-annexe.pdf", verifiedAt: "2026-07-12T09:00:00Z" },
@@ -620,7 +620,7 @@ export const sampleHomes: HushHome[] = [
     sellerId: "u-mowatt",
     headline: "Exceptional three-storey Meadows townhouse undergoing luxury refurbishment",
     areaId: "edinburgh/marchmont",
-    addressLine: "Withheld until viewing — beside the Meadows",
+    addressLine: "Withheld until viewing · beside the Meadows",
     price: 1535000,
     beds: 4,
     baths: 4,
@@ -639,9 +639,9 @@ export const sampleHomes: HushHome[] = [
   {
     id: "h-nb-bungalow",
     sellerId: "u-mowatt",
-    headline: "2 bed bungalow with planning to extend — North Berwick",
+    headline: "2 bed bungalow with planning to extend in North Berwick",
     areaId: "east-lothian/north-berwick",
-    addressLine: "Withheld until viewing — North Berwick",
+    addressLine: "Withheld until viewing · North Berwick",
     price: 480000,
     beds: 2,
     baths: 1,
@@ -649,7 +649,7 @@ export const sampleHomes: HushHome[] = [
     garden: true,
     features: ["parking"],
     description:
-      "A charming chalet bungalow quietly positioned at the foot of a cul-de-sac in one of North Berwick's most coveted corners, with the Lodge Gardens on the doorstep. Two generous double bedrooms, a large sitting room with feature fireplace, a sunny garden room and fully enclosed gardens — plus full planning permission for a significant extension. Under offer to a registered Quiet Seeker.",
+      "A charming chalet bungalow quietly positioned at the foot of a cul-de-sac in one of North Berwick's most coveted corners, with the Lodge Gardens on the doorstep. Two generous double bedrooms, a large sitting room with feature fireplace, a sunny garden room and fully enclosed gardens, plus full planning permission for a significant extension. Under offer to a registered Quiet Seeker.",
     photos: [],
     floorPlan: null,
     homeReport: { status: "verified", supplier: "allied-surveyors", fileName: "home-report-nb-bungalow.pdf", verifiedAt: "2026-07-06T09:00:00Z" },
@@ -701,7 +701,7 @@ export const sampleHomes: HushHome[] = [
     garden: true,
     features: ["period-features", "home-office"],
     description:
-      "A double-fronted Victorian terrace with the Hermitage of Braid at the end of the road. Draft listing — Home Report still to be ordered.",
+      "A double-fronted Victorian terrace with the Hermitage of Braid at the end of the road. Draft listing; Home Report still to be ordered.",
     photos: [],
     floorPlan: null,
     homeReport: { status: "none" },
@@ -801,7 +801,7 @@ export const sampleLawyers: Lawyer[] = [
     contactName: "Iain Fraser",
     location: "Inverness & the Highlands",
     feeEstimate: 1150,
-    blurb: "The Highland specialists — crofts, new builds and everything between.",
+    blurb: "The Highland specialists: crofts, new builds and everything between.",
   },
 ];
 
@@ -862,19 +862,19 @@ export const sampleOffers: Offer[] = [
 ];
 
 export const sampleInvoices: Invoice[] = [
-  { id: "inv-hr-gullane", userId: "u-gordon", homeId: "h-gullane", kind: "home-report", description: "Home Report — Allied Surveyors (14 Marine Terrace)", net: 625, vat: 125, status: "paid", createdAt: "2026-06-13T09:00:00Z", paidAt: "2026-06-13T09:02:00Z" },
-  { id: "inv-hr-shawlands", userId: "u-rachel", homeId: "h-shawlands", kind: "home-report", description: "Home Report — Graham + Sibbald (48 Kilmarnock Road)", net: 550, vat: 110, status: "paid", createdAt: "2026-06-16T09:00:00Z", paidAt: "2026-06-16T09:01:00Z" },
-  { id: "inv-hr-largs", userId: "u-morag", homeId: "h-largs", kind: "home-report", description: "Home Report — Allied Surveyors (5 Broomfields Promenade)", net: 545, vat: 109, status: "paid", createdAt: "2026-06-06T09:00:00Z", paidAt: "2026-06-06T09:05:00Z" },
-  { id: "inv-hr-stockbridge", userId: "u-ewan", homeId: "h-stockbridge", kind: "home-report", description: "Home Report — Graham + Sibbald (7A Dean Terrace)", net: 595, vat: 119, status: "paid", createdAt: "2026-06-09T09:00:00Z", paidAt: "2026-06-09T09:03:00Z" },
-  { id: "inv-hr-standrews", userId: "u-morag", homeId: "h-standrews", kind: "home-report", description: "Home Report — Allied Surveyors (3 Gibson Place)", net: 610, vat: 122, status: "paid", createdAt: "2026-06-20T09:00:00Z", paidAt: "2026-06-20T09:02:00Z" },
-  { id: "inv-hr-dunkeld", userId: "u-isla", homeId: "h-dunkeld", kind: "home-report", description: "Home Report — Graham + Sibbald (Larch Cottage)", net: 570, vat: 114, status: "paid", createdAt: "2026-06-21T09:00:00Z", paidAt: "2026-06-21T09:04:00Z" },
-  { id: "inv-hr-troon", userId: "u-ewan", homeId: "h-troon", kind: "home-report", description: "Home Report — Allied Surveyors (22 Bentinck Drive)", net: 555, vat: 111, status: "paid", createdAt: "2026-06-11T09:00:00Z", paidAt: "2026-06-11T09:01:00Z" },
-  { id: "inv-hr-aberlady", userId: "u-tam", homeId: "h-aberlady", kind: "home-report", description: "Home Report — Allied Surveyors (4 Craigielaw Road)", net: 555, vat: 111, status: "paid", createdAt: "2026-07-21T09:00:00Z", paidAt: "2026-07-21T09:02:00Z" },
-  { id: "inv-hr-inverness", userId: "u-isla", homeId: "h-inverness", kind: "home-report", description: "Home Report — Graham + Sibbald (9 Island Bank Lane)", net: 560, vat: 112, status: "paid", createdAt: "2026-07-08T09:00:00Z", paidAt: "2026-07-08T09:02:00Z" },
-  { id: "inv-hr-melrose", userId: "u-morag", homeId: "h-melrose", kind: "home-report", description: "Home Report — Allied Surveyors (Eildon View)", net: 585, vat: 117, status: "paid", createdAt: "2026-05-22T09:00:00Z", paidAt: "2026-05-22T09:01:00Z" },
-  { id: "inv-dep-kirsty", userId: "u-kirsty", homeId: "h-troon", offerId: "offer-troon", kind: "conveyancing-deposit", description: "Conveyancing deposit — Aberdein Considine appointed", net: 100, vat: 20, status: "paid", createdAt: "2026-06-25T15:00:00Z", paidAt: "2026-06-25T15:01:00Z" },
-  { id: "inv-dep-fenella", userId: "u-fenella", homeId: "h-melrose", offerId: "offer-melrose", kind: "conveyancing-deposit", description: "Conveyancing deposit — Thorntons Law appointed", net: 100, vat: 20, status: "paid", createdAt: "2026-06-01T10:00:00Z", paidAt: "2026-06-01T10:01:00Z" },
-  { id: "inv-fee-fenella", userId: "u-fenella", homeId: "h-melrose", offerId: "offer-melrose", kind: "sourcing-fee", description: "Buyer sourcing fee — 0.8% of £405,000 (Eildon View, missives concluded 30 Jun 2026)", net: 3240, vat: 648, status: "due", createdAt: "2026-06-30T12:05:00Z" },
+  { id: "inv-hr-gullane", userId: "u-gordon", homeId: "h-gullane", kind: "home-report", description: "Home Report · Allied Surveyors (14 Marine Terrace)", net: 625, vat: 125, status: "paid", createdAt: "2026-06-13T09:00:00Z", paidAt: "2026-06-13T09:02:00Z" },
+  { id: "inv-hr-shawlands", userId: "u-rachel", homeId: "h-shawlands", kind: "home-report", description: "Home Report · Graham + Sibbald (48 Kilmarnock Road)", net: 550, vat: 110, status: "paid", createdAt: "2026-06-16T09:00:00Z", paidAt: "2026-06-16T09:01:00Z" },
+  { id: "inv-hr-largs", userId: "u-morag", homeId: "h-largs", kind: "home-report", description: "Home Report · Allied Surveyors (5 Broomfields Promenade)", net: 545, vat: 109, status: "paid", createdAt: "2026-06-06T09:00:00Z", paidAt: "2026-06-06T09:05:00Z" },
+  { id: "inv-hr-stockbridge", userId: "u-ewan", homeId: "h-stockbridge", kind: "home-report", description: "Home Report · Graham + Sibbald (7A Dean Terrace)", net: 595, vat: 119, status: "paid", createdAt: "2026-06-09T09:00:00Z", paidAt: "2026-06-09T09:03:00Z" },
+  { id: "inv-hr-standrews", userId: "u-morag", homeId: "h-standrews", kind: "home-report", description: "Home Report · Allied Surveyors (3 Gibson Place)", net: 610, vat: 122, status: "paid", createdAt: "2026-06-20T09:00:00Z", paidAt: "2026-06-20T09:02:00Z" },
+  { id: "inv-hr-dunkeld", userId: "u-isla", homeId: "h-dunkeld", kind: "home-report", description: "Home Report · Graham + Sibbald (Larch Cottage)", net: 570, vat: 114, status: "paid", createdAt: "2026-06-21T09:00:00Z", paidAt: "2026-06-21T09:04:00Z" },
+  { id: "inv-hr-troon", userId: "u-ewan", homeId: "h-troon", kind: "home-report", description: "Home Report · Allied Surveyors (22 Bentinck Drive)", net: 555, vat: 111, status: "paid", createdAt: "2026-06-11T09:00:00Z", paidAt: "2026-06-11T09:01:00Z" },
+  { id: "inv-hr-aberlady", userId: "u-tam", homeId: "h-aberlady", kind: "home-report", description: "Home Report · Allied Surveyors (4 Craigielaw Road)", net: 555, vat: 111, status: "paid", createdAt: "2026-07-21T09:00:00Z", paidAt: "2026-07-21T09:02:00Z" },
+  { id: "inv-hr-inverness", userId: "u-isla", homeId: "h-inverness", kind: "home-report", description: "Home Report · Graham + Sibbald (9 Island Bank Lane)", net: 560, vat: 112, status: "paid", createdAt: "2026-07-08T09:00:00Z", paidAt: "2026-07-08T09:02:00Z" },
+  { id: "inv-hr-melrose", userId: "u-morag", homeId: "h-melrose", kind: "home-report", description: "Home Report · Allied Surveyors (Eildon View)", net: 585, vat: 117, status: "paid", createdAt: "2026-05-22T09:00:00Z", paidAt: "2026-05-22T09:01:00Z" },
+  { id: "inv-dep-kirsty", userId: "u-kirsty", homeId: "h-troon", offerId: "offer-troon", kind: "conveyancing-deposit", description: "Conveyancing deposit · Aberdein Considine appointed", net: 100, vat: 20, status: "paid", createdAt: "2026-06-25T15:00:00Z", paidAt: "2026-06-25T15:01:00Z" },
+  { id: "inv-dep-fenella", userId: "u-fenella", homeId: "h-melrose", offerId: "offer-melrose", kind: "conveyancing-deposit", description: "Conveyancing deposit · Thorntons Law appointed", net: 100, vat: 20, status: "paid", createdAt: "2026-06-01T10:00:00Z", paidAt: "2026-06-01T10:01:00Z" },
+  { id: "inv-fee-fenella", userId: "u-fenella", homeId: "h-melrose", offerId: "offer-melrose", kind: "sourcing-fee", description: "Buyer fee · fixed £300 + VAT (Eildon View, missives concluded 30 Jun 2026)", net: 300, vat: 60, status: "due", createdAt: "2026-06-30T12:05:00Z" },
 ];
 
 export const sampleSaved: SavedHome[] = [
@@ -887,7 +887,7 @@ export const sampleNotifications: AppNotification[] = [
     id: "n-ailsa-1",
     userId: "u-ailsa",
     kind: "match",
-    title: "It's a match — 99%",
+    title: "It's a match: 99%",
     body: "A Hush Home in Gullane matches your brief almost perfectly. This could be the one.",
     href: "/homes/h-gullane",
     createdAt: "2026-07-11T08:00:00Z",
@@ -897,7 +897,7 @@ export const sampleNotifications: AppNotification[] = [
     id: "n-gordon-1",
     userId: "u-gordon",
     kind: "match",
-    title: "It's a match — 99%",
+    title: "It's a match: 99%",
     body: "A registered Quiet Seeker (cash buyer, nothing to sell) is a 99% match with your Hush Home.",
     href: "/dashboard",
     createdAt: "2026-07-11T08:00:00Z",

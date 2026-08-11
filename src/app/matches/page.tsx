@@ -56,7 +56,7 @@ export default async function MatchesPage() {
         {matches.length === 0 ? (
           <div className="mt-4 rounded-2xl bg-soft p-6">
             <p className="text-sm text-charcoal-soft">
-              Nothing live matches yet — the Matchlist keeps watch and will
+              Nothing live matches yet. The Matchlist keeps watch and will
               tell you the moment that changes.
             </p>
             <ButtonLink href="/dashboard/brief" variant="seeker" className="mt-4">

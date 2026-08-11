@@ -11,11 +11,12 @@ import { headers } from "next/headers";
 import {
   addSlot,
   adminUserId,
+  audit,
   createProfile,
   findIntroduction,
   getBrief,
   getBriefByPublicRef,
-  getHome,
+  getHomeUnscoped,
   getIntroduction,
   getInvoice,
   getPurchaseOrder,
@@ -28,6 +29,8 @@ import {
   getUserByEmail,
   getViewing,
   homesBySeller,
+  introductionsBySeller,
+  PUBLIC_HOME_STATUSES,
   invoicesForUser,
   matchWeights,
   newId,
@@ -72,7 +75,7 @@ import {
   SITE_NAME,
   VAT_RATE,
   homeReportQuote,
-  sourcingFee,
+  BUYER_FEE,
 } from "./site";
 import type { SeekerPropertyType } from "./mowatt-seekers";
 import type {
@@ -155,13 +158,19 @@ export async function register(formData: FormData) {
   }
   const user = await createProfile({ id: created.userId, name, email });
 
+  // With email confirmation switched on, sign-up returns no session, so every
+  // signed-in destination below would bounce straight back to /login with no
+  // explanation. Send them to confirm instead.
+  const onward = (path: string) =>
+    created.needsConfirmation ? "/login?registered=1" : path;
+
   // Arrived via a Quiet Seeker's public profile: record the interest now,
   // so the introduction pipeline starts the moment the account exists.
   const target = seekerRef ? await getBriefByPublicRef(seekerRef) : undefined;
   if (target?.contract && target.userId !== user.id) {
     await recordInterest(target.userId, user.id, null);
     refresh();
-    redirect(`/dashboard/home/new?seeker=${encodeURIComponent(seekerRef)}`);
+    redirect(onward(`/dashboard/home/new?seeker=${encodeURIComponent(seekerRef)}`));
   }
   if (seekerRef && !target) {
     const { findMowattSeeker } = await import("./mowatt-bridge");
@@ -169,12 +178,12 @@ export async function register(formData: FormData) {
     if (mowatt?.active) {
       await recordInterest(`mowatt:${seekerRef}`, user.id, null);
       refresh();
-      redirect(`/dashboard/home/new?seeker=${encodeURIComponent(seekerRef)}`);
+      redirect(onward(`/dashboard/home/new?seeker=${encodeURIComponent(seekerRef)}`));
     }
   }
 
   refresh();
-  redirect(intent === "seller" ? "/dashboard/home/new" : "/dashboard/brief");
+  redirect(onward(intent === "seller" ? "/dashboard/home/new" : "/dashboard/brief"));
 }
 
 export async function signIn(formData: FormData) {
@@ -289,7 +298,7 @@ export async function signSeekerContract(formData: FormData) {
 export async function saveHomeListing(formData: FormData) {
   const user = await requireUser();
   const homeId = String(formData.get("homeId") ?? "");
-  const existing = homeId ? await getHome(homeId) : undefined;
+  const existing = homeId ? await getHomeUnscoped(homeId) : undefined;
   if (existing && existing.sellerId !== user.id) redirect("/dashboard");
 
   const features = formData.getAll("features").map(String) as FeatureTag[];
@@ -311,8 +320,9 @@ export async function saveHomeListing(formData: FormData) {
     homeReport: existing?.homeReport ?? { status: "none" },
     contract: existing?.contract ?? null,
     status: existing?.status ?? "draft",
-    // "I'll do the Home Report later" — preview listing until it's verified.
-    previewListed: formData.get("previewLater") === "on",
+    // Preview listings are gone (BUILD-BRIEF.md §3) — the column stays but
+    // is never set or displayed any more.
+    previewListed: false,
     createdAt: existing?.createdAt ?? new Date().toISOString(),
   };
   if (!home.headline || !home.areaId || !home.price) {
@@ -325,7 +335,7 @@ export async function saveHomeListing(formData: FormData) {
 
 export async function signSellerContract(formData: FormData) {
   const user = await requireUser();
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const typedName = String(formData.get("typedName") ?? "").trim();
   const agreed = formData.get("agree") === "on";
@@ -339,7 +349,7 @@ export async function signSellerContract(formData: FormData) {
 
 export async function orderHomeReport(formData: FormData) {
   const user = await requireUser();
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   const supplierId = String(formData.get("supplier") ?? "");
   const supplier = HOME_REPORT_SUPPLIERS.find((s) => s.id === supplierId);
   if (!home || home.sellerId !== user.id || !supplier) redirect("/dashboard");
@@ -359,7 +369,7 @@ export async function orderHomeReport(formData: FormData) {
     userId: user.id,
     homeId: home.id,
     kind: "home-report",
-    description: `Home Report — ${supplier.name} (${home.addressLine || home.headline}) · fee £${quote.base} + our £${quote.margin} arrangement fee`,
+    description: `Home Report · ${supplier.name} (${home.addressLine || home.headline}) · fee £${quote.base} + our £${quote.margin} arrangement fee`,
     net: quote.base + quote.margin,
     vat: quote.vat,
     status: "due",
@@ -401,7 +411,7 @@ export async function orderHomeReport(formData: FormData) {
           currency: "gbp",
           unit_amount: toPence(total),
           product_data: {
-            name: `Home Report — ${supplier.name}`,
+            name: `Home Report · ${supplier.name}`,
             description: `${home.addressLine || home.headline}. Includes the surveyor's fee, VAT and our £${quote.margin} arrangement fee.`,
           },
         },
@@ -426,7 +436,7 @@ export async function orderHomeReport(formData: FormData) {
  */
 export async function uploadHomePhotos(formData: FormData) {
   const user = await requireUser();
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
 
   const MAX_PHOTOS = 8;
@@ -458,7 +468,7 @@ export async function uploadHomePhotos(formData: FormData) {
 
 export async function removeHomePhoto(formData: FormData) {
   const user = await requireUser();
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const index = Number(formData.get("index"));
   if (Number.isInteger(index) && index >= 0 && index < home.photos.length) {
@@ -471,7 +481,7 @@ export async function removeHomePhoto(formData: FormData) {
 
 export async function uploadHomeReport(formData: FormData) {
   const user = await requireUser();
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const file = formData.get("report");
   const fileName =
@@ -515,7 +525,7 @@ export async function uploadHomeReport(formData: FormData) {
     userId: adminId,
     kind: "system",
     title: "Home Report awaiting verification",
-    body: `${home.headline} — report uploaded, listing is gated until you verify it.`,
+    body: `${home.headline}: report uploaded, listing is gated until you verify it.`,
     href: "/admin/reports",
   });
   refresh();
@@ -555,7 +565,7 @@ export async function payInvoice(formData: FormData) {
 }
 export async function addViewingSlot(formData: FormData) {
   const user = await requireUser();
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const date = String(formData.get("date") ?? "");
   const time = String(formData.get("time") ?? "");
@@ -577,7 +587,7 @@ export async function deleteViewingSlot(formData: FormData) {
   const user = await requireUser();
   const slot = await getSlot(String(formData.get("slotId") ?? ""));
   if (!slot) redirect("/dashboard");
-  const home = await getHome(slot.homeId);
+  const home = await getHomeUnscoped(slot.homeId);
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   await removeSlot(slot.id);
   refresh();
@@ -590,7 +600,7 @@ export async function bookViewing(formData: FormData) {
   if (!brief?.contract) redirect("/dashboard/brief");
   const slot = await getSlot(String(formData.get("slotId") ?? ""));
   if (!slot || slot.bookedBy) redirect("/matches?error=slot-taken");
-  const home = await getHome(slot.homeId);
+  const home = await getHomeUnscoped(slot.homeId);
   if (!home) redirect("/matches");
   slot.bookedBy = user.id;
   await upsertViewing({
@@ -621,7 +631,7 @@ export async function submitViewingFeedback(formData: FormData) {
   viewing.feedback = String(formData.get("feedback") ?? "").trim();
   viewing.stillInterested = formData.get("stillInterested") === "yes";
   await upsertViewing(viewing);
-  const home = await getHome(viewing.homeId);
+  const home = await getHomeUnscoped(viewing.homeId);
   if (home) {
     await pushNotification({
       userId: home.sellerId,
@@ -645,7 +655,7 @@ export async function submitViewingFeedback(formData: FormData) {
 
 export async function appointLawyer(formData: FormData) {
   const user = await requireUser();
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   const lawyer = await getLawyer(String(formData.get("lawyerId") ?? ""));
   if (!home || !lawyer) redirect("/matches");
   const invoice: Invoice = {
@@ -654,7 +664,7 @@ export async function appointLawyer(formData: FormData) {
     homeId: home.id,
     lawyerId: lawyer.id,
     kind: "conveyancing-deposit",
-    description: `Conveyancing deposit — ${lawyer.firm} appointed`,
+    description: `Conveyancing deposit · ${lawyer.firm} appointed`,
     net: CONVEYANCING_DEPOSIT,
     vat: Math.round(CONVEYANCING_DEPOSIT * VAT_RATE * 100) / 100,
     status: "due",
@@ -669,7 +679,7 @@ export async function submitOffer(formData: FormData) {
   const user = await requireUser();
   const brief = await getBrief(user.id);
   if (!brief?.contract) redirect("/dashboard/brief");
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   const lawyer = await getLawyer(String(formData.get("lawyerId") ?? ""));
   const amount = Number(formData.get("amount") ?? 0);
   if (!home || !lawyer || !amount) redirect("/matches");
@@ -715,7 +725,7 @@ export async function respondToOffer(formData: FormData) {
   const user = await requireUser();
   const offer = await getOffer(String(formData.get("offerId") ?? ""));
   if (!offer) redirect("/dashboard");
-  const home = await getHome(offer.homeId);
+  const home = await getHomeUnscoped(offer.homeId);
   if (!home || home.sellerId !== user.id) redirect("/dashboard");
   const action = String(formData.get("action") ?? "");
   const now = new Date().toISOString();
@@ -770,7 +780,7 @@ export async function acceptCounter(formData: FormData) {
   const offer = await getOffer(String(formData.get("offerId") ?? ""));
   if (!offer || offer.seekerId !== user.id || offer.status !== "countered")
     redirect("/dashboard");
-  const home = await getHome(offer.homeId);
+  const home = await getHomeUnscoped(offer.homeId);
   if (!home) redirect("/dashboard");
   const now = new Date().toISOString();
   offer.amount = offer.counterAmount ?? offer.amount;
@@ -851,17 +861,23 @@ export async function expressInterestInSeeker(formData: FormData) {
 
 /**
  * Admin offers the introduction to the seeker — only allowed once the gate
- * is met: the seller has a home profile with a signed contract. (The Home
- * Report status is shown alongside so the admin can hold out for verified.)
+ * is met: signed contract AND the home is live. s.101(3) Housing (Scotland)
+ * Act 2006 catches communication of availability to ANY person, so a
+ * pre-live introduction is marketing without a Home Report, full stop.
+ * Pre-live hands stay queued and fire automatically at go-live
+ * (offerQueuedIntroductions).
  */
 export async function adminOfferIntroduction(formData: FormData) {
   await requireAdmin();
   const intro = await getIntroduction(String(formData.get("introId") ?? ""));
   if (!intro || intro.status !== "new") redirect("/admin/introductions");
   const homeId = String(formData.get("homeId") ?? "") || intro.homeId;
-  const home = homeId ? await getHome(homeId) : undefined;
+  const home = homeId ? await getHomeUnscoped(homeId) : undefined;
   if (!home || home.sellerId !== intro.sellerId || !home.contract) {
     redirect("/admin/introductions?error=gate");
+  }
+  if (!(PUBLIC_HOME_STATUSES as readonly string[]).includes(home.status)) {
+    redirect("/admin/introductions?error=prelive");
   }
   intro.homeId = home.id;
   intro.status = "offered";
@@ -871,11 +887,50 @@ export async function adminOfferIntroduction(formData: FormData) {
     userId: intro.seekerId,
     kind: "match",
     title: "A home owner spotted your profile",
-    body: "Someone thinks their home fits your brief. Want to see it? It's entirely your choice — say yes and we'll show you the Hush Home.",
+    body: "Someone thinks their home fits your brief. Want to see it? It's entirely your choice. Say yes and we'll show you the Hush Home.",
     href: "/dashboard",
   });
   refresh();
   redirect("/admin/introductions");
+}
+
+/**
+ * A hand raised on a pre-live home is queued silently: the seeker learns
+ * nothing — no home, no attributes, no notification — until the Home Report
+ * is verified and the home goes live. This fires those queued introductions
+ * the moment that happens. Sheet-sourced (mowatt:) seekers have no account,
+ * so those queue to the admin for the offline approach instead.
+ */
+async function offerQueuedIntroductions(home: HushHome): Promise<void> {
+  const queued = (await introductionsBySeller(home.sellerId)).filter(
+    (i) => i.status === "new" && (i.homeId === home.id || !i.homeId),
+  );
+  const now = new Date().toISOString();
+  for (const intro of queued) {
+    if (intro.seekerId.startsWith("mowatt:")) {
+      const adminId = await adminUserId();
+      if (adminId)
+        await pushNotification({
+          userId: adminId,
+          kind: "system",
+          title: "Queued introduction ready",
+          body: `${home.headline} is now live. ${intro.seekerId.slice(7)} had a hand raised pre-live — make the approach now.`,
+          href: "/admin/introductions",
+        });
+      continue;
+    }
+    intro.homeId = home.id;
+    intro.status = "offered";
+    intro.offeredAt = now;
+    await upsertIntroduction(intro);
+    await pushNotification({
+      userId: intro.seekerId,
+      kind: "match",
+      title: "A home owner spotted your profile",
+      body: "Someone thinks their home fits your brief. Want to see it? It's entirely your choice. Say yes and we'll show you the Hush Home.",
+      href: "/dashboard",
+    });
+  }
 }
 
 /** The seeker's answer to an offered introduction: see it, or pass. */
@@ -888,7 +943,7 @@ export async function respondToIntroduction(formData: FormData) {
   intro.status = accepted ? "accepted" : "declined";
   intro.respondedAt = new Date().toISOString();
   await upsertIntroduction(intro);
-  const home = intro.homeId ? await getHome(intro.homeId) : undefined;
+  const home = intro.homeId ? await getHomeUnscoped(intro.homeId) : undefined;
   if (home) {
     await pushNotification({
       userId: home.sellerId,
@@ -897,7 +952,7 @@ export async function respondToIntroduction(formData: FormData) {
         ? "Introduction accepted 🎉"
         : "Introduction declined",
       body: accepted
-        ? `The Quiet Seeker said yes — they can now view ${home.headline}.`
+        ? `The Quiet Seeker said yes. They can now view ${home.headline}.`
         : "The Quiet Seeker passed this time. Your identity was never shared, and your home stays on the Matchlist.",
       href: `/dashboard/home/${home.id}`,
     });
@@ -938,7 +993,7 @@ export async function saveAlertPref(formData: FormData) {
 
 export async function adminVerifyReport(formData: FormData) {
   await requireAdmin();
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   if (!home || home.homeReport.status !== "uploaded") redirect("/admin/reports");
   home.homeReport = {
     ...home.homeReport,
@@ -947,15 +1002,21 @@ export async function adminVerifyReport(formData: FormData) {
   };
   home.status = "live";
   await upsertHome(home);
+  await audit(null, "listing.status_changed", "listing", home.id, {
+    to: "live",
+    via: "adminVerifyReport",
+  });
   await pushNotification({
     userId: home.sellerId,
     kind: "system",
     title: "Your Hush Home is live",
-    body: `${home.headline} — Home Report verified. The Matchlist is already looking.`,
+    body: `${home.headline}: Home Report verified. The Matchlist is already looking.`,
     href: "/dashboard",
   });
-  // The home just went live: tell every Quiet Seeker it matches.
+  // The home just went live: tell every Quiet Seeker it matches, and fire
+  // any hands raised while it was still pre-live.
   await alertSeekersAboutHome(home);
+  await offerQueuedIntroductions(home);
   refresh();
   redirect("/admin/reports");
 }
@@ -964,7 +1025,7 @@ export async function adminConcludeMissives(formData: FormData) {
   await requireAdmin();
   const offer = await getOffer(String(formData.get("offerId") ?? ""));
   if (!offer || offer.status !== "accepted") redirect("/admin/deals");
-  const home = await getHome(offer.homeId);
+  const home = await getHomeUnscoped(offer.homeId);
   if (!home) redirect("/admin/deals");
   const now = new Date().toISOString();
   offer.missivesConcludedAt = now;
@@ -972,14 +1033,14 @@ export async function adminConcludeMissives(formData: FormData) {
   await upsertOffer(offer);
   home.status = "sold";
   await upsertHome(home);
-  const fee = sourcingFee(offer.amount);
+  const fee = BUYER_FEE; // fixed, every transaction, regardless of price
   await upsertInvoice({
     id: newId(),
     userId: offer.seekerId,
     homeId: home.id,
     offerId: offer.id,
     kind: "sourcing-fee",
-    description: `Buyer sourcing fee — 0.8% of £${offer.amount.toLocaleString("en-GB")} (${home.headline})`,
+    description: `Buyer fee · fixed £${BUYER_FEE} + VAT (${home.headline})`,
     net: fee,
     vat: Math.round(fee * VAT_RATE * 100) / 100,
     status: "due",
@@ -988,8 +1049,8 @@ export async function adminConcludeMissives(formData: FormData) {
   await pushNotification({
     userId: offer.seekerId,
     kind: "system",
-    title: "Missives concluded — congratulations",
-    body: `${home.headline} is yours. Your sourcing fee invoice (0.8% + VAT) is in your dashboard.`,
+    title: "Missives concluded. Congratulations",
+    body: `${home.headline} is yours. Your buyer fee invoice (£${BUYER_FEE} + VAT) is in your dashboard.`,
     href: "/dashboard",
   });
   refresh();
@@ -998,7 +1059,7 @@ export async function adminConcludeMissives(formData: FormData) {
 
 export async function adminRecordWithdrawal(formData: FormData) {
   await requireAdmin();
-  const home = await getHome(String(formData.get("homeId") ?? ""));
+  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   if (!home) redirect("/admin/deals");
   const now = new Date().toISOString();
   home.status = "withdrawn";
@@ -1008,7 +1069,7 @@ export async function adminRecordWithdrawal(formData: FormData) {
     userId: home.sellerId,
     homeId: home.id,
     kind: "withdrawal-fee",
-    description: `Withdrawal fee — ${home.headline} listed on the open market`,
+    description: `Withdrawal fee · ${home.headline} listed on the open market`,
     net: 300,
     vat: 60,
     status: "due",

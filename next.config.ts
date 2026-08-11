@@ -27,6 +27,19 @@ const csp = [
   "object-src 'none'",
 ].join("; ");
 
+// The internal project board (/board-uvy2tlvzvc42) is the one page that
+// loads Poppins/Inter from Google Fonts — everything else self-hosts. Its
+// headers entry sits after the catch-all so these two values win there.
+const boardCsp = csp
+  .replace(
+    "style-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  )
+  .replace(
+    "font-src 'self' data:",
+    "font-src 'self' data: https://fonts.gstatic.com",
+  );
+
 const securityHeaders = [
   { key: "Content-Security-Policy", value: csp },
   { key: "X-Frame-Options", value: "DENY" },
@@ -61,8 +74,21 @@ const nextConfig: NextConfig = {
     },
     viewTransition: true,
   },
+  // Make sure the board HTML ships inside the serverless bundle on Vercel.
+  outputFileTracingIncludes: {
+    "/board-uvy2tlvzvc42": ["./src/app/board-uvy2tlvzvc42/board.html"],
+  },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      {
+        source: "/board-uvy2tlvzvc42",
+        headers: [
+          { key: "Content-Security-Policy", value: boardCsp },
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+        ],
+      },
+    ];
   },
 };
 

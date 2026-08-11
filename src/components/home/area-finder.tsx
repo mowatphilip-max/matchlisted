@@ -112,8 +112,8 @@ export function AreaFinder({ stats }: { stats: AreaSeekerStats }) {
             </strong>{" "}
             {found.councilWide
               ? `are looking across ${picked.councilName} right now`
-              : `are looking in ${picked.place} right now`}{" "}
-            — budgets{" "}
+              : `are looking in ${picked.place} right now`}
+            , budgets{" "}
             <strong className="text-charcoal">
               {formatBudget(found.stat.budgetMin, found.stat.budgetMax)}
             </strong>
@@ -121,7 +121,7 @@ export function AreaFinder({ stats }: { stats: AreaSeekerStats }) {
           </p>
         ) : (
           <p className="mt-2 text-sm leading-relaxed text-charcoal-soft">
-            No live seekers in {picked.place} just yet — be the first Hush Home
+            No live seekers in {picked.place} just yet. Be the first Hush Home
             there and every new seeker gets scored against yours.
           </p>
         )}
@@ -130,7 +130,7 @@ export function AreaFinder({ stats }: { stats: AreaSeekerStats }) {
             href="/join?as=seller"
             className="rounded-full bg-orange-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-orange-cta-hover"
           >
-            List your home — free
+            List your home free
           </Link>
           <Link
             href="/seekers"

@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { currentUser } from "@/lib/session";
-import { getHome, getViewing } from "@/lib/db";
+import { getHomeUnscoped, getViewing } from "@/lib/db";
 import { submitViewingFeedback } from "@/lib/actions";
 import { areaShortLabel } from "@/lib/areas";
 import { formatTimeRange } from "@/lib/format";
@@ -21,7 +21,7 @@ export default async function ViewingFeedbackPage({
   const viewing = await getViewing(id);
   if (!viewing || viewing.seekerId !== user.id) notFound();
   if (viewing.status === "completed") redirect("/dashboard");
-  const home = await getHome(viewing.homeId);
+  const home = await getHomeUnscoped(viewing.homeId);
   if (!home) notFound();
 
   return (
@@ -32,7 +32,7 @@ export default async function ViewingFeedbackPage({
         </p>
         <h1 className="mt-2 text-3xl">How was your viewing?</h1>
         <p className="mt-2 text-charcoal-soft">
-          {formatTimeRange(viewing.start, viewing.end)} — your feedback goes
+          {formatTimeRange(viewing.start, viewing.end)}. Your feedback goes
           straight to the seller (anonymised, as ever).
         </p>
 
@@ -46,7 +46,7 @@ export default async function ViewingFeedbackPage({
               id="feedback"
               name="feedback"
               rows={4}
-              placeholder="What worked, what didn't — honest is helpful."
+              placeholder="What worked, what didn't. Honest is helpful."
               className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-sm outline-none focus:border-blue-deep"
             />
           </div>

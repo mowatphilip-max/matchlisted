@@ -4,12 +4,12 @@ import { allInvoices, usersById } from "@/lib/db";
 import { adminMarkInvoicePaid } from "@/lib/actions";
 import { formatDate, formatMoney } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Admin — invoices" };
+export const metadata: Metadata = { title: "Admin · invoices" };
 
 const kindLabels: Record<string, string> = {
   "home-report": "Home Report",
   "conveyancing-deposit": "Conveyancing deposit",
-  "sourcing-fee": "Sourcing fee (0.8%)",
+  "sourcing-fee": "Buyer fee (£300 fixed)",
   "withdrawal-fee": "Withdrawal fee",
 };
 

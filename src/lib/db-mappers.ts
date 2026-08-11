@@ -3,6 +3,8 @@
 // never has to know what the columns are called.
 
 import type {
+  AuditEntry,
+  Charge,
   ContractSignature,
   HushHome,
   Introduction,
@@ -140,6 +142,11 @@ export function toHome(row: Row): HushHome {
     },
     contract: toContract(row),
     status: row.status,
+    ownerEstimate: row.owner_estimate ?? null,
+    goLiveAt: row.go_live_at ?? null,
+    expiresAt: row.expires_at ?? null,
+    approvalStatus: row.approval_status ?? "pending",
+    approvalNotes: row.approval_notes ?? null,
     previewListed: row.preview_listed ?? false,
     createdAt: row.created_at,
   };
@@ -175,6 +182,11 @@ export function fromHome(home: HushHome): Row {
     contract_ip: home.contract?.ip ?? null,
     contract_version: home.contract?.version ?? null,
     status: home.status,
+    owner_estimate: home.ownerEstimate ?? null,
+    go_live_at: home.goLiveAt ?? null,
+    expires_at: home.expiresAt ?? null,
+    approval_status: home.approvalStatus ?? "pending",
+    approval_notes: home.approvalNotes ?? null,
     preview_listed: home.previewListed ?? false,
   };
 }
@@ -297,5 +309,64 @@ export function toEmail(row: Row): OutboxEmail {
     subject: row.subject,
     body: row.body,
     createdAt: row.created_at,
+  };
+}
+
+// ---- Charges (BUILD-BRIEF.md §4) ------------------------------------------
+
+export function toCharge(row: Row): Charge {
+  return {
+    id: row.id,
+    subjectType: row.subject_type,
+    subjectId: row.subject_id,
+    payerUserId: row.payer_user_id,
+    type: row.type,
+    netAmount: Number(row.net_amount),
+    vatAmount: Number(row.vat_amount),
+    grossAmount: Number(row.gross_amount),
+    status: row.status,
+    trigger: row.trigger ?? undefined,
+    dueAt: row.due_at ?? undefined,
+    collectionRoute: row.collection_route ?? undefined,
+    stripePaymentIntent: row.stripe_payment_intent ?? undefined,
+    mandateId: row.mandate_id ?? undefined,
+    notes: row.notes ?? undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function fromCharge(charge: Charge): Row {
+  return {
+    id: charge.id,
+    subject_type: charge.subjectType,
+    subject_id: charge.subjectId,
+    payer_user_id: charge.payerUserId,
+    type: charge.type,
+    net_amount: charge.netAmount,
+    vat_amount: charge.vatAmount,
+    gross_amount: charge.grossAmount,
+    status: charge.status,
+    trigger: charge.trigger ?? null,
+    due_at: charge.dueAt ?? null,
+    collection_route: charge.collectionRoute ?? null,
+    stripe_payment_intent: charge.stripePaymentIntent ?? null,
+    mandate_id: charge.mandateId ?? null,
+    notes: charge.notes ?? null,
+    updated_at: charge.updatedAt,
+  };
+}
+
+// ---- Audit log ------------------------------------------------------------
+
+export function toAuditEntry(row: Row): AuditEntry {
+  return {
+    id: row.id,
+    actorId: row.actor_id ?? null,
+    action: row.action,
+    subjectType: row.subject_type,
+    subjectId: row.subject_id,
+    meta: row.meta ?? {},
+    at: row.at,
   };
 }

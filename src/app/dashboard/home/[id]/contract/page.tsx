@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { currentUser } from "@/lib/session";
-import { getHome } from "@/lib/db";
+import { getHomeUnscoped } from "@/lib/db";
 import { signSellerContract } from "@/lib/actions";
 import { CONTRACT_VERSIONS, HOME_REPORT_MARGIN, WITHDRAWAL_FEE } from "@/lib/site";
 
@@ -19,7 +19,7 @@ export default async function SellerContractPage({
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
-  const home = await getHome(id);
+  const home = await getHomeUnscoped(id);
   if (!home || home.sellerId !== user.id) notFound();
   if (home.contract) redirect(`/dashboard/home/${home.id}`);
   const { error } = await searchParams;
@@ -32,8 +32,8 @@ export default async function SellerContractPage({
         </p>
         <h1 className="mt-2 text-3xl">The Hush Home seller agreement</h1>
         <p className="mt-2 text-charcoal-soft">
-          Listing is free. This agreement is what keeps the quiet market
-          quiet — and fair to the buyers who commit to it.
+          There's no listing fee and no commission. This agreement is what keeps the quiet market
+          quiet, and fair to the buyers who commit to it.
         </p>
 
         {error && (
@@ -44,12 +44,12 @@ export default async function SellerContractPage({
 
         <div className="mt-8 max-h-96 overflow-y-auto rounded-2xl border border-hairline bg-soft p-6 text-sm leading-relaxed">
           <h2 className="text-base">
-            Hush Home Seller Agreement — {CONTRACT_VERSIONS.seller}
+            Hush Home Seller Agreement · {CONTRACT_VERSIONS.seller}
           </h2>
           <ol className="mt-4 list-decimal space-y-3 pl-5">
             <li>
-              <strong>Free listing.</strong> Matchlisted charges no listing fee
-              and no percentage of your sale price. You build and own your
+              <strong>No listing fee. No commission.</strong> Matchlisted charges
+              nothing to list and no percentage of your sale price. You build and own your
               listing content.
             </li>
             <li>

@@ -86,7 +86,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
       <section>
         <h2 className="text-xl">Where are you looking?</h2>
         <p className="mt-1 text-sm text-charcoal-soft">
-          Anywhere in Scotland — pick as many places as you like. Location is
+          Anywhere in Scotland. Pick as many places as you like; location is
           the heaviest-weighted part of your Match %.
         </p>
 
@@ -114,7 +114,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search a town or area — e.g. Largs, Stockbridge, Melrose"
+            placeholder="Search a town or area, e.g. Largs, Stockbridge, Melrose"
             className="min-h-11 w-full rounded-full border border-hairline bg-white pl-11 pr-4 text-sm outline-none focus:border-blue-deep"
           />
           {results.length > 0 && (
@@ -205,9 +205,9 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
       <section>
         <h2 className="text-xl">What kind of home are you looking for?</h2>
         <p className="mt-1 max-w-xl text-sm text-charcoal-soft">
-          Pick the closest match — more than one if you&apos;re torn. This
+          Pick the closest match, or more than one if you&apos;re torn. This
           helps us match you to the right properties before they&apos;re
-          listed — and it&apos;s the image that appears on your anonymous
+          listed, and it&apos;s the image that appears on your anonymous
           Quiet Seeker card. You can change it any time.
         </p>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -257,14 +257,14 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
                 .map(
                   (k) => SEEKER_PROPERTY_TYPES.find((t) => t.key === k)?.label,
                 )
-                .join(", ")}${pickedTypes.length > 1 ? " — the first one is your card icon" : ""}.`}
+                .join(", ")}${pickedTypes.length > 1 ? " (the first one is your card icon)" : ""}.`}
         </p>
       </section>
 
       <section>
         <h2 className="text-xl">Your budget range</h2>
         <p className="mt-1 text-sm text-charcoal-soft">
-          From £50,000 to £5,000,000 — drag both handles.
+          From £50,000 to £5,000,000. Drag both handles.
         </p>
         <div className="mt-5 max-w-xl">
           <p className="font-display text-2xl font-bold text-orange-deep">
@@ -456,7 +456,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
       <section className="rounded-2xl bg-blue-tint/60 p-5 ring-1 ring-blue-deep/15">
         <h2 className="text-base font-bold">Your public profile</h2>
         <p className="mt-1 text-sm text-charcoal-soft">
-          Shown to everyone on the live Quiet Seekers list — anonymised, never
+          Shown to everyone on the live Quiet Seekers list, anonymised and never
           your name. A good story helps the right seller recognise their buyer.
         </p>
         <label htmlFor="headline" className="mt-4 block text-sm font-semibold">
@@ -479,7 +479,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
           rows={4}
           maxLength={500}
           defaultValue={brief?.story}
-          placeholder="Who you are (no names needed), why you're moving, and how ready you are — sellers read these."
+          placeholder="Who you are (no names needed), why you're moving, and how ready you are. Sellers read these."
           className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-sm outline-none focus:border-blue-deep"
         />
       </section>

@@ -7,11 +7,16 @@
 //
 // Allowed: registered (contract-signed) Quiet Seekers, the home's own
 // seller, and admin. Everyone else gets 403 — including signed-in users
-// who haven't completed their brief.
+// who haven't completed their brief. The home itself must pass the §3
+// visibility scope (getHomeFor): a verified report on a withdrawn or
+// pre-live home is not downloadable by seekers.
+//
+// Every successful download is written to the audit log — a BUILD-BRIEF.md
+// §12 non-negotiable.
 
 import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
-import { getBrief, getHome } from "@/lib/db";
+import { audit, getBrief, getHomeFor } from "@/lib/db";
 import { currentUser } from "@/lib/session";
 import { signedHomeReportUrl } from "@/lib/storage";
 
@@ -21,7 +26,7 @@ export async function GET(
 ) {
   const user = await currentUser();
   const { id } = await params;
-  const home = await getHome(id);
+  const home = await getHomeFor(id, user);
   if (!home || home.homeReport.status !== "verified") notFound();
 
   const isSeller = user?.id === home.sellerId;
@@ -50,6 +55,11 @@ export async function GET(
       status: 503,
     });
   }
+
+  await audit(user.id, "home_report.downloaded", "listing", home.id, {
+    role: isSeller ? "seller" : user.isAdmin ? "admin" : "seeker",
+    fileName: home.homeReport.fileName ?? null,
+  });
 
   // Redirect to the short-lived signed link rather than proxying the file:
   // the link dies in two minutes and cannot be shared usefully.

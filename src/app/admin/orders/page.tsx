@@ -8,12 +8,12 @@ import { formatDate, formatMoney } from "@/lib/format";
 import { HOME_REPORT_SUPPLIERS } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Admin — Purchase orders" };
+export const metadata: Metadata = { title: "Admin · Purchase orders" };
 
 const STATUS = {
-  instructed: { label: "Instructed — awaiting their invoice", cls: "bg-blue-tint text-blue-deep" },
+  instructed: { label: "Instructed · awaiting their invoice", cls: "bg-blue-tint text-blue-deep" },
   billed: { label: "Their invoice received", cls: "bg-orange-tint text-orange-deep" },
-  settled: { label: "Settled — surveyor paid", cls: "bg-green-tint text-green-deep" },
+  settled: { label: "Settled · surveyor paid", cls: "bg-green-tint text-green-deep" },
 } as const;
 
 export default async function AdminOrdersPage() {
@@ -37,7 +37,7 @@ export default async function AdminOrdersPage() {
 
       {orders.length === 0 ? (
         <p className="mt-8 rounded-2xl bg-paper p-6 text-sm text-charcoal-soft ring-1 ring-hairline">
-          No purchase orders yet — they appear the moment an owner pays for a
+          No purchase orders yet. They appear the moment an owner pays for a
           Home Report.
         </p>
       ) : (
@@ -56,7 +56,7 @@ export default async function AdminOrdersPage() {
                   <div>
                     <p className="flex items-center gap-2 font-bold">
                       <FileText className="h-4 w-4 text-orange-deep" />
-                      {po.id} — {supplier?.name}
+                      {po.id} · {supplier?.name}
                     </p>
                     <p className="mt-1 text-sm text-charcoal-soft">
                       {home ? `${home.addressLine}, ${areaLabel(home.areaId)}` : po.homeId} ·

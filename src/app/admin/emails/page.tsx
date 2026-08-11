@@ -3,7 +3,7 @@ import { Mail } from "lucide-react";
 import { allEmails } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Admin — Email outbox" };
+export const metadata: Metadata = { title: "Admin · Email outbox" };
 
 // In the prototype nothing is really sent: every email the platform would
 // send lands here so the flow can be inspected. Production swaps the
@@ -16,14 +16,14 @@ export default async function AdminEmailsPage() {
       <h1 className="text-3xl">Email outbox</h1>
       <p className="mt-2 max-w-2xl text-charcoal-soft">
         Every email the platform would send, newest first. The prototype
-        doesn&apos;t really send them — this is where you check the wording
+        doesn&apos;t really send them: this is where you check the wording
         and the triggers. Production plugs Resend into the same seam.
       </p>
 
       {emails.length === 0 ? (
         <p className="mt-8 rounded-2xl bg-paper p-6 text-sm text-charcoal-soft ring-1 ring-hairline">
           Nothing sent yet. Sign a new seeker agreement, or verify a Home
-          Report to put a Hush Home live — possible-match emails will appear
+          Report to put a Hush Home live, and possible-match emails will appear
           here.
         </p>
       ) : (

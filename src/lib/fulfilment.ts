@@ -9,7 +9,7 @@
 
 import {
   adminUserId,
-  getHome,
+  getHomeUnscoped,
   getInvoice,
   getUser,
   nextPurchaseOrderRef,
@@ -33,7 +33,7 @@ export async function fulfilHomeReportOrder(
   // Already done — a retry, not a second order.
   if (invoice.status === "paid") return { ok: true, reason: "already fulfilled" };
 
-  const home = invoice.homeId ? await getHome(invoice.homeId) : undefined;
+  const home = invoice.homeId ? await getHomeUnscoped(invoice.homeId) : undefined;
   const user = await getUser(invoice.userId);
   if (!home || !user) return { ok: false, reason: "home or buyer missing" };
 
@@ -81,11 +81,11 @@ export async function fulfilHomeReportOrder(
   // 1) Instruct the surveyor.
   await recordEmail({
     to: supplier.email,
-    subject: `HOME REPORT INSTRUCTION — ${po.id} — ${address}`,
+    subject: `HOME REPORT INSTRUCTION: ${po.id} · ${address}`,
     body: [
       `Purchase order: ${po.id}`,
       "",
-      `Please carry out a Home Report for the following property. This instruction is CONFIRMED and PAID on our side — invoice ${SITE_NAME} (quoting ${po.id}) for your fee of £${po.base} + VAT.`,
+      `Please carry out a Home Report for the following property. This instruction is CONFIRMED and PAID on our side. Invoice ${SITE_NAME} (quoting ${po.id}) for your fee of £${po.base} + VAT.`,
       "",
       `Property address: ${address}`,
       `Owner's estimate of value: £${po.estimatedValue.toLocaleString("en-GB")}`,
@@ -96,7 +96,7 @@ export async function fulfilHomeReportOrder(
       "",
       "Please contact the owner directly to arrange access and timings, and send the completed Home Report to both the owner and ourselves.",
       "",
-      `— ${SITE_NAME}`,
+      `${SITE_NAME}`,
     ].join("\n"),
   });
 
@@ -110,24 +110,24 @@ export async function fulfilHomeReportOrder(
   });
   await recordEmail({
     to: user.email,
-    subject: `Your Home Report is booked — ${supplier.name} will be in touch`,
+    subject: `Your Home Report is booked and ${supplier.name} will be in touch`,
     body: [
       `Hello ${user.name.split(" ")[0]},`,
       "",
-      `Good news — your Home Report for ${address} is booked and paid.`,
+      `Good news: your Home Report for ${address} is booked and paid.`,
       "",
       `We have instructed ${supplier.name} (our reference ${po.id}). They will contact you directly on ${user.phone ?? user.email} to arrange a convenient time to visit the property.`,
       "",
-      "Once the completed report is uploaded and verified, your Hush Home goes fully live on the Matchlist — photos unblurred, report downloadable by registered Quiet Seekers, and possible-match alerts sent.",
+      "Once the completed report is uploaded and verified, your Hush Home goes fully live on the Matchlist: photos unblurred, report downloadable by registered Quiet Seekers, and possible-match alerts sent.",
       "",
-      `— ${SITE_NAME}`,
+      `${SITE_NAME}`,
     ].join("\n"),
   });
 
   // 3) Receipt.
   await recordEmail({
     to: user.email,
-    subject: `Receipt — Home Report payment (${po.id})`,
+    subject: `Receipt: Home Report payment (${po.id})`,
     body: [
       `Hello ${user.name.split(" ")[0]},`,
       "",
@@ -143,7 +143,7 @@ export async function fulfilHomeReportOrder(
       `Reference: ${po.id}`,
       `Date: ${new Date().toLocaleDateString("en-GB")}`,
       "",
-      `— ${SITE_NAME}`,
+      `${SITE_NAME}`,
     ].join("\n"),
   });
 
@@ -153,7 +153,7 @@ export async function fulfilHomeReportOrder(
     await pushNotification({
       userId: adminId,
       kind: "system",
-      title: `Home Report paid — ${po.id}`,
+      title: `Home Report paid · ${po.id}`,
       body: `${user.name} paid £${po.total.toFixed(2)} for ${address}. ${supplier.name} instructed.`,
       href: "/admin/orders",
     });

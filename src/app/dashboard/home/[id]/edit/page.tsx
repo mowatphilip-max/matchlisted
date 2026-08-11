@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { HomeForm } from "@/components/home-form";
 import { currentUser } from "@/lib/session";
-import { getHome } from "@/lib/db";
+import { getHomeUnscoped } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Edit my Hush Home" };
 
@@ -15,7 +15,7 @@ export default async function EditHomePage({
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
-  const home = await getHome(id);
+  const home = await getHomeUnscoped(id);
   if (!home || home.sellerId !== user.id) notFound();
 
   return (

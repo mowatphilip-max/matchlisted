@@ -71,7 +71,7 @@ export async function matchlistPulse(): Promise<PulseEvent[]> {
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
     .slice(0, 4)
     .map((b) => ({
-      text: `${b.publicRef} joined — “${b.headline}” · up to ${formatPrice(b.budgetMax)}`,
+      text: `${b.publicRef} joined · “${b.headline}” · up to ${formatPrice(b.budgetMax)}`,
       href: `/seekers/${b.publicRef}`,
     }));
 

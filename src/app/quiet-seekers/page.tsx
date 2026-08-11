@@ -3,12 +3,12 @@ import { FileText, Heart, MapPinned, Percent } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
-import { sourcingFee } from "@/lib/site";
+import { BUYER_FEE, withVat } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Become a Quiet Seeker — homes that match, before the market",
+  title: "Become a Quiet Seeker: homes that match, before the market",
   description:
-    "Register free, build your brief, and get a Match % on every Hush Home in Scotland. Pay only a 0.8% (+ VAT) sourcing fee when you actually buy.",
+    "Register free, build your brief, and get a Match % on every Hush Home in Scotland. Pay only a fixed £300 (+ VAT) buyer fee when you actually buy.",
 };
 
 export default function QuietSeekersPage() {
@@ -24,11 +24,11 @@ export default function QuietSeekersPage() {
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-charcoal-soft">
             Tell us where in Scotland, what budget, how many bedrooms and what
-            actually matters — the Matchlist rates every Hush Home against
+            actually matters. The Matchlist rates every Hush Home against
             your brief and tells you when it finds the one.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/join">Build your brief — free</ButtonLink>
+            <ButtonLink href="/join">Build your brief, free</ButtonLink>
             <ButtonLink href="/seekers" variant="seeker">
               See the live Quiet Seekers
             </ButtonLink>
@@ -44,12 +44,12 @@ export default function QuietSeekersPage() {
               {
                 icon: MapPinned,
                 title: "A brief, not a search box",
-                body: "Pick your areas anywhere in Scotland, set a budget range from £50,000 to £5 million on one slider, and state your position — cash, sold, or still to sell.",
+                body: "Pick your areas anywhere in Scotland, set a budget range from £50,000 to £5 million on one slider, and state your position: cash, sold, or still to sell.",
               },
               {
                 icon: Percent,
                 title: "A Match % on every home",
-                body: "Every live Hush Home is scored against your brief. 90%+ and you'll hear about it the moment it happens — “It's a match” works both ways.",
+                body: "Every live Hush Home is scored against your brief. 90%+ and you'll hear about it the moment it happens. “It's a match” works both ways.",
               },
               {
                 icon: FileText,
@@ -77,16 +77,12 @@ export default function QuietSeekersPage() {
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-charcoal-soft">
               Registration is free. When you sign up you agree to one thing: if
               you buy a property you found through Matchlisted, a{" "}
-              <strong className="text-charcoal">0.8% sourcing fee (+ VAT)</strong>{" "}
-              is payable on conclusion of missives — for example, a{" "}
-              {formatPrice(200000)} home means{" "}
-              <strong className="text-charcoal">
-                {formatPrice(sourcingFee(200000))} (+ VAT)
-              </strong>
-              . The fee still applies if you buy the same property later, even
+              <strong className="text-charcoal">fixed £{BUYER_FEE} buyer fee (+ VAT)</strong>{" "}
+              is payable on conclusion of missives — {formatPrice(withVat(BUYER_FEE))}{" "}
+              in total, whether the home costs £150,000 or £1.5 million. The fee still applies if you buy the same property later, even
               after it has left the site. Before you can make an offer, you
               appoint a lawyer from our panel with a £100 (+ VAT) conveyancing
-              deposit — so an accepted offer goes straight to missives.
+              deposit, so an accepted offer goes straight to missives.
             </p>
           </div>
         </Container>
@@ -96,7 +92,7 @@ export default function QuietSeekersPage() {
         <Container className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <h2 className="flex items-center gap-3 text-2xl text-white">
             <Heart className="h-6 w-6 fill-orange text-orange" />
-            87% match — this could be the one.
+            87% match. This could be the one.
           </h2>
           <ButtonLink href="/join">Become a Quiet Seeker</ButtonLink>
         </Container>

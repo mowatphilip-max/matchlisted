@@ -6,14 +6,14 @@ import {
   HushHomesBrowser,
   type BrowserHome,
 } from "@/components/hush-homes/browser";
-import { getBrief, liveHomes, previewHomes } from "@/lib/db";
+import { getBrief, liveHomes } from "@/lib/db";
 import { currentUser } from "@/lib/session";
 import { HOME_REPORT_SUPPLIERS, WITHDRAWAL_FEE } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Hush Homes — browse quietly listed homes, list yours free",
+  title: "Hush Homes: browse quietly listed homes, list yours with no fee",
   description:
-    "Browse every quietly listed Hush Home in Scotland — anonymised until you register — and list your own for free. Verified Home Report, registered Quiet Seekers only.",
+    "Browse every quietly listed Hush Home in Scotland, anonymised until you register, and list your own with no listing fee. Verified Home Report, registered Quiet Seekers only.",
 };
 
 export const dynamic = "force-dynamic";
@@ -47,20 +47,8 @@ export default async function HushHomesPage() {
           : {}),
       }),
     ),
-    // Preview listings ("Home Report later"): story + hazed photos for all.
-    ...(await previewHomes()).map(
-      (h): BrowserHome => ({
-        id: h.id,
-        areaId: h.areaId,
-        price: h.price,
-        beds: h.beds,
-        type: h.type,
-        status: "preview",
-        photo: h.photos[0] ?? null,
-        headline: h.headline,
-        description: h.description,
-      }),
-    ),
+    // Preview listings are gone (BUILD-BRIEF.md §3): a home with no verified
+    // Home Report must never be communicated to seekers, hazed or not.
   ];
 
   return (
@@ -80,7 +68,7 @@ export default async function HushHomesPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink href="/join?as=seller" variant="seller">
-              Start your free listing
+              Start your listing
             </ButtonLink>
             <ButtonLink href="/#fees" variant="secondary">
               See the fees
@@ -91,23 +79,23 @@ export default async function HushHomesPage() {
 
       <section className="py-16 sm:py-20">
         <Container>
-          <h2 className="text-3xl">Listing is free. Three conditions.</h2>
+          <h2 className="text-3xl">No listing fee. No commission. Three conditions.</h2>
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {[
               {
                 icon: PenLine,
                 title: "You build the profile",
-                body: "Description, photography and floor plans are yours to create — our listing builder walks you through it. Your address stays private until a viewing is booked.",
+                body: "Description, photography and floor plans are yours to create, and our listing builder walks you through it. Your address stays private until a viewing is booked.",
               },
               {
                 icon: FileCheck2,
                 title: "A Home Report before going live",
-                body: `Buy it through Matchlisted from ${HOME_REPORT_SUPPLIERS.map((s) => s.name).join(", ")}. Fees are banded on your estimate of value; it verifies your home's worth, anchors your Match %, and is downloadable only by registered Quiet Seekers. Not ready yet? List as a preview — description and hazed photos — and do the report when you are.`,
+                body: `Buy it through Matchlisted from ${HOME_REPORT_SUPPLIERS.map((s) => s.name).join(", ")}. Fees are banded on your estimate of value; it verifies your home's worth, anchors your Match %, and is downloadable only by registered Quiet Seekers. Until it's verified, your home stays completely private — that's the law, and the quiet market's promise.`,
               },
               {
                 icon: ShieldCheck,
                 title: "One agreement, signed digitally",
-                body: `You agree to sell only to registered Quiet Seekers through the platform. Listing with another agent on the open market counts as a withdrawal — a £${WITHDRAWAL_FEE} (+ VAT) fee applies.`,
+                body: `You agree to sell only to registered Quiet Seekers through the platform. Listing with another agent on the open market counts as a withdrawal, and a £${WITHDRAWAL_FEE} (+ VAT) fee applies.`,
               },
             ].map(({ icon: Icon, title, body }) => (
               <div
@@ -135,8 +123,8 @@ export default async function HushHomesPage() {
               <h2 className="text-3xl">The Hush Homes, quietly waiting</h2>
               <p className="mt-3 max-w-2xl text-charcoal-soft">
                 {registered
-                  ? "You're a registered Quiet Seeker — full details on every home, and every verified Home Report is yours to download."
-                  : "Anonymised on purpose. Register free as a Quiet Seeker to unlock every photo, headline and Home Report — and get your own Match % on each one."}
+                  ? "You're a registered Quiet Seeker: full details on every home, and every verified Home Report is yours to download."
+                  : "Anonymised on purpose. Register free as a Quiet Seeker to unlock every photo, headline and Home Report, and get your own Match % on each one."}
               </p>
             </div>
             {!registered && (
@@ -159,7 +147,7 @@ export default async function HushHomesPage() {
               See who&apos;s matching before you commit.
             </h2>
             <p className="mt-2 max-w-xl text-white/70">
-              Create the profile first — you&apos;ll see anonymised Quiet
+              Create the profile first and you&apos;ll see anonymised Quiet
               Seeker matches for your home before you order the Home Report.
             </p>
           </div>

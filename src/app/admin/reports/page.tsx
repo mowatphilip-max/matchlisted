@@ -7,7 +7,7 @@ import { areaLabel } from "@/lib/areas";
 import { formatDate, formatPrice } from "@/lib/format";
 import { HOME_REPORT_SUPPLIERS } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Admin — Home Reports" };
+export const metadata: Metadata = { title: "Admin · Home Reports" };
 
 export default async function AdminReportsPage() {
   const pending = (await allHomes()).filter((h) => h.homeReport.status === "uploaded");
@@ -26,7 +26,7 @@ export default async function AdminReportsPage() {
 
       {pending.length === 0 ? (
         <p className="mt-8 rounded-2xl bg-paper p-6 text-sm text-charcoal-soft ring-1 ring-hairline">
-          Nothing waiting — every uploaded report has been reviewed.
+          Nothing waiting. Every uploaded report has been reviewed.
         </p>
       ) : (
         <ul className="mt-8 space-y-4">
@@ -50,7 +50,7 @@ export default async function AdminReportsPage() {
                     <p className="mt-1 text-sm">
                       <span className="font-medium">{h.homeReport.fileName}</span>{" "}
                       <span className="text-charcoal-soft">
-                        — {supplier?.name}, uploaded{" "}
+                        · {supplier?.name}, uploaded{" "}
                         {h.homeReport.uploadedAt
                           ? formatDate(h.homeReport.uploadedAt)
                           : ""}
@@ -80,7 +80,7 @@ export default async function AdminReportsPage() {
             <span>
               {h.headline}{" "}
               <span className="text-charcoal-soft">
-                — {h.homeReport.fileName}
+                · {h.homeReport.fileName}
               </span>
             </span>
             <span className="font-medium text-green-deep">
