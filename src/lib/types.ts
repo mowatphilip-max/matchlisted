@@ -384,13 +384,17 @@ export interface SeenMatch {
 
 // ---- Phase 1, BUILD-BRIEF.md §4: the fee ledger and the audit trail -------
 
+/**
+ * Consumer fee lines ONLY (DECISIONS.md §6): a Charge's payer is always a
+ * user. The withdrawal fee is abolished (§3). B2B lines — the case pack fee
+ * and the panel seat — live on the firm ledger (FirmInvoice), never here.
+ */
 export type ChargeType =
   | "home_report"
-  | "withdrawal_fee"
   | "rightmove_addon"
   | "photography_addon"
-  | "buyer_fee"
-  | "conveyancing_commission";
+  | "board_addon"
+  | "buyer_fee";
 
 export type ChargeStatus =
   | "pending"
@@ -435,6 +439,65 @@ export interface Charge {
   collectionRoute?: CollectionRoute;
   stripePaymentIntent?: string;
   mandateId?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ---- The firm side (DECISIONS.md §6): panel firms and their ledger --------
+//
+// Consumer charges and firm invoices are SEPARATE LEDGERS. The charges
+// table carries consumer-protection machinery (14-day notices, cancellation
+// rights, stored-card mandates); none of that applies to a business invoice
+// to a law firm. Never merge them.
+
+/**
+ * A conveyancing panel member. The seat is a fixed annual fee per firm by
+ * territory — never indexed to volume in-year (no bands, no true-up, no
+ * rebate), fixed for twelve months and renegotiated at renewal. Papered as
+ * two agreements (services agreement + panel licence), never "commission".
+ */
+export interface PanelFirm {
+  id: string;
+  name: string;
+  contactName?: string;
+  contactEmail?: string;
+  territory: string;
+  /** £ ex VAT per year. */
+  seatFeeAnnual: number;
+  invoicingSchedule: "monthly" | "quarterly" | "annual";
+  renewalDate: string; // ISO date
+  active: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * A fee a panel firm owes us. Two kinds only:
+ *
+ *   case_pack_fee — £150 + VAT per case, triggered by pack_delivered and
+ *     NEVER by missives_concluded (a fee payable on completion is
+ *     transaction commission however labelled — LSS rule D9.2). Never
+ *     refundable on fall-through. Carries listingId for per-listing
+ *     revenue reporting.
+ *   panel_seat — the annual seat fee, invoiced on the firm's schedule.
+ *     Never attached to a listing.
+ */
+export interface FirmInvoice {
+  id: string;
+  firmId: string;
+  kind: "case_pack_fee" | "panel_seat";
+  listingId?: string | null;
+  netAmount: number;
+  vatAmount: number;
+  grossAmount: number;
+  status: "due" | "invoiced" | "paid" | "written_off";
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  dueAt?: string;
+  invoicedAt?: string;
+  paidAt?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;

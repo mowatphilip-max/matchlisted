@@ -9,18 +9,22 @@ import { serverDb } from "./supabase";
 import {
   fromBrief,
   fromCharge,
+  fromFirmInvoice,
   fromHome,
   fromIntroduction,
   fromInvoice,
+  fromPanelFirm,
   fromPurchaseOrder,
   fromUser,
   toAuditEntry,
   toBrief,
   toCharge,
   toEmail,
+  toFirmInvoice,
   toHome,
   toIntroduction,
   toInvoice,
+  toPanelFirm,
   toPurchaseOrder,
   toPurchaseOrder as toPO,
   toUser,
@@ -30,6 +34,8 @@ import type {
   AppNotification,
   AuditEntry,
   Charge,
+  FirmInvoice,
+  PanelFirm,
   HushHome,
   Introduction,
   Invoice,
@@ -851,6 +857,96 @@ export async function updateCharge(
   const res = await serverDb().from("charges").update(fromCharge(after)).eq("id", id);
   unwrap(res as any, "updateCharge");
   await audit(actorId, "charge.updated", "charge", id, {
+    from: before.status,
+    to: after.status,
+    patch,
+  });
+}
+
+// ---- Panel firms + the firm ledger (DECISIONS.md §6) ----------------------
+//
+// B2B only. Consumer charges and firm invoices are separate ledgers: the
+// charges table carries consumer-protection machinery, none of which
+// applies to a business invoice to a law firm. Never merge them.
+
+export async function createPanelFirm(
+  input: Omit<PanelFirm, "id" | "createdAt" | "updatedAt">,
+): Promise<PanelFirm> {
+  const now = new Date().toISOString();
+  const firm: PanelFirm = { ...input, id: newId(), createdAt: now, updatedAt: now };
+  const res = await serverDb().from("panel_firms").insert(fromPanelFirm(firm));
+  unwrap(res as any, "createPanelFirm");
+  await audit(null, "panel_firm.created", "panel_firm", firm.id, {
+    name: firm.name,
+    territory: firm.territory,
+    seatFeeAnnual: firm.seatFeeAnnual,
+  });
+  return firm;
+}
+
+export async function getPanelFirm(id: string): Promise<PanelFirm | undefined> {
+  const res = await serverDb().from("panel_firms").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res, "getPanelFirm");
+  return row ? toPanelFirm(row) : undefined;
+}
+
+export async function allPanelFirms(): Promise<PanelFirm[]> {
+  const res = await serverDb()
+    .from("panel_firms")
+    .select("*")
+    .order("name", { ascending: true });
+  return (unwrap(res, "allPanelFirms") ?? []).map(toPanelFirm);
+}
+
+export async function createFirmInvoice(
+  input: Omit<FirmInvoice, "id" | "createdAt" | "updatedAt">,
+): Promise<FirmInvoice> {
+  const now = new Date().toISOString();
+  const invoice: FirmInvoice = { ...input, id: newId(), createdAt: now, updatedAt: now };
+  const res = await serverDb().from("firm_invoices").insert(fromFirmInvoice(invoice));
+  unwrap(res as any, "createFirmInvoice");
+  await audit(null, "firm_invoice.created", "firm_invoice", invoice.id, {
+    kind: invoice.kind,
+    firmId: invoice.firmId,
+    listingId: invoice.listingId ?? null,
+    gross: invoice.grossAmount,
+  });
+  return invoice;
+}
+
+export async function firmInvoicesForFirm(firmId: string): Promise<FirmInvoice[]> {
+  const res = await serverDb()
+    .from("firm_invoices")
+    .select("*")
+    .eq("firm_id", firmId)
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "firmInvoicesForFirm") ?? []).map(toFirmInvoice);
+}
+
+export async function allFirmInvoices(): Promise<FirmInvoice[]> {
+  const res = await serverDb()
+    .from("firm_invoices")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (unwrap(res, "allFirmInvoices") ?? []).map(toFirmInvoice);
+}
+
+/** Every firm-invoice state change is audited, like updateCharge. */
+export async function updateFirmInvoice(
+  id: string,
+  patch: Partial<
+    Pick<FirmInvoice, "status" | "dueAt" | "invoicedAt" | "paidAt" | "notes">
+  >,
+  actorId: string | null,
+): Promise<void> {
+  const res0 = await serverDb().from("firm_invoices").select("*").eq("id", id).maybeSingle();
+  const row = unwrap(res0, "updateFirmInvoice.read");
+  if (!row) throw new Error(`updateFirmInvoice: no firm invoice ${id}`);
+  const before = toFirmInvoice(row);
+  const after: FirmInvoice = { ...before, ...patch, updatedAt: new Date().toISOString() };
+  const res = await serverDb().from("firm_invoices").update(fromFirmInvoice(after)).eq("id", id);
+  unwrap(res as any, "updateFirmInvoice");
+  await audit(actorId, "firm_invoice.updated", "firm_invoice", id, {
     from: before.status,
     to: after.status,
     patch,

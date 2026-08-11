@@ -6,10 +6,12 @@ import type {
   AuditEntry,
   Charge,
   ContractSignature,
+  FirmInvoice,
   HushHome,
   Introduction,
   Invoice,
   OutboxEmail,
+  PanelFirm,
   PurchaseOrder,
   SeekerBrief,
   User,
@@ -354,6 +356,82 @@ export function fromCharge(charge: Charge): Row {
     mandate_id: charge.mandateId ?? null,
     notes: charge.notes ?? null,
     updated_at: charge.updatedAt,
+  };
+}
+
+// ---- Panel firms + the firm ledger (DECISIONS.md §6) ----------------------
+
+export function toPanelFirm(row: Row): PanelFirm {
+  return {
+    id: row.id,
+    name: row.name,
+    contactName: row.contact_name ?? undefined,
+    contactEmail: row.contact_email ?? undefined,
+    territory: row.territory,
+    seatFeeAnnual: Number(row.seat_fee_annual),
+    invoicingSchedule: row.invoicing_schedule,
+    renewalDate: row.renewal_date,
+    active: row.active,
+    notes: row.notes ?? undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function fromPanelFirm(firm: PanelFirm): Row {
+  return {
+    id: firm.id,
+    name: firm.name,
+    contact_name: firm.contactName ?? null,
+    contact_email: firm.contactEmail ?? null,
+    territory: firm.territory,
+    seat_fee_annual: firm.seatFeeAnnual,
+    invoicing_schedule: firm.invoicingSchedule,
+    renewal_date: firm.renewalDate,
+    active: firm.active,
+    notes: firm.notes ?? null,
+    updated_at: firm.updatedAt,
+  };
+}
+
+export function toFirmInvoice(row: Row): FirmInvoice {
+  return {
+    id: row.id,
+    firmId: row.firm_id,
+    kind: row.kind,
+    listingId: row.listing_id ?? null,
+    netAmount: Number(row.net_amount),
+    vatAmount: Number(row.vat_amount),
+    grossAmount: Number(row.gross_amount),
+    status: row.status,
+    periodStart: row.period_start ?? null,
+    periodEnd: row.period_end ?? null,
+    dueAt: row.due_at ?? undefined,
+    invoicedAt: row.invoiced_at ?? undefined,
+    paidAt: row.paid_at ?? undefined,
+    notes: row.notes ?? undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function fromFirmInvoice(invoice: FirmInvoice): Row {
+  return {
+    id: invoice.id,
+    firm_id: invoice.firmId,
+    kind: invoice.kind,
+    listing_id: invoice.listingId ?? null,
+    net_amount: invoice.netAmount,
+    vat_amount: invoice.vatAmount,
+    gross_amount: invoice.grossAmount,
+    status: invoice.status,
+    period_start: invoice.periodStart ?? null,
+    period_end: invoice.periodEnd ?? null,
+    due_at: invoice.dueAt ?? null,
+    invoiced_at: invoice.invoicedAt ?? null,
+    paid_at: invoice.paidAt ?? null,
+    notes: invoice.notes ?? null,
+    updated_at: invoice.updatedAt,
   };
 }
 
