@@ -30,7 +30,6 @@ import {
   BUYER_FEE,
   CONFIG,
   HOME_REPORT_MARGIN,
-  WITHDRAWAL_FEE,
   withVat,
 } from "@/lib/site";
 
@@ -411,8 +410,8 @@ export default async function HomePage() {
                 </tr>
                 <tr>
                   <td className="px-6 py-4 font-medium">Seller withdrawal fee</td>
-                  <td className="px-6 py-4 font-display font-bold">£{WITHDRAWAL_FEE}</td>
-                  <td className="px-6 py-4 text-charcoal-soft">Only if listed elsewhere on the open market</td>
+                  <td className="px-6 py-4 font-display font-bold text-green-deep">None</td>
+                  <td className="px-6 py-4 text-charcoal-soft">Withdraw whenever you need. You only ever pay for your Home Report</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-4 font-medium">Quiet Seeker registration</td>

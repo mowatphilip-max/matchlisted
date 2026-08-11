@@ -12,6 +12,7 @@ import {
   addSlot,
   adminUserId,
   audit,
+  chargesForSubject,
   createProfile,
   findIntroduction,
   getBrief,
@@ -41,6 +42,7 @@ import {
   removeSlot,
   setMatchWeights,
   toggleSaved,
+  updateCharge,
   upsertBrief,
   upsertHome,
   upsertIntroduction,
@@ -69,6 +71,7 @@ import {
   signUpWithPassword,
 } from "./session";
 import {
+  CONFIG,
   CONTRACT_VERSIONS,
   HOME_REPORT_SUPPLIERS,
   SITE_NAME,
@@ -1030,29 +1033,70 @@ export async function adminConcludeMissives(formData: FormData) {
   redirect("/admin/deals");
 }
 
+/**
+ * DECISIONS.md §3: on withdrawal (or listing elsewhere, or the longstop)
+ * the seller owes the £580 Home Report charge and NOTHING else — the £300
+ * withdrawal fee is abolished. If the listing carries a deferred (pending)
+ * Home Report charge it becomes due, collected from the stored card only
+ * after CONFIG.cardNoticeDays' written notice. A seller who already paid
+ * for their Home Report upfront owes nothing at all.
+ */
 export async function adminRecordWithdrawal(formData: FormData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
   if (!home) redirect("/admin/deals");
-  const now = new Date().toISOString();
   home.status = "withdrawn";
   await upsertHome(home);
-  await upsertInvoice({
-    id: newId(),
-    userId: home.sellerId,
-    homeId: home.id,
-    kind: "withdrawal-fee",
-    description: `Withdrawal fee · ${home.headline} listed on the open market`,
-    net: 300,
-    vat: 60,
-    status: "due",
-    createdAt: now,
+  await audit(admin.id, "listing.withdrawn", "listing", home.id, {
+    headline: home.headline,
   });
+
+  const pendingHomeReport = (await chargesForSubject("listing", home.id)).find(
+    (c) => c.type === "home_report" && c.status === "pending",
+  );
+  const seller = await getUser(home.sellerId);
+
+  if (pendingHomeReport) {
+    const dueAt = new Date(
+      Date.now() + CONFIG.cardNoticeDays * 86_400_000,
+    ).toISOString();
+    await updateCharge(
+      pendingHomeReport.id,
+      {
+        status: "due",
+        trigger: "withdrawn",
+        collectionRoute: "card",
+        dueAt,
+        notes: `Withdrawal recorded; ${CONFIG.cardNoticeDays} days' written notice sent before any card collection.`,
+      },
+      admin.id,
+    );
+    if (seller) {
+      await recordEmail({
+        to: seller.email,
+        subject: `Your listing has been withdrawn — written notice of your Home Report charge`,
+        body: [
+          `Hello ${seller.name.split(" ")[0]},`,
+          "",
+          `${home.headline} has been withdrawn from Matchlisted.`,
+          "",
+          `As set out in your seller agreement, your deferred Home Report charge of £${CONFIG.fees.homeReportGross} (including VAT) now becomes payable. There is no withdrawal fee and nothing else to pay.`,
+          "",
+          `This email is your ${CONFIG.cardNoticeDays} days' written notice: we will collect £${CONFIG.fees.homeReportGross} from your stored card on or after ${new Date(dueAt).toLocaleDateString("en-GB")}. If anything here looks wrong, reply to this email before that date.`,
+          "",
+          `${SITE_NAME}`,
+        ].join("\n"),
+      });
+    }
+  }
+
   await pushNotification({
     userId: home.sellerId,
     kind: "system",
     title: "Listing withdrawn",
-    body: `${home.headline} has been withdrawn. The £300 (+ VAT) withdrawal fee applies, per your seller agreement.`,
+    body: pendingHomeReport
+      ? `${home.headline} has been withdrawn. Your £${CONFIG.fees.homeReportGross} Home Report charge becomes payable, and nothing else. We've emailed your ${CONFIG.cardNoticeDays} days' written notice.`
+      : `${home.headline} has been withdrawn. There is no withdrawal fee and nothing to pay.`,
     href: "/dashboard",
   });
   refresh();

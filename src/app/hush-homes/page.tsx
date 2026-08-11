@@ -8,7 +8,7 @@ import {
 } from "@/components/hush-homes/browser";
 import { getBrief, liveHomes } from "@/lib/db";
 import { currentUser } from "@/lib/session";
-import { HOME_REPORT_SUPPLIERS, WITHDRAWAL_FEE } from "@/lib/site";
+import { HOME_REPORT_SUPPLIERS } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Hush Homes: browse quietly listed homes, list yours with no fee",
@@ -95,7 +95,7 @@ export default async function HushHomesPage() {
               {
                 icon: ShieldCheck,
                 title: "One agreement, signed digitally",
-                body: `You agree to sell only to registered Quiet Seekers through the platform. Listing with another agent on the open market counts as a withdrawal, and a £${WITHDRAWAL_FEE} (+ VAT) fee applies.`,
+                body: `You agree to sell only to registered Quiet Seekers through the platform. Listing with another agent on the open market counts as a withdrawal. There is no withdrawal fee, and the only cost you ever bear is your Home Report.`,
               },
             ].map(({ icon: Icon, title, body }) => (
               <div

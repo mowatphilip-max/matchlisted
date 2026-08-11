@@ -8,9 +8,8 @@ export const metadata: Metadata = { title: "Admin · invoices" };
 
 const kindLabels: Record<string, string> = {
   "home-report": "Home Report",
-  "conveyancing-deposit": "Conveyancing deposit",
+  "conveyancing-deposit": "Conveyancing deposit (legacy)",
   "sourcing-fee": "Buyer fee (£300 fixed)",
-  "withdrawal-fee": "Withdrawal fee",
 };
 
 export default async function AdminInvoicesPage() {

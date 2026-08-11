@@ -81,7 +81,7 @@ export default function QuietSeekersPage() {
               is payable on conclusion of missives — {formatPrice(withVat(BUYER_FEE))}{" "}
               in total, whether the home costs £150,000 or £1.5 million. The fee still applies if you buy the same property later, even
               after it has left the site. You don&apos;t need a solicitor to
-              make an offer, and nothing is payable to submit one — if your
+              make an offer, and nothing is payable to submit one. If your
               offer is accepted, you appoint a solicitor then, your own or one
               from our panel.
             </p>

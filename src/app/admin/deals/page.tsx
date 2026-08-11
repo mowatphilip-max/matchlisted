@@ -116,7 +116,7 @@ export default async function AdminDealsPage() {
                     <form action={adminRecordWithdrawal}>
                       <input type="hidden" name="homeId" value={h.id} />
                       <button className="cursor-pointer text-xs font-semibold text-red-deep underline">
-                        Record withdrawal (£300 fee)
+                        Record withdrawal
                       </button>
                     </form>
                   )}

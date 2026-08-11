@@ -103,7 +103,7 @@ export default async function OfferPage({
           <p className="mt-4 rounded-xl bg-soft p-4 text-xs text-charcoal-soft">
             You don&apos;t need a solicitor to make an offer, and nothing is
             payable to submit one. If your offer is accepted, you appoint a
-            solicitor then — your own or one from our panel — to conclude the
+            solicitor then, your own or one from our panel, to conclude the
             missives.
           </p>
           <p className="mt-3 rounded-xl bg-soft p-4 text-xs text-charcoal-soft">

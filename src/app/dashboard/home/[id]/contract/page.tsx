@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { currentUser } from "@/lib/session";
 import { getHomeUnscoped } from "@/lib/db";
 import { signSellerContract } from "@/lib/actions";
-import { CONTRACT_VERSIONS, HOME_REPORT_MARGIN, WITHDRAWAL_FEE } from "@/lib/site";
+import { CONTRACT_VERSIONS, HOME_REPORT_MARGIN } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Seller agreement" };
 
@@ -60,9 +60,10 @@ export default async function SellerContractPage({
             <li>
               <strong>Withdrawal.</strong> Listing this home with another
               agent or on the open market (including portals) constitutes a
-              withdrawal from Matchlisted and triggers a withdrawal fee of{" "}
-              <strong>£{WITHDRAWAL_FEE} (+ VAT)</strong>, invoiced on
-              withdrawal.
+              withdrawal from Matchlisted. There is no withdrawal fee. If
+              your Home Report was provided on deferred terms it becomes
+              payable on withdrawal, and nothing else does; we collect it
+              from your stored card only after 14 days&apos; written notice.
             </li>
             <li>
               <strong>Home Report.</strong> Your listing cannot go live until a
@@ -74,8 +75,8 @@ export default async function SellerContractPage({
             </li>
             <li>
               <strong>Viewings & offers.</strong> You control your viewing
-              diary. Offers arrive exclusively from registered, contract-signed
-              Quiet Seekers with a solicitor already appointed.
+              diary. Offers arrive exclusively from registered,
+              contract-signed Quiet Seekers.
             </li>
             <li>
               <strong>Signature.</strong> This agreement is executed
@@ -107,9 +108,9 @@ export default async function SellerContractPage({
               className="mt-0.5 h-4 w-4 accent-[var(--color-orange-deep)]"
             />
             <span>
-              I have read the Hush Home Seller Agreement. I agree to sell only
-              via Matchlisted while listed, and to the £{WITHDRAWAL_FEE} (+
-              VAT) withdrawal fee if I list this home on the open market.
+              I have read the Hush Home Seller Agreement. I agree to sell
+              only via Matchlisted while listed, and I understand that my
+              Home Report is the only cost I will ever bear.
             </span>
           </label>
           <Button type="submit" variant="seller">

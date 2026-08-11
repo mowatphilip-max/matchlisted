@@ -38,7 +38,6 @@ import { areaLabel } from "@/lib/areas";
 import { formatMoney, formatPrice, formatTimeRange, formatDate } from "@/lib/format";
 import {
   HOME_REPORT_SUPPLIERS,
-  WITHDRAWAL_FEE,
   homeReportQuote,
 } from "@/lib/site";
 
@@ -159,9 +158,9 @@ export default async function SellerHomePage({
           <div className="mt-5 rounded-2xl bg-orange-tint p-4">
             <p className="text-sm">
               <strong>Next: sign your seller agreement.</strong> No listing
-              fee, no commission. You agree to sell only through Matchlisted, with a £
-              {WITHDRAWAL_FEE} (+ VAT) fee only if you withdraw to the open
-              market.
+              fee, no commission, no withdrawal fee. You agree to sell only
+              through Matchlisted, and the only cost you ever bear is your
+              Home Report.
             </p>
             <ButtonLink
               href={`/dashboard/home/${home.id}/contract`}
@@ -612,7 +611,8 @@ export default async function SellerHomePage({
         <p className="mt-10 rounded-2xl bg-soft p-4 text-xs text-charcoal-soft">
           Remember: your seller agreement commits this home to Matchlisted.
           Listing it with another agent on the open market counts as a
-          withdrawal and triggers the £{WITHDRAWAL_FEE} (+ VAT) fee.{" "}
+          withdrawal. There is no withdrawal fee; only your Home Report is
+          ever payable.{" "}
           <Link href="/#fees" className="underline">
             Fee details
           </Link>

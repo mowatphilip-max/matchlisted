@@ -293,8 +293,9 @@ export type InvoiceKind =
   | "home-report"
   /** LEGACY — abolished by DECISIONS.md §0.5 (conditional selling). Never issued anymore; kept only so historical rows still parse. */
   | "conveyancing-deposit"
-  | "sourcing-fee"
-  | "withdrawal-fee";
+  | "sourcing-fee";
+// "withdrawal-fee" is gone entirely (DECISIONS.md §3): the fee is abolished
+// and no row was ever written with it.
 
 export interface Invoice {
   id: string;

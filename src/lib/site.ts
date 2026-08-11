@@ -10,7 +10,10 @@ export const SITE_TAGLINE = "Where Quiet Seekers meet Hush Homes";
 // Fees (all + VAT). Single source of truth — quoted across the site.
 export const VAT_RATE = 0.2;
 export const HOME_REPORT_MARGIN = 100; // our margin per Home Report, £
-export const WITHDRAWAL_FEE = 300; // seller lists elsewhere on the open market, £
+// WITHDRAWAL_FEE is gone (DECISIONS.md §3): abolished 10 Aug 2026. On
+// withdrawal, listing elsewhere or the longstop the seller owes the Home
+// Report charge and nothing else — two stacked charges risked being an
+// unenforceable penalty under the Consumer Rights Act.
 // CONVEYANCING_DEPOSIT is gone (DECISIONS.md §0.5): conditioning an offer on
 // appointing/paying for a lawyer is conditional selling. Nothing is payable
 // to submit an offer.
@@ -30,10 +33,14 @@ export const BUYER_FEE = 300;
 // over, it must read from here — never inline a fee or threshold.
 export const CONFIG = {
   fees: {
-    /** Home Report charge, £ inc VAT. Deferred: solicitor at settlement, or stored card on withdrawal/expiry. */
+    /**
+     * Home Report charge, £ inc VAT. Deferred: solicitor at settlement, or
+     * stored card on withdrawal / listed elsewhere / longstop — after
+     * cardNoticeDays' written notice. On withdrawal this is the ONLY thing
+     * the seller owes: the withdrawal fee was abolished 10 Aug 2026
+     * (DECISIONS.md §3).
+     */
     homeReportGross: 580,
-    /** Withdrawal fee, £ ex VAT. Stored card, after notice. */
-    withdrawalNet: 300,
     /** Rightmove listing add-on, £ ex VAT. Stripe Checkout, upfront. */
     rightmoveAddonNet: 200,
     /** Professional photography add-on, £ ex VAT. Stripe Checkout, upfront. */
@@ -113,7 +120,9 @@ export const CONTRACT_VERSIONS = {
   // v1.1: conveyancing-deposit clause removed (DECISIONS.md §0.5 — an offer
   // is never conditional on appointing or paying for a solicitor).
   seeker: "seeker-v1.1-2026-08",
-  seller: "seller-v1.0-2026-07",
+  // v1.1: £300 withdrawal fee removed (DECISIONS.md §3) and the "solicitor
+  // already appointed" line dropped from the offers clause (§0.5).
+  seller: "seller-v1.1-2026-08",
 } as const;
 
 // ---- Home Report pricing --------------------------------------------------
