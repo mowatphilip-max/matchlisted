@@ -45,6 +45,15 @@ export const CONFIG = {
     rightmoveAddonNet: 200,
     /** Professional photography add-on, £ ex VAT. Stripe Checkout, upfront. */
     photographyAddonNet: 295,
+    /**
+     * For Sale board add-on, £ ex VAT (£120 inc VAT, DECISIONS.md §2). A
+     * Hush Home is private BY DEFAULT and the add-ons are the volume knob:
+     * Rightmove takes the seller public online, a board takes them public
+     * locally, both by choice (§4). Config and schema only for now — the
+     * purchase/fulfilment path is built once, in Phase 6, and photography
+     * and Rightmove reuse it.
+     */
+    boardAddonNet: 100,
     /** Buyer fee, £ ex VAT, fixed, every transaction. Solicitor at settlement. */
     buyerFeeNet: 300,
     /**
