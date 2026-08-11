@@ -47,6 +47,15 @@ export const CONFIG = {
     photographyAddonNet: 295,
     /** Buyer fee, £ ex VAT, fixed, every transaction. Solicitor at settlement. */
     buyerFeeNet: 300,
+    /**
+     * Case preparation fee, £ ex VAT, B2B — invoiced to the PANEL FIRM,
+     * never to a consumer, so it is quoted "+ VAT" and lives on the firm
+     * ledger (DECISIONS.md §6). Trigger is pack_delivered and NEVER
+     * missives_concluded: a fee payable on completion is transaction
+     * commission however it is labelled (LSS rule D9.2). Never refundable
+     * on fall-through; contingency makes it commission again.
+     */
+    casePackFeeNet: 150,
   },
   /**
    * Listing-claim copy (CAP Code / DMCCA). NEVER write a bare "free" claim
