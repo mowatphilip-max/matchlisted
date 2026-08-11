@@ -26,12 +26,7 @@ import { currentUser } from "@/lib/session";
 import { areaShortLabel } from "@/lib/areas";
 import { matchLine } from "@/lib/match";
 import { formatPrice } from "@/lib/format";
-import {
-  BUYER_FEE,
-  CONFIG,
-  HOME_REPORT_MARGIN,
-  withVat,
-} from "@/lib/site";
+import { CONFIG, HOME_REPORT_MARGIN } from "@/lib/site";
 
 /** The personalized hero copy for a signed-in visitor, or null. */
 async function personalHero(userId: string, name: string) {
@@ -356,7 +351,7 @@ export default async function HomePage() {
               {
                 icon: ShieldCheck,
                 title: "Contracts signed on both sides",
-                body: "Sellers commit to selling through the platform; seekers commit to the fixed £300 (+ VAT) buyer fee when they complete. Everyone plays fair.",
+                body: "Sellers commit to selling through the platform; seekers commit to the fixed £360 buyer fee (including VAT) when they complete. Everyone plays fair.",
               },
             ].map(({ icon: Icon, title, body }) => (
               <li
@@ -381,8 +376,8 @@ export default async function HomePage() {
         <Container>
           <h2 className="display-lg">Fees, in plain sight</h2>
           <p className="mt-4 max-w-2xl text-lg text-charcoal-soft">
-            All prices + VAT. No listing fees, no percentage for sellers, no
-            surprises later.
+            All prices include VAT. No listing fees, no percentage for
+            sellers, no surprises later.
           </p>
           <div className="mt-10 overflow-x-auto rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline">
             <table className="w-full min-w-[560px] text-left text-sm">
@@ -420,7 +415,7 @@ export default async function HomePage() {
                 </tr>
                 <tr>
                   <td className="px-6 py-4 font-medium">Buyer fee</td>
-                  <td className="px-6 py-4 font-display font-bold text-orange-deep">£{BUYER_FEE} fixed</td>
+                  <td className="px-6 py-4 font-display font-bold text-orange-deep">£{CONFIG.fees.buyerFeeGross} fixed</td>
                   <td className="px-6 py-4 text-charcoal-soft">On conclusion of missives, whatever the price</td>
                 </tr>
               </tbody>
@@ -430,7 +425,7 @@ export default async function HomePage() {
             Worked example: buy a {formatPrice(300000)} home found on
             Matchlisted and the buyer fee is{" "}
             <strong className="text-charcoal">
-              £{BUYER_FEE} + VAT = {formatPrice(withVat(BUYER_FEE))}
+              {formatPrice(CONFIG.fees.buyerFeeGross)} including VAT
             </strong>
             , the same on every home at every price. It stays payable if you
             buy the same home later, even after it has left the site.

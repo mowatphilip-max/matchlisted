@@ -6,7 +6,7 @@ import { currentUser } from "@/lib/session";
 import { getBrief } from "@/lib/db";
 import { signSeekerContract } from "@/lib/actions";
 import { formatPrice } from "@/lib/format";
-import { BUYER_FEE, CONTRACT_VERSIONS, withVat } from "@/lib/site";
+import { CONFIG, CONTRACT_VERSIONS } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Quiet Seeker agreement" };
 
@@ -53,9 +53,9 @@ export default async function SeekerContractPage({
             <li>
               <strong>Buyer fee.</strong> If you successfully purchase a
               property found through Matchlisted, a fixed buyer fee of{" "}
-              <strong>£{BUYER_FEE} (+ VAT)</strong> is payable to Matchlisted
-              on conclusion of missives — {formatPrice(withVat(BUYER_FEE))} in
-              total, the same on every home at every price.
+              <strong>{formatPrice(CONFIG.fees.buyerFeeGross)} (including
+              VAT)</strong> is payable to Matchlisted on conclusion of
+              missives, the same on every home at every price.
             </li>
             <li>
               <strong>The fee survives the listing.</strong> The buyer fee
@@ -104,8 +104,8 @@ export default async function SeekerContractPage({
             />
             <span>
               I have read the Quiet Seeker Agreement and I agree to the fixed
-              £{BUYER_FEE} (+ VAT) buyer fee, including after a property
-              leaves the site.
+              {" "}{formatPrice(CONFIG.fees.buyerFeeGross)} buyer fee
+              (including VAT), including after a property leaves the site.
             </span>
           </label>
           <Button type="submit">Sign & start matching</Button>

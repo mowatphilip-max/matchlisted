@@ -7,7 +7,7 @@ import { getBrief, getHomeFor, getOffer } from "@/lib/db";
 import { acceptCounter, submitOffer } from "@/lib/actions";
 import { areaShortLabel } from "@/lib/areas";
 import { formatPrice } from "@/lib/format";
-import { BUYER_FEE, withVat } from "@/lib/site";
+import { CONFIG } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Make an offer" };
 
@@ -108,8 +108,8 @@ export default async function OfferPage({
           </p>
           <p className="mt-3 rounded-xl bg-soft p-4 text-xs text-charcoal-soft">
             Reminder from your Quiet Seeker agreement: on conclusion of
-            missives the fixed £{BUYER_FEE} (+ VAT) buyer fee applies —{" "}
-            {formatPrice(withVat(BUYER_FEE))} in total, whatever the price.
+            missives the fixed {formatPrice(CONFIG.fees.buyerFeeGross)} buyer
+            fee applies (including VAT), whatever the price.
           </p>
           <Button type="submit" className="mt-4 w-full">
             Send my offer to the seller

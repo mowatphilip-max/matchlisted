@@ -288,7 +288,7 @@ async function seed() {
 
   // 8. Invoices — deferred-fee model: NO upfront Home Report invoices (the
   //    obligation lives in the charges ledger instead). Deposits and the
-  //    fixed £300 buyer fee stay.
+  //    fixed £360 (inc VAT) buyer fee stay.
   for (const inv of sampleInvoices.filter((i) => i.kind !== "home-report")) {
     await insert("invoices", {
       ...fromInvoice({
@@ -344,7 +344,7 @@ async function seed() {
   // 9b. The charges ledger (deferred-fee model): every ordered Home Report
   //     is a pending £580 obligation; the sold home's charges have fired via
   //     missives_concluded and route to the solicitor's mandate, alongside
-  //     the fixed £300 + VAT buyer fee.
+  //     the fixed £360 (inc VAT) buyer fee.
   let charges = 0;
   for (const home of sampleHomes) {
     if (!home.homeReport.supplier) continue;
@@ -382,7 +382,7 @@ async function seed() {
       trigger: "missives_concluded",
       due_at: o.missivesConcludedAt,
       collection_route: "solicitor_mandate",
-      notes: "Fixed £300 + VAT, every transaction, regardless of price.",
+      notes: "Fixed £360 including VAT, every transaction, regardless of price.",
     });
     charges++;
   }

@@ -54,7 +54,7 @@ export function SiteFooter() {
             <li><Link href="/quiet-seekers" className="hover:text-white">Become a Quiet Seeker</Link></li>
             <li><Link href="/seekers" className="hover:text-white">Browse live Quiet Seekers</Link></li>
             <li><Link href="/#how-it-works" className="hover:text-white">How matching works</Link></li>
-            <li><Link href="/#fees" className="hover:text-white">The £300 buyer fee</Link></li>
+            <li><Link href="/#fees" className="hover:text-white">The £360 buyer fee</Link></li>
           </ul>
         </div>
         <div>
@@ -70,7 +70,7 @@ export function SiteFooter() {
       <div className="border-t border-white/10">
         <Container className="space-y-3 py-6 text-xs text-white/50">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p>© 2026 Matchlisted.com · all fees quoted + VAT.</p>
+            <p>© 2026 Matchlisted.com · all prices include VAT.</p>
             <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Legal">
               {policyLinks.map((l) => (
                 <Link key={l.href} href={l.href} className="hover:text-white">

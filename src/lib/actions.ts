@@ -76,8 +76,8 @@ import {
   HOME_REPORT_SUPPLIERS,
   SITE_NAME,
   VAT_RATE,
+  exVat,
   homeReportQuote,
-  BUYER_FEE,
 } from "./site";
 import type { SeekerPropertyType } from "./mowatt-seekers";
 import type {
@@ -1009,16 +1009,19 @@ export async function adminConcludeMissives(formData: FormData) {
   await upsertOffer(offer);
   home.status = "sold";
   await upsertHome(home);
-  const fee = BUYER_FEE; // fixed, every transaction, regardless of price
+  // Fixed, every transaction, regardless of price. Consumer-facing figures
+  // are VAT-inclusive; the ledger row stays net + vat.
+  const gross = CONFIG.fees.buyerFeeGross;
+  const net = exVat(gross);
   await upsertInvoice({
     id: newId(),
     userId: offer.seekerId,
     homeId: home.id,
     offerId: offer.id,
     kind: "sourcing-fee",
-    description: `Buyer fee · fixed £${BUYER_FEE} + VAT (${home.headline})`,
-    net: fee,
-    vat: Math.round(fee * VAT_RATE * 100) / 100,
+    description: `Buyer fee · fixed £${gross} including VAT (${home.headline})`,
+    net,
+    vat: Math.round((gross - net) * 100) / 100,
     status: "due",
     createdAt: now,
   });
@@ -1026,7 +1029,7 @@ export async function adminConcludeMissives(formData: FormData) {
     userId: offer.seekerId,
     kind: "system",
     title: "Missives concluded. Congratulations",
-    body: `${home.headline} is yours. Your buyer fee invoice (£${BUYER_FEE} + VAT) is in your dashboard.`,
+    body: `${home.headline} is yours. Your buyer fee invoice (£${gross} including VAT) is in your dashboard.`,
     href: "/dashboard",
   });
   refresh();

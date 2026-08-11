@@ -10,7 +10,7 @@ import {
 import { adminConcludeMissives, adminRecordWithdrawal } from "@/lib/actions";
 import { areaShortLabel } from "@/lib/areas";
 import { formatDate, formatPrice } from "@/lib/format";
-import { BUYER_FEE, withVat } from "@/lib/site";
+import { CONFIG } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Admin · deals" };
 
@@ -29,8 +29,9 @@ export default async function AdminDealsPage() {
     <>
       <h1 className="text-3xl">Deals pipeline</h1>
       <p className="mt-2 text-charcoal-soft">
-        Viewings → offers → missives. Concluding missives raises the fixed £{BUYER_FEE} (+ VAT)
-        sourcing fee automatically.
+        Viewings → offers → missives. Concluding missives raises the fixed{" "}
+        {formatPrice(CONFIG.fees.buyerFeeGross)} (inc VAT) buyer fee
+        automatically.
       </p>
 
       {/* Accepted offers awaiting missives */}
@@ -61,8 +62,8 @@ export default async function AdminDealsPage() {
                     {formatDate(o.history.at(-1)?.at ?? o.createdAt)}
                   </p>
                   <p className="mt-1 text-sm">
-                    Sourcing fee on conclusion:{" "}
-                    <strong>£{BUYER_FEE} + VAT ({formatPrice(withVat(BUYER_FEE))})</strong>
+                    Buyer fee on conclusion:{" "}
+                    <strong>{formatPrice(CONFIG.fees.buyerFeeGross)} inc VAT</strong>
                   </p>
                 </div>
                 <form action={adminConcludeMissives}>

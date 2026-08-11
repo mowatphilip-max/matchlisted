@@ -7,7 +7,10 @@ export const SITE_URL = (
 export const SITE_NAME = "Matchlisted";
 export const SITE_TAGLINE = "Where Quiet Seekers meet Hush Homes";
 
-// Fees (all + VAT). Single source of truth — quoted across the site.
+// Fees. Single source of truth — quoted across the site. Every
+// CONSUMER-facing figure is stored and shown INCLUSIVE of VAT (DECISIONS.md
+// §1 condition 3: no "+ VAT" anywhere a seller or buyer can see). B2B
+// figures (the case pack fee) are the one exception and stay net.
 export const VAT_RATE = 0.2;
 export const HOME_REPORT_MARGIN = 100; // our margin per Home Report, £
 // WITHDRAWAL_FEE is gone (DECISIONS.md §3): abolished 10 Aug 2026. On
@@ -18,12 +21,9 @@ export const HOME_REPORT_MARGIN = 100; // our margin per Home Report, £
 // appointing/paying for a lawyer is conditional selling. Nothing is payable
 // to submit an offer.
 
-/**
- * The buyer fee: £300 + VAT, FIXED, on conclusion of missives — every
- * transaction, regardless of price (Phase 1 review decision, replacing both
- * the old 0.8% sourcing fee and the brief's £495).
- */
-export const BUYER_FEE = 300;
+// The buyer fee lives in CONFIG.fees.buyerFeeGross (£360 inc VAT, fixed,
+// every transaction) — the old net BUYER_FEE constant is gone with the
+// VAT-inclusive rule. Ledger rows derive net/vat via exVat().
 
 // ---- Build-brief config (docs/BUILD-BRIEF.md) ------------------------------
 //
@@ -41,21 +41,21 @@ export const CONFIG = {
      * (DECISIONS.md §3).
      */
     homeReportGross: 580,
-    /** Rightmove listing add-on, £ ex VAT. Stripe Checkout, upfront. */
-    rightmoveAddonNet: 200,
-    /** Professional photography add-on, £ ex VAT. Stripe Checkout, upfront. */
-    photographyAddonNet: 295,
+    /** Rightmove listing add-on, £ inc VAT. Stripe Checkout, upfront. */
+    rightmoveAddonGross: 240,
+    /** Professional photography add-on, £ inc VAT. Stripe Checkout, upfront. */
+    photographyAddonGross: 354,
     /**
-     * For Sale board add-on, £ ex VAT (£120 inc VAT, DECISIONS.md §2). A
-     * Hush Home is private BY DEFAULT and the add-ons are the volume knob:
-     * Rightmove takes the seller public online, a board takes them public
-     * locally, both by choice (§4). Config and schema only for now — the
+     * For Sale board add-on, £ inc VAT (DECISIONS.md §2). A Hush Home is
+     * private BY DEFAULT and the add-ons are the volume knob: Rightmove
+     * takes the seller public online, a board takes them public locally,
+     * both by choice (§4). Config and schema only for now — the
      * purchase/fulfilment path is built once, in Phase 6, and photography
      * and Rightmove reuse it.
      */
-    boardAddonNet: 100,
-    /** Buyer fee, £ ex VAT, fixed, every transaction. Solicitor at settlement. */
-    buyerFeeNet: 300,
+    boardAddonGross: 120,
+    /** Buyer fee, £ inc VAT, fixed, every transaction. Solicitor at settlement. */
+    buyerFeeGross: 360,
     /**
      * Case preparation fee, £ ex VAT, B2B — invoiced to the PANEL FIRM,
      * never to a consumer, so it is quoted "+ VAT" and lives on the firm
@@ -131,6 +131,15 @@ export const LEGAL = {
 
 export function withVat(net: number): number {
   return Math.round(net * (1 + VAT_RATE) * 100) / 100;
+}
+
+/**
+ * The net (ex VAT) share of a VAT-inclusive price, to 2dp — for ledger and
+ * invoice rows, which stay net + vat. Display never uses this: consumers
+ * only ever see the gross figure.
+ */
+export function exVat(gross: number): number {
+  return Math.round((gross / (1 + VAT_RATE)) * 100) / 100;
 }
 
 

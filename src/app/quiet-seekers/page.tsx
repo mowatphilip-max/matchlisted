@@ -3,12 +3,12 @@ import { FileText, Heart, MapPinned, Percent } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
-import { BUYER_FEE, withVat } from "@/lib/site";
+import { CONFIG } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Become a Quiet Seeker: homes that match, before the market",
   description:
-    "Register free, build your brief, and get a Match % on every Hush Home in Scotland. Pay only a fixed £300 (+ VAT) buyer fee when you actually buy.",
+    "Register free, build your brief, and get a Match % on every Hush Home in Scotland. Pay only a fixed £360 buyer fee (including VAT) when you actually buy.",
 };
 
 export default function QuietSeekersPage() {
@@ -77,9 +77,12 @@ export default function QuietSeekersPage() {
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-charcoal-soft">
               Registration is free. When you sign up you agree to one thing: if
               you buy a property you found through Matchlisted, a{" "}
-              <strong className="text-charcoal">fixed £{BUYER_FEE} buyer fee (+ VAT)</strong>{" "}
-              is payable on conclusion of missives — {formatPrice(withVat(BUYER_FEE))}{" "}
-              in total, whether the home costs £150,000 or £1.5 million. The fee still applies if you buy the same property later, even
+              <strong className="text-charcoal">
+                fixed {formatPrice(CONFIG.fees.buyerFeeGross)} buyer fee
+                (including VAT)
+              </strong>{" "}
+              is payable on conclusion of missives, whether the home costs
+              £150,000 or £1.5 million. The fee still applies if you buy the same property later, even
               after it has left the site. You don&apos;t need a solicitor to
               make an offer, and nothing is payable to submit one. If your
               offer is accepted, you appoint a solicitor then, your own or one

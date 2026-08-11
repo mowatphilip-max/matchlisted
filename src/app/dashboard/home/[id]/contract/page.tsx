@@ -70,7 +70,7 @@ export default async function SellerContractPage({
               Home Report has been purchased through Matchlisted from one of
               our trusted suppliers (currently Allied Surveyors Scotland and
               Graham + Sibbald; the price includes our £{HOME_REPORT_MARGIN}
-              (+ VAT) arrangement margin), completed, uploaded and verified.
+              arrangement margin), completed, uploaded and verified.
               The report is downloadable only by registered Quiet Seekers.
             </li>
             <li>
