@@ -70,7 +70,6 @@ import {
 } from "./session";
 import {
   CONTRACT_VERSIONS,
-  CONVEYANCING_DEPOSIT,
   HOME_REPORT_SUPPLIERS,
   SITE_NAME,
   VAT_RATE,
@@ -653,51 +652,23 @@ export async function submitViewingFeedback(formData: FormData) {
 
 // ---- Lawyer + offer flow --------------------------------------------------
 
-export async function appointLawyer(formData: FormData) {
-  const user = await requireUser();
-  const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
-  const lawyer = await getLawyer(String(formData.get("lawyerId") ?? ""));
-  if (!home || !lawyer) redirect("/matches");
-  const invoice: Invoice = {
-    id: newId(),
-    userId: user.id,
-    homeId: home.id,
-    lawyerId: lawyer.id,
-    kind: "conveyancing-deposit",
-    description: `Conveyancing deposit · ${lawyer.firm} appointed`,
-    net: CONVEYANCING_DEPOSIT,
-    vat: Math.round(CONVEYANCING_DEPOSIT * VAT_RATE * 100) / 100,
-    status: "due",
-    createdAt: new Date().toISOString(),
-  };
-  await upsertInvoice(invoice);
-  refresh();
-  redirect(`/pay/${invoice.id}?lawyer=${lawyer.id}`);
-}
+// appointLawyer is gone (DECISIONS.md §0.5): requiring a lawyer — or any
+// payment — before an offer is conditional selling under the 1991 Order.
+// A buyer appoints a solicitor of their choice after acceptance.
 
 export async function submitOffer(formData: FormData) {
   const user = await requireUser();
   const brief = await getBrief(user.id);
   if (!brief?.contract) redirect("/dashboard/brief");
   const home = await getHomeUnscoped(String(formData.get("homeId") ?? ""));
-  const lawyer = await getLawyer(String(formData.get("lawyerId") ?? ""));
   const amount = Number(formData.get("amount") ?? 0);
-  if (!home || !lawyer || !amount) redirect("/matches");
-
-  // The deposit must be paid before the offer can be submitted.
-  const deposit = (await invoicesForUser(user.id)).find(
-    (i) =>
-      i.kind === "conveyancing-deposit" &&
-      i.homeId === home.id &&
-      i.status === "paid",
-  );
-  if (!deposit) redirect(`/homes/${home.id}/offer?error=deposit`);
+  if (!home || !amount) redirect("/matches");
 
   const offer = {
     id: newId(),
     homeId: home.id,
     seekerId: user.id,
-    lawyerId: lawyer.id,
+    lawyerId: null,
     amount,
     note: String(formData.get("note") ?? "").trim() || undefined,
     status: "submitted" as const,
@@ -735,12 +706,14 @@ export async function respondToOffer(formData: FormData) {
     offer.history.push({ at: now, event: "Accepted by the seller" });
     home.status = "under-offer";
     await upsertHome(home);
-    const lawyer = await getLawyer(offer.lawyerId);
+    const lawyer = offer.lawyerId ? await getLawyer(offer.lawyerId) : undefined;
     await pushNotification({
       userId: offer.seekerId,
       kind: "offer",
       title: "Offer accepted 🎉",
-      body: `Your offer on ${home.headline} was accepted. ${lawyer?.firm ?? "Your lawyer"} will conclude the sale.`,
+      body: lawyer
+        ? `Your offer on ${home.headline} was accepted. ${lawyer.firm} will conclude the sale.`
+        : `Your offer on ${home.headline} was accepted. Next step: appoint a solicitor — yours or one of ours — to conclude the missives.`,
       href: "/dashboard",
     });
   } else if (action === "decline") {

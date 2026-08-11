@@ -41,7 +41,7 @@ export default async function AdminDealsPage() {
           .map((o) => {
             const home = homes.find((h) => h.id === o.homeId);
             const buyer = users.get(o.seekerId);
-            const lawyer = lawyers.get(o.lawyerId);
+            const lawyer = o.lawyerId ? lawyers.get(o.lawyerId) : undefined;
             if (!home) return null;
             return (
               <li
@@ -56,8 +56,9 @@ export default async function AdminDealsPage() {
                     </span>
                   </p>
                   <p className="mt-1 text-sm text-charcoal-soft">
-                    {formatPrice(o.amount)} from {buyer?.name} · {lawyer?.firm}{" "}
-                    · accepted {formatDate(o.history.at(-1)?.at ?? o.createdAt)}
+                    {formatPrice(o.amount)} from {buyer?.name} ·{" "}
+                    {lawyer?.firm ?? "no solicitor appointed yet"} · accepted{" "}
+                    {formatDate(o.history.at(-1)?.at ?? o.createdAt)}
                   </p>
                   <p className="mt-1 text-sm">
                     Sourcing fee on conclusion:{" "}

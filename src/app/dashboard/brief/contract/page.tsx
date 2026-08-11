@@ -64,9 +64,10 @@ export default async function SeekerContractPage({
               property has left the site.
             </li>
             <li>
-              <strong>Conveyancing deposit.</strong> Before submitting an
-              offer you must appoint a solicitor from the Matchlisted panel,
-              secured by a £100 (+ VAT) conveyancing deposit.
+              <strong>Offers are unconditional on services.</strong> You do
+              not need a solicitor to submit an offer, and nothing is payable
+              to submit one. If your offer is accepted, you appoint a
+              solicitor of your choice to conclude the missives.
             </li>
             <li>
               <strong>Fair use.</strong> Home Reports and property details are

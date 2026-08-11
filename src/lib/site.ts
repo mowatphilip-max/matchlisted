@@ -11,7 +11,9 @@ export const SITE_TAGLINE = "Where Quiet Seekers meet Hush Homes";
 export const VAT_RATE = 0.2;
 export const HOME_REPORT_MARGIN = 100; // our margin per Home Report, £
 export const WITHDRAWAL_FEE = 300; // seller lists elsewhere on the open market, £
-export const CONVEYANCING_DEPOSIT = 100; // to appoint a lawyer before offering, £
+// CONVEYANCING_DEPOSIT is gone (DECISIONS.md §0.5): conditioning an offer on
+// appointing/paying for a lawyer is conditional selling. Nothing is payable
+// to submit an offer.
 
 /**
  * The buyer fee: £300 + VAT, FIXED, on conclusion of missives — every
@@ -108,7 +110,9 @@ export function withVat(net: number): number {
 
 
 export const CONTRACT_VERSIONS = {
-  seeker: "seeker-v1.0-2026-07",
+  // v1.1: conveyancing-deposit clause removed (DECISIONS.md §0.5 — an offer
+  // is never conditional on appointing or paying for a solicitor).
+  seeker: "seeker-v1.1-2026-08",
   seller: "seller-v1.0-2026-07",
 } as const;
 

@@ -80,9 +80,10 @@ export default function QuietSeekersPage() {
               <strong className="text-charcoal">fixed £{BUYER_FEE} buyer fee (+ VAT)</strong>{" "}
               is payable on conclusion of missives — {formatPrice(withVat(BUYER_FEE))}{" "}
               in total, whether the home costs £150,000 or £1.5 million. The fee still applies if you buy the same property later, even
-              after it has left the site. Before you can make an offer, you
-              appoint a lawyer from our panel with a £100 (+ VAT) conveyancing
-              deposit, so an accepted offer goes straight to missives.
+              after it has left the site. You don&apos;t need a solicitor to
+              make an offer, and nothing is payable to submit one — if your
+              offer is accepted, you appoint a solicitor then, your own or one
+              from our panel.
             </p>
           </div>
         </Container>

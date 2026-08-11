@@ -872,8 +872,6 @@ export const sampleInvoices: Invoice[] = [
   { id: "inv-hr-aberlady", userId: "u-tam", homeId: "h-aberlady", kind: "home-report", description: "Home Report · Allied Surveyors (4 Craigielaw Road)", net: 555, vat: 111, status: "paid", createdAt: "2026-07-21T09:00:00Z", paidAt: "2026-07-21T09:02:00Z" },
   { id: "inv-hr-inverness", userId: "u-isla", homeId: "h-inverness", kind: "home-report", description: "Home Report · Graham + Sibbald (9 Island Bank Lane)", net: 560, vat: 112, status: "paid", createdAt: "2026-07-08T09:00:00Z", paidAt: "2026-07-08T09:02:00Z" },
   { id: "inv-hr-melrose", userId: "u-morag", homeId: "h-melrose", kind: "home-report", description: "Home Report · Allied Surveyors (Eildon View)", net: 585, vat: 117, status: "paid", createdAt: "2026-05-22T09:00:00Z", paidAt: "2026-05-22T09:01:00Z" },
-  { id: "inv-dep-kirsty", userId: "u-kirsty", homeId: "h-troon", offerId: "offer-troon", kind: "conveyancing-deposit", description: "Conveyancing deposit · Aberdein Considine appointed", net: 100, vat: 20, status: "paid", createdAt: "2026-06-25T15:00:00Z", paidAt: "2026-06-25T15:01:00Z" },
-  { id: "inv-dep-fenella", userId: "u-fenella", homeId: "h-melrose", offerId: "offer-melrose", kind: "conveyancing-deposit", description: "Conveyancing deposit · Thorntons Law appointed", net: 100, vat: 20, status: "paid", createdAt: "2026-06-01T10:00:00Z", paidAt: "2026-06-01T10:01:00Z" },
   { id: "inv-fee-fenella", userId: "u-fenella", homeId: "h-melrose", offerId: "offer-melrose", kind: "sourcing-fee", description: "Buyer fee · fixed £300 + VAT (Eildon View, missives concluded 30 Jun 2026)", net: 300, vat: 60, status: "due", createdAt: "2026-06-30T12:05:00Z" },
 ];
 

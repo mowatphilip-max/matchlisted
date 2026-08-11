@@ -29,7 +29,6 @@ import { formatPrice } from "@/lib/format";
 import {
   BUYER_FEE,
   CONFIG,
-  CONVEYANCING_DEPOSIT,
   HOME_REPORT_MARGIN,
   WITHDRAWAL_FEE,
   withVat,
@@ -419,11 +418,6 @@ export default async function HomePage() {
                   <td className="px-6 py-4 font-medium">Quiet Seeker registration</td>
                   <td className="px-6 py-4 font-display font-bold text-green-deep">Free</td>
                   <td className="px-6 py-4 text-charcoal-soft">Always</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 font-medium">Conveyancing deposit</td>
-                  <td className="px-6 py-4 font-display font-bold">£{CONVEYANCING_DEPOSIT}</td>
-                  <td className="px-6 py-4 text-charcoal-soft">To appoint a lawyer before offering</td>
                 </tr>
                 <tr>
                   <td className="px-6 py-4 font-medium">Buyer fee</td>

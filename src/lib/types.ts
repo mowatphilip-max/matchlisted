@@ -272,7 +272,13 @@ export interface Offer {
   id: string;
   homeId: string;
   seekerId: string;
-  lawyerId: string;
+  /**
+   * Nullable by design (DECISIONS.md §0.5): an offer NEVER requires a
+   * lawyer — conditioning offer submission on services is an undesirable
+   * practice under the 1991 Order. Set post-acceptance if the buyer
+   * chooses a solicitor.
+   */
+  lawyerId: string | null;
   amount: number;
   note?: string;
   status: OfferStatus;
@@ -285,6 +291,7 @@ export interface Offer {
 
 export type InvoiceKind =
   | "home-report"
+  /** LEGACY — abolished by DECISIONS.md §0.5 (conditional selling). Never issued anymore; kept only so historical rows still parse. */
   | "conveyancing-deposit"
   | "sourcing-fee"
   | "withdrawal-fee";
