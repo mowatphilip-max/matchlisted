@@ -1,5 +1,17 @@
 # Matchlisted.com — Build Brief for Claude Code
 
+> **STALE IN PLACES — `docs/DECISIONS.md` WINS.** This brief is preserved
+> verbatim from 3 August 2026. The decision log has since overturned or
+> amended parts of it: the £300 withdrawal fee is abolished; conveyancing
+> commission is replaced by the firm-ledger case pack fee and panel seat
+> (and `charges` is consumer-only); the seller panel is mandatory with a
+> price guarantee; a For Sale board add-on exists; consumer prices are
+> quoted inclusive of VAT (£360 buyer fee, £240/£354/£120 add-ons); a
+> qualified "free listing" claim is permitted; and an offer is never
+> conditional on appointing or paying for a solicitor. Read
+> `docs/DECISIONS.md` first — where the two disagree, the decision log is
+> the build instruction.
+
 Prepared 3 August 2026 · target launch January 2027
 Supplied by Phil, 4 August 2026. This is the working brief. Read it end to end
 before writing code. Preserved verbatim; tables reconstructed from the paste.
