@@ -17,7 +17,7 @@ card payments, solicitor introductions — through an admin back office.
 
 Run: `npm run dev` -> **http://localhost:3000**
 Database: Supabase project `gqyvxtccpqitktdefhnh`
-Branch: `main` · 15 commits · no git remote yet
+Branch: `main` · remote: `github.com/mowatphilip-max/matchlisted` (private)
 
 ## What this is NOT
 **This is not the Mowatt website.** `../mowatt-uk` is a separate product with its own
@@ -76,4 +76,11 @@ code.** Changing one does not change the other. Porting a fix across is a decisi
 an automatic follow-up. `mowatt-bridge.ts` is the one real coupling.
 
 ## Open risk
-**There is no git remote.** 15 commits exist only on this machine. Nothing is backed up.
+**The registrations are the critical path, not the code.** Matchlisted Ltd is a new company
+and inherits none of Mowatt's permissions — redress, HMRC AML supervision, ICO and VAT must
+all be obtained fresh, and estate agency work without AML supervision is an offence. If the
+applications are not filed by the end of September 2026, the January 2027 launch is at risk
+regardless of build progress.
+
+**`docs/BUILD-BRIEF.md` still contradicts `docs/DECISIONS.md`** in several places. The
+decision log wins by instruction, but the brief needs rewriting so the two agree.

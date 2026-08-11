@@ -6,7 +6,7 @@ Where it conflicts with `docs/BUILD-BRIEF.md`, **this file wins** until the brie
 **Read this before starting any build session.** Two of the brief's own §12 "non-negotiables"
 have been overturned and a session working from the brief alone will build the wrong behaviour.
 
-Last updated: 10 August 2026.
+Last updated: 11 August 2026.
 
 ---
 
@@ -18,6 +18,30 @@ Last updated: 10 August 2026.
 | §12 "The panel is a recommendation, not a requirement — the opt-out must be as visible as the accept" | **Overturned.** The conveyancing panel is **mandatory** for Hush Home sellers, paired with a quoted fixed-fee price guarantee. See §6. | 10 Aug 2026 |
 | §1 "No board, no portal, no open viewings" | **Amended.** A For Sale board is now a paid add-on. A Hush Home is private *by default*; the add-ons are the volume knob. | 10 Aug 2026 |
 | §13 open item 2 — "whether the 12-month longstop and the £300 withdrawal fee can both stand" | **Resolved.** Withdrawal fee abolished. Longstop stands. | 10 Aug 2026 |
+
+---
+
+## 0.5 OUTSTANDING DEFECT — fix before the Track B rework
+
+**The offer flow conditions a buyer's ability to make an offer on appointing and paying for
+a lawyer through the platform** (`src/app/homes/[id]/offer/page.tsx`, echoed on the
+quiet-seekers page and the seeker contract page). Found 11 Aug 2026 during the Track B survey.
+
+This is **conditional selling**. The Estate Agents (Undesirable Practices) (No. 2) Order 1991
+makes it an undesirable practice to discriminate against a prospective purchaser "on the
+grounds that that purchaser will not be, or is unlikely to be, accepting services", and
+NTSEAT names *imposing additional conditions on offer submission* as a specific example.
+It is a **trigger event** under the Estate Agents Act 1979 — NTSEAT can prohibit an
+individual from estate agency work — and the code is live on a deployed site.
+
+**The seller mandate and the buyer condition are not the same thing.** A mandated panel for
+the *seller*, paired with a price guarantee, is defensible (§6). Any condition on the *buyer*
+is not defensible at all, on any terms, ever.
+
+**Fix:** a buyer must be able to submit a Note of Offer with no lawyer appointed and nothing
+paid. Appointing a solicitor comes after acceptance, and the £100 deposit tied to it should
+be removed rather than re-labelled — do not spend effort making it VAT-inclusive until its
+fate is decided.
 
 ---
 
@@ -52,9 +76,9 @@ Do not run the free claim hard at audiences below ~£200k, where £580 is at or 
 | Withdrawal fee | **ABOLISHED** — was £300 + VAT | — |
 | Rightmove add-on | **£240** | Stripe, upfront |
 | Photography add-on | **£354** | Stripe, upfront |
-| **Board add-on** | **£120** | Stripe, upfront. NEW — needs a supplier workflow modelled on photography's |
+| **Board add-on** | **£120** | Stripe, upfront. NEW. No photography workflow exists yet to copy — config and schema only for now; the fulfilment path is built once, in Phase 6, and photography and Rightmove reuse it |
 | **Buyer fee** | **£360, flat** | Solicitor at settlement |
-| **Case pack fee** | **£150 + VAT, B2B** | Invoiced to the panel firm on `pack_delivered` — see §6 |
+| **Case pack fee** | **£150 + VAT, B2B** | Invoiced to the panel firm on `pack_delivered`. **Firm ledger, not `charges`** — see §6 |
 | **Panel seat** | Fixed annual, per firm | B2B invoicing, monthly. **Not a `Charge`** — see §6 |
 
 **The draft seller agreement says the buyer fee is 0.8%. That is wrong and must be corrected
@@ -149,6 +173,23 @@ periodically."
 - Fixed for twelve months, renegotiated at renewal.
 - **A panel seat is not a `Charge`.** It is B2B invoicing against a firm. Needs a new
   `PanelFirm` model: territory, seat fee, invoicing schedule, renewal date.
+
+### Where the money sits in the data model
+
+**Consumer charges and firm invoices are separate ledgers. Do not merge them.**
+
+The `charges` table carries consumer-protection machinery — 14-day pre-charge notices,
+cancellation rights, stored-card mandates, s.18 disclosure. None of that applies to a
+business invoice to a law firm.
+
+- **Consumer side (`charges`)** — Home Report, add-ons, buyer fee. The payer is always a user.
+- **Firm side (its own table)** — the case pack fee *and* the panel seat. The payer is always
+  a `PanelFirm`. Carry a nullable `listing_id` on the pack fee so per-listing revenue stays
+  reportable.
+
+**Do not make `charges.payer_user_id` nullable to accommodate a firm payer.** A polymorphic
+payer on the table that governs consumer protection is how a 14-day consumer notice ends up
+addressed to a law firm — or, far worse, how a consumer silently misses one.
 
 ### The mandate
 
