@@ -6,7 +6,10 @@ Where it conflicts with `docs/BUILD-BRIEF.md`, **this file wins** until the brie
 **Read this before starting any build session.** Two of the brief's own §12 "non-negotiables"
 have been overturned and a session working from the brief alone will build the wrong behaviour.
 
-Last updated: 11 August 2026.
+Last updated: 11 August 2026 (Rightmove membership, §4a).
+
+Pitch-side decisions — narrative, valuation, deck structure, what we claim to investors and how we
+defend it — live in `docs/PITCH.md`, not here.
 
 ---
 
@@ -74,7 +77,7 @@ Do not run the free claim hard at audiences below ~£200k, where £580 is at or 
 |---|---|---|
 | Home Report | **£580** | Solicitor at settlement; **stored card, 14 days' written notice**, on withdrawal / listed elsewhere / longstop |
 | Withdrawal fee | **ABOLISHED** — was £300 + VAT | — |
-| Rightmove add-on | **£240** | Stripe, upfront |
+| Rightmove add-on | **£240** | Stripe, upfront. **Matchlisted lists under its OWN Rightmove membership** — see §4a |
 | Photography add-on | **£354** | Stripe, upfront |
 | **Board add-on** | **£120** | Stripe, upfront. NEW. No photography workflow exists yet to copy — config and schema only for now; the fulfilment path is built once, in Phase 6, and photography and Rightmove reuse it |
 | **Buyer fee** | **£360, flat** | Solicitor at settlement |
@@ -123,6 +126,43 @@ the existing data model (`street` never exposed pre-viewing).
 
 **Board add-on.** A Hush Home is private by default and the add-ons are the volume knob:
 Rightmove takes the seller public online, a board takes them public locally, both by choice.
+
+---
+
+## 4a. Rightmove — Matchlisted's own membership
+
+**Decided 11 August 2026.** Matchlisted Ltd holds its own Rightmove membership and lists as
+Matchlisted. **It does not list under Mowatt's membership**, and no material may claim that it does.
+
+Why the previous assumption failed. Rightmove's published Product Guidelines require the branch
+advertising a property to have *"received an instruction at Your Location to which the Featured
+Property is allocated"*, and the Additional Profile product — the only route to a second listing
+profile — requires that profile to *"share the same legal entity as Your Parent Branch"* and trade
+from the same address. Rightmove has separately refused a joint listing between a member and a
+non-member firm on the ground that *"agents cannot re-sell Rightmove services to other agents"*,
+requiring the listing agent to hold the vendor instruction and handle all enquiries itself.
+Matchlisted Ltd is a separate legal entity holding its own instructions, so Mowatt could not
+lawfully list its stock under Rightmove's own rules.
+
+**Build and planning consequences:**
+
+- **Rightmove membership is a fixed annual cost, not a per-listing marginal one.** Remove any
+  `£25 marginal cost` assumption. Modelled at £12,000 in 2027 rising to £18,000 by 2032 —
+  an estimate until membership quotes it.
+- **Rightmove requires redress scheme membership**, so the add-on cannot go live until Matchlisted
+  holds redress. **It sits on the same critical path as incorporation, HMRC AML and ICO, and may
+  not be available at the January 2027 launch.** The listing builder must be able to hide or
+  waitlist the add-on without a code change — a config flag, like the other add-ons.
+- Rightmove has historically priced online and hybrid agents differently from high-street branches.
+  A single office advertising across all of Scotland may not be priced as one branch. Confirm
+  before relying on the cost.
+- Mowatt's Rightmove membership still matters — it covers **Mowatt's own instructions**, which is
+  the premium tier. It is not a launch de-risker for the Matchlisted add-on.
+
+**Alternative, if the add-on has to ship before redress:** the seller taking the Rightmove route
+instructs **Mowatt** and becomes a Mowatt open-market client, with Mowatt listing its own
+instruction and handling enquiries. That is compliant, but it is a different product with different
+economics — not a £240 add-on to a Hush Home Listing — and must be presented as such.
 
 ---
 
