@@ -980,6 +980,35 @@ export async function audit(
   }
 }
 
+// ---- Match Report leads (BUILD-BRIEF.md §6.1) ------------------------------
+//
+// The public Match Report's honest empty state: when nothing matches we
+// capture an email and the four inputs, and alert them when a seeker does.
+// No account, no auth — this is a marketing lead, not a user.
+
+export interface MatchReportLeadInput {
+  email: string;
+  areaId: string | null;
+  town: string | null;
+  beds: number | null;
+  propertyType: string | null;
+  valueBand: string | null;
+}
+
+export async function createMatchReportLead(
+  lead: MatchReportLeadInput,
+): Promise<void> {
+  const res = await serverDb().from("match_report_leads").insert({
+    email: lead.email,
+    area_id: lead.areaId,
+    town: lead.town,
+    beds: lead.beds,
+    property_type: lead.propertyType,
+    value_band: lead.valueBand,
+  });
+  unwrap(res as any, "createMatchReportLead");
+}
+
 export async function auditForSubject(
   subjectType: string,
   subjectId: string,

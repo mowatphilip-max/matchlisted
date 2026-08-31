@@ -127,10 +127,10 @@ export function AreaFinder({ stats }: { stats: AreaSeekerStats }) {
         )}
         <div className="mt-3 flex flex-wrap gap-2">
           <Link
-            href="/join?as=seller"
+            href={`/match-report?area=${encodeURIComponent(picked.id)}`}
             className="rounded-full bg-orange-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-orange-cta-hover"
           >
-            List your home free
+            Get your free Match Report
           </Link>
           <Link
             href="/seekers"

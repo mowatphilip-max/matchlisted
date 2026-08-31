@@ -67,11 +67,11 @@ export default async function HushHomesPage() {
             Seeker in Scotland, and you meet only the buyers who genuinely fit.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/join?as=seller" variant="seller">
-              Start your listing
+            <ButtonLink href="/match-report" variant="seller">
+              See who&apos;s waiting for your home
             </ButtonLink>
-            <ButtonLink href="/#fees" variant="secondary">
-              See the fees
+            <ButtonLink href="/join?as=seller" variant="secondary">
+              Start your listing
             </ButtonLink>
           </div>
         </Container>

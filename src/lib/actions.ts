@@ -13,6 +13,7 @@ import {
   adminUserId,
   audit,
   chargesForSubject,
+  createMatchReportLead,
   createProfile,
   findIntroduction,
   getBrief,
@@ -54,7 +55,7 @@ import {
   markNotificationsRead,
 } from "./db";
 import { alertSeekersAboutHome, alertSellersAboutBrief } from "./alerts";
-import { areaLabel } from "./areas";
+import { areaLabel, getArea } from "./areas";
 import { uploadHomeReportFile } from "./storage";
 import { fulfilHomeReportOrder } from "./fulfilment";
 import {
@@ -1171,4 +1172,49 @@ export async function adminRemoveLawyer(formData: FormData) {
   dbRemoveLawyer(String(formData.get("lawyerId") ?? ""));
   refresh();
   redirect("/admin/lawyers");
+}
+
+// ---- The public Match Report (BUILD-BRIEF.md §6.1) -------------------------
+
+/**
+ * Empty-state email capture. Public and unauthenticated by design — the
+ * Match Report is the destination for every seller-side advert and must
+ * work with no account. Stores a lead; never creates a user, never sends
+ * anything yet. The email goes to the database only (match_report_leads),
+ * NEVER into the redirect URL.
+ */
+export async function captureMatchReportLead(formData: FormData) {
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const areaId = String(formData.get("area") ?? "").trim();
+  const beds = Math.floor(Number(formData.get("beds") ?? 0));
+  const type = String(formData.get("type") ?? "").trim();
+  const band = String(formData.get("band") ?? "").trim();
+
+  // Preserve the four inputs through the redirect so the report re-renders.
+  const params = new URLSearchParams();
+  const area = getArea(areaId);
+  if (area) params.set("area", area.id);
+  if (beds >= 1) params.set("beds", String(Math.min(beds, 6)));
+  if (type) params.set("type", type);
+  if (band) params.set("band", band);
+
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    params.set("error", "email");
+    redirect(`/match-report?${params.toString()}`);
+  }
+
+  const { PROPERTY_TYPES } = await import("./types");
+  await createMatchReportLead({
+    email,
+    areaId: area?.id ?? null,
+    town: area?.place ?? null,
+    beds: beds >= 1 ? Math.min(beds, 6) : null,
+    propertyType: PROPERTY_TYPES.some((t) => t.value === type) ? type : null,
+    valueBand: CONFIG.valueBands.some((b) => b.id === band) ? band : null,
+  });
+
+  params.set("saved", "1");
+  redirect(`/match-report?${params.toString()}`);
 }
