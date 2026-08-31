@@ -67,14 +67,26 @@ export const CONFIG = {
     casePackFeeNet: 150,
   },
   /**
-   * Listing-claim copy (CAP Code / DMCCA). NEVER write a bare "free" claim
-   * for the listing anywhere — use these strings. The sub-line flips to the
-   * deferred wording when Phase 3 switches collection over (one-line edit).
+   * Listing-claim copy. DECISIONS.md §1 (10 Aug 2026, overturning brief
+   * §12) PERMITS "List your house for free", subject to four mandatory
+   * conditions: total liability on the SAME SCREEN as the word "free";
+   * dated market-rate evidence kept beside the ad file; every
+   * consumer-facing figure VAT-inclusive; and a statement that the Home
+   * Report is payable whether or not the home sells.
+   *
+   * The compliant liability line quotes the flat £580 DEFERRED Home Report
+   * (fees.homeReportGross) — a model the site does not run yet: collection
+   * is still upfront and banded (homeReportQuote below). Flip these strings
+   * to the free claim WITH Phase 3's deferred switchover, not before —
+   * pairing "free" with today's upfront banded purchase would attach the
+   * wrong liability statement to the claim.
    */
   copy: {
     listingHeadline: "No listing fee. No commission.",
     listingSubline: "You pay only for your Home Report.",
-    // Phase 3: listingSubline becomes "Pay for your Home Report when you sell."
+    // Phase 3: listingHeadline becomes "List your house for free" and the
+    // sub-line becomes "Pay for your Home Report when you sell." with the
+    // £580 / whether-or-not-it-sells liability rendered alongside.
   },
   /** goLiveAt + this many months → expired (longstop). Under legal review — may be switched off. */
   longstopMonths: 12,
