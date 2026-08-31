@@ -123,7 +123,7 @@ function RingBadge({
           cy={BOX / 2}
           r={R}
           fill="none"
-          stroke="#F37C24"
+          stroke="#E8693A"
           strokeWidth={STROKE}
           strokeLinecap="round"
           strokeDasharray={C}

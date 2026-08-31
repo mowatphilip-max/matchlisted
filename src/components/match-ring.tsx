@@ -5,7 +5,7 @@ import { matchBand } from "@/lib/match";
 import { cn } from "@/lib/utils";
 
 const bandColors = {
-  hot: { ring: "#F37C24", text: "text-orange-deep" },
+  hot: { ring: "#E8693A", text: "text-orange-deep" },
   warm: { ring: "#2FA2CE", text: "text-blue-deep" },
   cool: { ring: "#9AA1A9", text: "text-charcoal-soft" },
 } as const;

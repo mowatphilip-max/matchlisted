@@ -9,7 +9,7 @@
 
 import { SEEKER_PROPERTY_TYPES, type SeekerPropertyType } from "@/lib/mowatt-seekers";
 
-const CORAL = "var(--color-orange, #F37C24)";
+const CORAL = "var(--color-orange, #E8693A)";
 
 /** Secondary "context" strokes (the rest of the building) — muted slate. */
 const CTX = { opacity: 0.42 } as const;
