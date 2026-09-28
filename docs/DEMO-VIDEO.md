@@ -10,6 +10,29 @@ document in the SEIS Advance Assurance pack. **That is why nothing in it may be 
 Read first, in this order: `CLAUDE.md`, `docs/DECISIONS.md` (§0.5, §1, §2, §4, §4a, §4b),
 `docs/PITCH.md` (§1 and §2.8). Where this brief and DECISIONS.md disagree, DECISIONS.md wins.
 
+## 0. Decisions taken 28 September 2026 — these override anything below
+
+- **Recording route: Tella.** Phil records the clips himself in Tella against the local build, and
+  the edit happens in Tella. Build the scenes, the demo data and the local database; **skip §3
+  steps 4 to 8** (Playwright recording, ffmpeg/Remotion assembly, synthetic voice).
+- **Database: local Supabase** via Docker Desktop and the Supabase CLI. Point the app at it through
+  a separate `.env.demo`; never edit or overwrite `.env.local`, and print the Supabase URL on start
+  so Phil can see it is `127.0.0.1`, not the hosted project.
+- **Scene 3 — build it, minus the free-claim panel.** Build the "Offers over £X" field and the
+  add-ons at inclusive prices (DECISIONS.md §2, §4). **Do not build or show the free-claim panel.**
+  Its compliant wording quotes the flat £580 deferred Home Report, and the site still collects the
+  Home Report upfront and banded (commit 9381c59); the copy switches with Phase 3, not before.
+- **Scene 5 — build it.** The viewing page reveals the address only once a viewing is booked
+  (DECISIONS.md §4). The data model already withholds `street`; this is a page, not a rule change.
+- **Scene 1 — add the buyer's position.** Investor material already describes it. Use Scottish
+  terms: "Nothing to sell", "My home is under offer", "My home is sold — missives concluded",
+  "Still to sell". Not "STC".
+- **End card — framed as launch pricing.** "When we launch in January: list your house for free…"
+  The product does not run the deferred model yet, so the video must not say it does today.
+- **Branches.** Commit the 49 files on `polish/audit-remediation` and push that branch before
+  anything else; merge `origin/main` into it; then branch `demo-video` from it. Do not merge to
+  `main` until Phil has reviewed the offer page against DECISIONS.md §0.5.
+
 ---
 
 ## 1. Rules — each one exists for a reason
