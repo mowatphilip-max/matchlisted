@@ -6,7 +6,7 @@ Where it conflicts with `docs/BUILD-BRIEF.md`, **this file wins** until the brie
 **Read this before starting any build session.** Two of the brief's own §12 "non-negotiables"
 have been overturned and a session working from the brief alone will build the wrong behaviour.
 
-Last updated: 11 August 2026 (Rightmove membership, §4a).
+Last updated: 28 September 2026 (company structure and SEIS, §4b).
 
 Pitch-side decisions — narrative, valuation, deck structure, what we claim to investors and how we
 defend it — live in `docs/PITCH.md`, not here.
@@ -166,6 +166,35 @@ economics — not a £240 add-on to a Hush Home Listing — and must be presente
 
 ---
 
+## 4b. Company structure and SEIS — decided 28 September 2026
+
+**Matchlisted Ltd raises £200,000 for 30% on its own, structured for SEIS. Mowatt – Move Smarter
+Ltd is a separate company and a related party, not part of the investment.** Pitch detail in
+`docs/PITCH.md` §1.
+
+Rules this creates — each one protects the investors' tax relief for three years after the shares
+are issued:
+
+- **Matchlisted must never be controlled by another company, Mowatt included.** Founder shares
+  are held by Phil and Annabelle personally. A company shareholder with control fails SEIS
+  permanently.
+- **One class of ordinary shares.** No preference, ratchet, redemption or put rights for anyone.
+- **The codebase and domain belong to Matchlisted Ltd**, assigned in writing from Phil personally
+  — not from Mowatt, which would read as Matchlisted acquiring a trade from a company under
+  common control.
+- **Quiet Seekers re-register with Matchlisted.** No list is transferred from Mowatt as an asset.
+  This is the same route the data-protection position already required.
+- **Nothing of value flows to an investor** from Matchlisted or anyone connected with it — no
+  loans, buy-backs, benefits, or assets below market value. Payment for services an investor
+  provides is at market rate under a separate contract, never in shares.
+- **No EIS money before the SEIS shares are issued.**
+- The Mowatt referral agreement is written, at 30% (the third-party agent rate), and disclosed.
+
+**Consumer copy rule added:** never "pay nothing until your home sells" or "settle only when your
+home sells". The Home Report is payable whether or not the home sells (§1, condition 4).
+
+---
+
 ## 5. AML / identity
 
 Provider decision rule: **cheapest.**
@@ -265,6 +294,10 @@ before the seller commits.
    *(New solicitor question.)*
 6. Does a mandated panel clause paired with a stated price guarantee survive CRA 2015 Part 2?
    *(New solicitor question.)*
+7. **Has Matchlisted Ltd been incorporated, and who holds the founder shares?** Must be Phil and
+   Annabelle personally (§4b). *(Raised 28 September 2026.)*
+8. **SEIS Advance Assurance** — two named prospective investors, and the accountant's review,
+   before the target submission date of 19 October 2026.
 
 ---
 

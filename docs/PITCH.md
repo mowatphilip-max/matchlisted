@@ -9,22 +9,39 @@ Opened 11 August 2026.
 
 ---
 
-## 1. The offer — fixed, do not restate
+## 1. The offer — changed 28 September 2026
 
-**£200,000 for 30% of Matchlisted Ltd AND 30% of Mowatt – Move Smarter Ltd.** Two companies held
-side by side by the same shareholders. No holding company, no intercompany loans, no debt facility.
+**£200,000 for 30% of Matchlisted Ltd.** One priced round of ordinary shares, structured for
+SEIS. Pre-money £466,667, post-money £666,667. **Mowatt – Move Smarter Ltd is not part of the
+investment.** It is a related party that pays Matchlisted a 30% referral under a written,
+arm's-length agreement.
 
-- £200,000 subscribes for newly issued Matchlisted shares. Post-money £666,667, pre-money £466,667.
-- 30% of Mowatt transfers at nominal value in the same transaction. Mowatt valued at £70,000
-  (4× year-one earnings), so £221,000 of value for £200,000.
+**Why it changed.** SEIS relief attaches only to new shares paid up in cash by the company
+raising the money. The August structure — 30% of Mowatt transferred at nominal value alongside —
+earned no relief on the Mowatt shares and put the relief on the Matchlisted shares at risk: HMRC
+counts value received from any person connected with the company, and an asset transferred for
+less than market value is one of the listed forms (VCM36040, VCM36070). RBS Entrepreneurship
+Centre independently advised Matchlisted standalone. Investors give up ~£129,000 of Mowatt value
+at a 2032 exit and gain £100,000 of income tax relief on day one plus a CGT exemption.
+
+**Never write again, anywhere investor-facing:** "£221,000 of value for £200,000", or anything that
+bundles Mowatt shares with the subscription. An investor who wants Mowatt buys it separately, at
+full market value, not conditional on the SEIS subscription, with the accountant's sign-off.
+
+**If "30% of both" was put to Craig and Iain in writing** (unknown as at 28 September), present
+the change as the thing that gets them SEIS — which it is — never as a reduced offer.
 
 **The 40% figure was never offered.** It was an internal draft, never presented. Nothing
-investor-facing may reference a previous ask, a revised offer, or an improvement on earlier terms —
-it hands Craig and Iain a 40% anchor they never had.
+investor-facing may reference a previous ask, a revised offer, or an improvement on earlier terms.
 
-**Standing answer on in-kind contribution:** welcome as part of the £200,000, never as a discount
-on it. £160,000 cash plus £40,000 of services against an agreed schedule and a value cap is the
-same deal. £160,000 cash alone is a different, weaker company.
+**Standing answer on in-kind contribution — REPLACED 28 September.** SEIS shares must be paid up
+in full, in cash, so services cannot buy them. In-kind help is welcome as a separate services
+contract at market rate. The anti-deduction line is now stronger: £200,000 in cash earns the
+investor £100,000 of relief; £160,000 earns £80,000. **Knocking £40,000 off for marketing costs
+the investor £20,000 of their own relief.**
+
+**Two named investors** are needed for the Advance Assurance application. Not decided as at
+28 September.
 
 ---
 
@@ -212,6 +229,43 @@ document's structure and copy, not the other way round.**
 Page 7 lists the four things Phil and Annabelle need to settle: how hard to push the return, the
 unopined conveyancing structure, the evidence-free board attach rate, and whether "400" or "160"
 leads the proof page.
+
+---
+
+## 2.8 The RBS pack — 28 September 2026
+
+Built for the RBS Entrepreneurship Centre meeting on 29 September, in the running order of RBS's
+Deal Room brief. **These supersede the August deck and the short-form pack for all external use.**
+
+- `matchlisted-pitch-deck-sept-2026.pdf` — 13 slides: title, problem, solution, how it works,
+  market, traction, business model and unit economics, competition, what you are investing in,
+  team and gaps, financials, the ask, vision.
+- `matchlisted-executive-summary.pdf` — one page, with the entity statement RBS asked for.
+- SEIS readiness and Deal Room plan — a Claude Doc:
+  https://claude.ai/code/artifact/ba60cde9-4cdc-4187-b424-7421eed3e800
+
+What changed in the story, and why:
+
+- **Financials are Matchlisted alone.** Break-even in 2028 on its own; 2032 EBITDA £650,900.
+  Returns shown against both the cash and the SEIS net cost: 11× → £2.15m (10.7× / 21.5×);
+  8× → £1.56m (7.8× / 15.6×). Lowest cash £64,994 in 2028 on the no-panel-seat funding case.
+- **Unit economics:** about £748 of gross profit per completed sale at 2028 take-up, before panel
+  seats and the fixed Rightmove membership. Marketing £200 per listing in 2027.
+- **Competition slide added** (the August deck had none): traditional agents, agents' private
+  sales, online agents, Off-Market Keys (launched 12 August 2026, agent-led, 0.1% each side) and
+  Pineapple Nest (Scottish direct matching, pricing not published).
+- **Annabelle's line reworded:** "Mowatt was the analogue testing ground. Matchlisted is the
+  platform built to do it at national scale." The deck goes to HMRC as the investor document, and
+  "Matchlisted takes it digital" reads as Matchlisted taking over a trade Mowatt already runs.
+- **Smart Sellers adopted** as the name for sellers. Hush Home Listing and Quiet Seeker Profile
+  stay the names of the things.
+- **The conveyancing price guarantee is not quoted as a number.** The panel firms' fee is still
+  open (DECISIONS.md §7 item 3); £975 + VAT is a modelling assumption only.
+- **Two lines from the pain-points paper (17 September) must not be used:** "settle only when
+  your home sells" — the Home Report is payable whether or not the home sells, which is a
+  condition of the free claim — and "Offers over tells you nothing", since our own listings use
+  "Offers over £X".
+- RBS's brief still assumes a seller fee and withdrawal fees. Neither exists.
 
 ---
 
