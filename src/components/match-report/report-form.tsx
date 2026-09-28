@@ -27,7 +27,7 @@ export interface ReportFormInitial {
 }
 
 const selectCls =
-  "min-h-12 w-full cursor-pointer rounded-xl border border-hairline bg-white px-3.5 text-sm text-charcoal outline-none focus:border-blue-deep";
+  "min-h-12 w-full cursor-pointer rounded-xl border border-hairline bg-white px-3.5 text-base text-charcoal focus:border-blue-deep";
 
 const noopSubscribe = () => () => {};
 function rememberedAreaId(): string | null {
@@ -106,7 +106,7 @@ export function MatchReportForm({ initial }: { initial: ReportFormInitial }) {
           </label>
           {picked ? (
             <div className="mt-1.5 flex min-h-12 items-center justify-between gap-3 rounded-xl bg-blue-tint px-3.5 ring-1 ring-inset ring-blue-deep/30">
-              <p className="flex items-center gap-2 text-sm font-bold text-blue-deep">
+              <p className="flex items-center gap-2 text-sm font-bold text-blue-text">
                 <MapPin className="h-4 w-4 shrink-0" />
                 {picked.place}
                 <span className="font-normal text-charcoal-soft">
@@ -150,7 +150,7 @@ export function MatchReportForm({ initial }: { initial: ReportFormInitial }) {
                 onKeyDown={onKeyDown}
                 onBlur={() => setTimeout(() => setOpen(false), 150)}
                 placeholder="Town or area. Try “Gullane”…"
-                className="min-h-12 w-full bg-transparent text-sm outline-none placeholder:text-muted"
+                className="min-h-12 w-full bg-transparent text-base placeholder:text-muted"
               />
             </div>
           )}
@@ -159,7 +159,7 @@ export function MatchReportForm({ initial }: { initial: ReportFormInitial }) {
             <ul
               id="mr-area-list"
               role="listbox"
-              className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-hairline bg-white p-1.5 shadow-[var(--shadow-card-hover)]"
+              className="popover-in absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-hairline bg-white p-1.5 shadow-[var(--shadow-card-hover)]"
             >
               {results.map((a, i) => (
                 <li key={a.id}>
@@ -176,7 +176,7 @@ export function MatchReportForm({ initial }: { initial: ReportFormInitial }) {
                     className={cn(
                       "flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm",
                       i === active
-                        ? "bg-blue-tint text-blue-deep"
+                        ? "bg-blue-tint text-blue-text"
                         : "text-charcoal",
                     )}
                   >

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
+import { Receipt } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ConfirmSubmit } from "@/components/ui/confirm-submit";
 import { allInvoices, usersById } from "@/lib/db";
 import { adminMarkInvoicePaid } from "@/lib/actions";
 import { formatDate, formatMoney } from "@/lib/format";
@@ -33,6 +36,21 @@ export default async function AdminInvoicesPage() {
         withdrawal fees are invoiced and marked paid here on receipt.
       </p>
 
+      {invoices.length === 0 ? (
+        <EmptyState
+          className="mt-8"
+          icon={Receipt}
+          title="No invoices raised yet"
+          action={
+            <ButtonLink href="/admin/deals" variant="secondary">
+              Open the deals pipeline
+            </ButtonLink>
+          }
+        >
+          Home Reports invoice at checkout and buyer fees are raised when
+          missives conclude.
+        </EmptyState>
+      ) : (
       <div className="mt-8 overflow-x-auto rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead>
@@ -46,7 +64,7 @@ export default async function AdminInvoicesPage() {
               <th className="px-5 py-3 font-semibold">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-hairline">
+          <tbody className="divide-y divide-hairline [&>tr]:transition-colors [&>tr:hover]:bg-soft/60">
             {invoices.map((i) => (
               <tr key={i.id}>
                 <td className="px-5 py-3 whitespace-nowrap">
@@ -79,13 +97,15 @@ export default async function AdminInvoicesPage() {
                       <span className="rounded-full bg-orange-tint px-3 py-1 text-xs font-bold text-orange-deep">
                         Due
                       </span>
-                      <Button
-                        type="submit"
+                      {/* A financial state change with no undo — arm, then commit. */}
+                      <ConfirmSubmit
                         variant="secondary"
-                        className="min-h-7 px-3 py-0.5 text-xs"
+                        size="sm"
+                        confirmLabel="Yes, mark paid"
+                        pendingLabel="Marking paid…"
                       >
                         Mark paid
-                      </Button>
+                      </ConfirmSubmit>
                     </form>
                   )}
                 </td>
@@ -94,6 +114,7 @@ export default async function AdminInvoicesPage() {
           </tbody>
         </table>
       </div>
+      )}
     </>
   );
 }

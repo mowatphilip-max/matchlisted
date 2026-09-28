@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { matchWeights } from "@/lib/db";
 import { adminSaveWeights } from "@/lib/actions";
 
@@ -52,14 +52,14 @@ export default async function AdminSettingsPage({
               min={0}
               max={100}
               defaultValue={weights[f.key]}
-              className="min-h-11 w-24 rounded-xl border border-hairline px-4 text-sm"
+              className="min-h-11 w-24 rounded-xl border border-hairline px-4 text-base"
             />
             <p className="text-xs text-charcoal-soft">{f.hint}</p>
           </div>
         ))}
-        <Button type="submit" variant="seller">
+        <SubmitButton variant="seller" pendingLabel="Saving weights…">
           Save weights
-        </Button>
+        </SubmitButton>
       </form>
     </>
   );

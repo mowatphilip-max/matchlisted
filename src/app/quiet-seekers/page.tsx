@@ -16,7 +16,7 @@ export default function QuietSeekersPage() {
     <>
       <section className="bg-soft py-16 sm:py-20">
         <Container>
-          <p className="text-sm font-bold uppercase tracking-wider text-blue-deep">
+          <p className="text-sm font-bold uppercase tracking-wider text-blue-text">
             For buyers
           </p>
           <h1 className="mt-3 max-w-2xl text-4xl sm:text-5xl">

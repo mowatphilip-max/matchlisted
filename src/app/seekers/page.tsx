@@ -23,7 +23,7 @@ export default async function SeekersDirectoryPage() {
     <>
       <section className="bg-soft py-16 sm:py-20">
         <Container>
-          <p className="text-sm font-bold uppercase tracking-wider text-blue-deep">
+          <p className="text-sm font-bold uppercase tracking-wider text-blue-text">
             Live now
           </p>
           <h1 className="mt-3 max-w-2xl text-4xl sm:text-5xl">
@@ -36,7 +36,7 @@ export default async function SeekersDirectoryPage() {
             contacted directly, but they can be <strong>matched</strong>: list
             your home as a Hush Home and we&apos;ll handle the introduction.
           </p>
-          <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-tint px-4 py-1.5 text-sm font-medium text-blue-deep">
+          <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-tint px-4 py-1.5 text-sm font-medium text-blue-text">
             <ShieldCheck className="h-4 w-4" />
             Identities are never shown. Introductions only happen through the
             Matchlist

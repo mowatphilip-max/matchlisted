@@ -9,7 +9,8 @@ import {
   Trees,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { MatchRing } from "@/components/match-ring";
 import { HeartButton } from "@/components/heart-button";
 import { PropertyImage } from "@/components/property-image";
@@ -235,13 +236,13 @@ export default async function HomeProfilePage({
                           {formatTimeRange(s.start, s.end)}
                         </span>
                         <input type="hidden" name="slotId" value={s.id} />
-                        <Button
-                          type="submit"
+                        <SubmitButton
                           variant="seeker"
-                          className="min-h-8 px-3 py-1 text-xs"
+                          size="sm"
+                          pendingLabel="Booking…"
                         >
                           Book
-                        </Button>
+                        </SubmitButton>
                       </form>
                     </li>
                   ))}

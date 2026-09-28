@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { requestPasswordReset, signIn } from "@/lib/actions";
 
 export const metadata: Metadata = { title: "Sign in" };
 
 const inputClass =
-  "mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep";
+  "mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base focus:border-orange-deep";
 
 export default async function LoginPage({
   searchParams,
@@ -31,7 +31,7 @@ export default async function LoginPage({
           </p>
         )}
         {reset === "sent" && (
-          <p className="mt-6 rounded-xl bg-blue-tint px-4 py-3 text-sm font-medium text-blue-deep">
+          <p className="mt-6 rounded-xl bg-blue-tint px-4 py-3 text-sm font-medium text-blue-text">
             If that address has an account, a reset link is on its way.
           </p>
         )}
@@ -72,12 +72,12 @@ export default async function LoginPage({
               className={inputClass}
             />
           </div>
-          <Button type="submit" className="w-full">
+          <SubmitButton className="w-full" pendingLabel="Signing in…">
             Sign in
-          </Button>
+          </SubmitButton>
           <p className="text-center text-xs text-charcoal-soft">
             No account yet?{" "}
-            <Link href="/join" className="font-semibold text-blue-deep underline">
+            <Link href="/join" className="font-semibold text-blue-text underline">
               Register free
             </Link>
           </p>
@@ -94,14 +94,16 @@ export default async function LoginPage({
               type="email"
               required
               placeholder="Forgotten your password?"
-              className="min-h-10 flex-1 rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
+              className="min-h-10 flex-1 rounded-xl border border-hairline px-4 text-base focus:border-orange-deep"
             />
-            <button
-              type="submit"
-              className="cursor-pointer rounded-full px-4 py-2 text-sm font-semibold text-blue-deep underline"
+            <SubmitButton
+              variant="ghost"
+              size="sm"
+              className="min-h-0 px-4 py-2 text-sm font-semibold text-blue-text underline hover:bg-transparent"
+              pendingLabel="Sending the link…"
             >
               Email me a link
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </div>

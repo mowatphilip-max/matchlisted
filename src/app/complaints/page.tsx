@@ -13,7 +13,7 @@ export default function ComplaintsPage() {
         Email{" "}
         <a
           href="mailto:hello@matchlisted.com"
-          className="text-blue-deep underline"
+          className="text-blue-text underline"
         >
           hello@matchlisted.com
         </a>{" "}

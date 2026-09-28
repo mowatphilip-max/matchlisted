@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { CreditCard, Lock } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { currentUser } from "@/lib/session";
 import { getInvoice } from "@/lib/db";
 import { payInvoice } from "@/lib/actions";
@@ -58,9 +58,9 @@ export default async function PayPage({
                 your journey forward.
               </p>
             </div>
-            <Button type="submit" className="mt-4 w-full">
+            <SubmitButton className="mt-4 w-full" pendingLabel="Taking payment…">
               <Lock className="h-4 w-4" /> Pay {formatMoney(invoice.net + invoice.vat)}
-            </Button>
+            </SubmitButton>
           </form>
         </div>
       </div>

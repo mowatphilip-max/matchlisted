@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/session";
 import { Container } from "@/components/ui/container";
+import { AdminNav } from "./admin-nav";
 
 const nav = [
   { href: "/admin", label: "Overview" },
@@ -32,15 +32,7 @@ export default async function AdminLayout({
           <span className="mr-4 text-sm font-bold uppercase tracking-wider text-white/60">
             Back-office
           </span>
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-full px-3.5 py-1.5 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
+          <AdminNav items={nav} />
         </Container>
       </div>
       <Container className="min-h-[60vh] py-10">{children}</Container>

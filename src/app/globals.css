@@ -11,6 +11,12 @@
   - blue-deep = #1E8FC4 per the review: interactive elements and large text
     (3.6:1 — passes the 3:1 UI-component bar, NOT 4.5:1 small-text AA; see
     the Phase 1 close-out note).
+  - blue-text = #1977A3. The rule above was documented and then broken in ~20
+    places — eyebrows, status pills and the global "Sign in" link all render
+    blue-deep at text-xs/text-sm. This is the same hue darkened until it clears
+    4.5:1 on every ground it actually sits on: 5.01 on white, 4.71 on Ground
+    #F8F8F6, 4.51 on blue-tint #E9F5FB. Use it for ANY blue text under 24px
+    (or under 18.7px bold). blue-deep stays for fills, rings and large text.
   - Precision #3AADDA itself is decoration and large fills only.
 */
 @theme {
@@ -24,6 +30,7 @@
   --color-orange-tint: #fcefe8; /* tint panels, heart hover fills */
   --color-blue: #3aadda; /* Precision: large fills + decoration ONLY */
   --color-blue-deep: #1e8fc4; /* Precision interactive step (see note above) */
+  --color-blue-text: #1977a3; /* AA-safe Precision for SMALL text — see below */
   --color-blue-tint: #e9f5fb;
   --color-soft: #f8f8f6; /* Ground: section backgrounds */
   --color-paper: #ffffff; /* cards */
@@ -52,6 +59,26 @@
   --shadow-card: 0 1px 2px rgb(61 79 97 / 0.05), 0 8px 24px -6px rgb(61 79 97 / 0.1);
   --shadow-card-hover: 0 2px 4px rgb(61 79 97 / 0.06), 0 20px 44px -10px rgb(61 79 97 / 0.18);
   --shadow-glow: 0 0 0 1px rgb(232 105 58 / 0.25), 0 10px 40px -8px rgb(232 105 58 / 0.35);
+
+  /* Motion — one scale, so there is a single answer to "the Matchlisted curve".
+     Built-in CSS easings are too weak for deliberate motion. Note these are a
+     Tailwind theme namespace: redefining --ease-* also retargets the ease-*
+     utilities, so a bare `ease-out` in JSX picks up the strong curve. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* entering + exiting: the default */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); /* moving/morphing on screen */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* iOS-like sheet curve */
+
+  /* Durations. UI stays under 300ms; marketing may deliberately exceed it. */
+  --duration-press: 140ms; /* button + press feedback */
+  --duration-pop: 160ms; /* tooltips, small popovers */
+  --duration-menu: 200ms; /* dropdowns, selects, nav underline, card lift */
+  --duration-sheet: 300ms; /* modals, bottom sheets */
+  --duration-reveal: 600ms; /* marketing reveals, over the UI ceiling on purpose */
+
+  /* Bare `transition-*` utilities inherit these rather than Tailwind's
+     cubic-bezier(0.4, 0, 0.2, 1). Hover and colour changes want `ease`. */
+  --default-transition-duration: 150ms;
+  --default-transition-timing-function: ease;
 }
 
 @layer base {
@@ -66,8 +93,15 @@
     *,
     *::before,
     *::after {
+      /* Not zero: movement goes, opacity and colour feedback stay. The delay
+         overrides are load-bearing — with `both` fill-mode an un-reset delay
+         holds the `from` frame for its full duration, which for .logo-drawn
+         means the mark sits invisible for 500ms and then pops. That is the
+         exact effect this media query exists to prevent. */
+      animation-delay: 0ms !important;
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
+      transition-delay: 0ms !important;
       transition-duration: 0.01ms !important;
     }
   }
@@ -156,7 +190,7 @@
   }
 }
 .logo-drawn .lm-house {
-  animation: logo-trace 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: logo-trace 0.7s var(--ease-out) both;
 }
 .logo-drawn .lm-house:nth-of-type(2) {
   animation-delay: 0.18s;
@@ -168,7 +202,7 @@
   transform-box: fill-box;
   transform-origin: center;
   animation:
-    logo-trace 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both,
+    logo-trace 0.9s var(--ease-out) 0.5s both,
     logo-beat 0.9s ease-in-out 1.6s;
 }
 
@@ -177,7 +211,7 @@
   .logo-home-link:hover .lm-heart {
     transform-box: fill-box;
     transform-origin: center;
-    animation: logo-beat 0.9s ease-in-out;
+    animation: logo-beat 0.45s ease-in-out;
   }
 }
 
@@ -196,10 +230,14 @@
   background: var(--color-orange);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--duration-menu) var(--ease-out);
 }
 .nav-link:hover::after,
 .nav-link:focus-visible::after {
+  transform: scaleX(1);
+}
+/* The page you are on holds the underline open. */
+.nav-link.is-current::after {
   transform: scaleX(1);
 }
 
@@ -216,10 +254,10 @@
 }
 
 .fade-up {
-  animation: fadeup 0.6s ease-out both;
+  animation: fadeup var(--duration-reveal) var(--ease-out) both;
 }
 .fade-up-late {
-  animation: fadeup 0.6s ease-out 0.15s both;
+  animation: fadeup var(--duration-reveal) var(--ease-out) 0.15s both;
 }
 
 /* Hero ground: warm radial washes on white, quiet but not flat. */
@@ -243,8 +281,8 @@
 /* Card hover lift — transform+shadow only, no layout shift. */
 .card-lift {
   transition:
-    transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1),
-    box-shadow 0.25s cubic-bezier(0.2, 0.7, 0.3, 1);
+    transform var(--duration-menu) var(--ease-out),
+    box-shadow var(--duration-menu) var(--ease-out);
 }
 @media (hover: hover) {
   .card-lift:hover {
@@ -271,7 +309,7 @@
   }
 }
 .heart-pop {
-  animation: heartpop 0.35s ease-out;
+  animation: heartpop 0.35s var(--ease-out);
 }
 
 /* Dual-handle budget slider: two stacked native ranges, transparent tracks,
@@ -319,7 +357,7 @@
   }
 }
 .match-ring-arc {
-  animation: matchring 0.9s ease-out both;
+  animation: matchring 0.9s var(--ease-out) both;
 }
 
 /* Count-up % number for MatchRing (countUp prop): a typed custom property
@@ -339,7 +377,7 @@
   }
 }
 .ring-count {
-  animation: countup 0.9s ease-out both;
+  animation: countup 0.9s var(--ease-out) both;
   counter-reset: pct var(--pct-num);
 }
 .ring-count::after {
@@ -588,5 +626,174 @@
   }
 }
 .ticker-item {
-  animation: tickerin 0.45s ease-out both;
+  animation: tickerin 0.45s var(--ease-out) both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Celebration — the real one.                                         */
+/*                                                                     */
+/* The Concept Reel on the homepage advertises what a match feels like */
+/* with reel-banner / reel-heart / reel-sparkle. Those are windowed     */
+/* into a 15s loop and cannot be reused directly, so these are one-shot */
+/* versions of the same shapes: the product now animates the delivery   */
+/* and not just the promise.                                           */
+/*                                                                     */
+/* Reduced motion needs nothing special here. The global kill-switch    */
+/* collapses duration to 0.01ms and `both` fill lands each element on   */
+/* its 100% frame — which for the panel and heart is the resting state, */
+/* and for the sparks is opacity:0, so the particles simply never show. */
+/* ------------------------------------------------------------------ */
+@keyframes celebrate-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.celebrate-in {
+  animation: celebrate-in 520ms var(--ease-out) both;
+}
+
+@keyframes celebrate-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.celebrate-pop {
+  animation: celebrate-pop 520ms var(--ease-out) 120ms both;
+}
+
+/* Each particle sets its own --dx/--dy for direction. */
+@keyframes celebrate-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx, 0), var(--dy, -34px)) scale(1);
+  }
+}
+.celebrate-spark {
+  animation: celebrate-spark 760ms var(--ease-out) 160ms both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Bottom sheet (the mobile filter panel on /seekers).                 */
+/* A sheet pinned to inset-x-0 bottom-0 has an unambiguous physical    */
+/* origin — the bottom edge — so it rises from it rather than          */
+/* materialising at its resting position. translateY(100%) is the      */
+/* element's own height, so no pixel offset needs maintaining.         */
+/* ------------------------------------------------------------------ */
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes sheet-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sheet-in {
+  animation: sheet-in var(--duration-sheet) var(--ease-drawer) both;
+}
+.sheet-out {
+  animation: sheet-out var(--duration-sheet) var(--ease-drawer) both;
+}
+.scrim-in {
+  animation: scrim-in var(--duration-sheet) var(--ease-out) both;
+}
+.scrim-out {
+  animation: scrim-in var(--duration-sheet) var(--ease-out) reverse both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Staggered grid entrance — MARKETING SURFACES ONLY.                  */
+/*                                                                     */
+/* Deliberately not applied to /dashboard, /matches, /hush-homes or    */
+/* /seekers. Those grids are seen many times a day, and the frequency  */
+/* rule is explicit that an entrance animation there should be removed */
+/* rather than decorated. Staggering them would be adding motion to    */
+/* the exact place the rule says to take it away.                      */
+/*                                                                     */
+/* Stagger is decorative, so it must never gate interaction: `both`    */
+/* fill only holds opacity, and the cards are clickable throughout.    */
+/* ------------------------------------------------------------------ */
+.stagger-in > * {
+  animation: fadeup 520ms var(--ease-out) both;
+}
+.stagger-in > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+.stagger-in > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.stagger-in > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+.stagger-in > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+.stagger-in > *:nth-child(6) {
+  animation-delay: 300ms;
+}
+
+/* ------------------------------------------------------------------ */
+/* Trigger-anchored popovers (comboboxes, the mobile menu).            */
+/* These previously had no transform-origin and no motion at all —     */
+/* they were `&&`-mounted and teleported into place, so nothing        */
+/* explained that the panel came from the input above it. Scaling from */
+/* the trigger edge is what makes the relationship legible.            */
+/* ------------------------------------------------------------------ */
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.popover-in {
+  transform-origin: top center;
+  animation: popover-in var(--duration-menu) var(--ease-out) both;
+}
+/* Anchored to a trigger on the right edge (the mobile menu button). */
+.popover-in-right {
+  transform-origin: top right;
 }

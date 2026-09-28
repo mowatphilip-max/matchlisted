@@ -12,7 +12,7 @@ import {
   PROPERTY_TYPES,
   type HushHome,
 } from "@/lib/types";
-import { Button } from "./ui/button";
+import { SubmitButton } from "./ui/submit-button";
 
 export function HomeForm({ home }: { home: HushHome | null }) {
   const [areaId, setAreaId] = useState(home?.areaId ?? "");
@@ -37,7 +37,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
           required
           defaultValue={home?.headline}
           placeholder="Sunny Victorian terrace two streets from the sea"
-          className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
+          className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base focus:border-orange-deep"
         />
       </div>
 
@@ -67,10 +67,10 @@ export function HomeForm({ home }: { home: HushHome | null }) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search your town or area"
-                className="min-h-11 w-full rounded-full border border-hairline bg-white pl-11 pr-4 text-sm outline-none focus:border-orange-deep"
+                className="min-h-11 w-full rounded-full border border-hairline bg-white pl-11 pr-4 text-base focus:border-orange-deep"
               />
               {results.length > 0 && (
-                <ul className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-hairline bg-white p-1.5 shadow-[var(--shadow-card-hover)]">
+                <ul className="popover-in absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-2xl border border-hairline bg-white p-1.5 shadow-[var(--shadow-card-hover)]">
                   {results.map((a) => (
                     <li key={a.id}>
                       <button
@@ -101,7 +101,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
             required
             defaultValue={home?.addressLine}
             placeholder="14 Marine Terrace"
-            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
+            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base focus:border-orange-deep"
           />
         </div>
       </div>
@@ -119,7 +119,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
             min={50000}
             step={1000}
             defaultValue={home?.price}
-            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
+            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base focus:border-orange-deep"
           />
           <p className="mt-1 text-xs text-charcoal-soft">
             Your honest best guess. It prices your Home Report and can be
@@ -134,7 +134,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
             id="beds"
             name="beds"
             defaultValue={home?.beds ?? 3}
-            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-sm"
+            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-base"
           >
             {[1, 2, 3, 4, 5, 6, 7].map((n) => (
               <option key={n} value={n}>{n}</option>
@@ -149,7 +149,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
             id="baths"
             name="baths"
             defaultValue={home?.baths ?? 1}
-            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-sm"
+            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-base"
           >
             {[1, 2, 3, 4, 5].map((n) => (
               <option key={n} value={n}>{n}</option>
@@ -164,7 +164,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
             id="type"
             name="type"
             defaultValue={home?.type ?? "detached"}
-            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-sm"
+            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-base"
           >
             {PROPERTY_TYPES.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
@@ -191,7 +191,11 @@ export function HomeForm({ home }: { home: HushHome | null }) {
           {FEATURE_TAGS.map((f) => (
             <label
               key={f.value}
-              className="cursor-pointer rounded-full px-4 py-2 text-sm font-medium ring-1 ring-inset ring-hairline transition-colors has-[:checked]:bg-charcoal has-[:checked]:text-white has-[:checked]:ring-charcoal"
+              // Same chip treatment as brief-form's pickers: explicit
+              // transition list (transition-colors and transition-transform
+              // both set transition-property, so stacking them is a coin
+              // flip), press feedback, and a 44px target under a finger.
+              className="inline-flex min-h-8 cursor-pointer items-center rounded-full px-4 py-2 text-sm font-medium ring-1 ring-inset ring-hairline transition-[background-color,box-shadow,transform] duration-[var(--duration-press)] ease-out active:scale-[0.97] pointer-coarse:min-h-11 motion-reduce:active:scale-100 has-[:checked]:bg-charcoal has-[:checked]:text-white has-[:checked]:ring-charcoal"
             >
               <input
                 type="checkbox"
@@ -217,7 +221,7 @@ export function HomeForm({ home }: { home: HushHome | null }) {
           required
           defaultValue={home?.description}
           placeholder="Tell its story: the light in the kitchen at breakfast, the walk to the station, the neighbours you'll miss…"
-          className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-sm outline-none focus:border-orange-deep"
+          className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-base focus:border-orange-deep"
         />
       </div>
 
@@ -236,9 +240,13 @@ export function HomeForm({ home }: { home: HushHome | null }) {
       </div>
 
       <div className="border-t border-hairline pt-6">
-        <Button type="submit" variant="seller" disabled={!areaId}>
+        <SubmitButton
+          variant="seller"
+          disabled={!areaId}
+          pendingLabel="Saving your Hush Home…"
+        >
           {home ? "Save changes" : "Save my Hush Home"}
-        </Button>
+        </SubmitButton>
         {!areaId && (
           <p className="mt-2 text-sm text-charcoal-soft">
             Choose your area to continue.

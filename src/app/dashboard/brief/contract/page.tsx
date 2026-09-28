@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { currentUser } from "@/lib/session";
 import { getBrief } from "@/lib/db";
 import { signSeekerContract } from "@/lib/actions";
@@ -25,7 +25,7 @@ export default async function SeekerContractPage({
   return (
     <Container className="py-10">
       <div className="mx-auto max-w-2xl">
-        <p className="text-sm font-bold uppercase tracking-wider text-blue-deep">
+        <p className="text-sm font-bold uppercase tracking-wider text-blue-text">
           One last step
         </p>
         <h1 className="mt-2 text-3xl">The Quiet Seeker agreement</h1>
@@ -92,7 +92,7 @@ export default async function SeekerContractPage({
               name="typedName"
               required
               placeholder={user.name}
-              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 font-display text-lg font-semibold outline-none focus:border-orange-deep"
+              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 font-display text-lg font-semibold focus:border-orange-deep"
             />
           </div>
           <label className="flex cursor-pointer items-start gap-3 text-sm">
@@ -108,7 +108,9 @@ export default async function SeekerContractPage({
               (including VAT), including after a property leaves the site.
             </span>
           </label>
-          <Button type="submit">Sign & start matching</Button>
+          <SubmitButton pendingLabel="Signing…">
+            Sign & start matching
+          </SubmitButton>
         </form>
       </div>
     </Container>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { FileCheck2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { allHomes, usersById } from "@/lib/db";
 import { adminVerifyReport } from "@/lib/actions";
 import { areaLabel } from "@/lib/areas";
@@ -59,9 +59,9 @@ export default async function AdminReportsPage() {
                   </div>
                   <form action={adminVerifyReport}>
                     <input type="hidden" name="homeId" value={h.id} />
-                    <Button type="submit">
+                    <SubmitButton pendingLabel="Verifying…">
                       <FileCheck2 className="h-4 w-4" /> Verify & go live
-                    </Button>
+                    </SubmitButton>
                   </form>
                 </div>
               </li>

@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { ConfirmSubmit } from "@/components/ui/confirm-submit";
 import {
   allHomes,
   allLawyers,
@@ -68,7 +72,9 @@ export default async function AdminDealsPage() {
                 </div>
                 <form action={adminConcludeMissives}>
                   <input type="hidden" name="offerId" value={o.id} />
-                  <Button type="submit">Conclude missives & invoice</Button>
+                  <SubmitButton pendingLabel="Concluding missives…">
+                    Conclude missives & invoice
+                  </SubmitButton>
                 </form>
               </li>
             );
@@ -83,6 +89,21 @@ export default async function AdminDealsPage() {
 
       {/* All listings */}
       <h2 className="mt-12 text-xl">All Hush Homes</h2>
+      {homes.length === 0 ? (
+        <EmptyState
+          className="mt-4"
+          icon={Home}
+          title="No Hush Homes listed yet"
+          action={
+            <ButtonLink href="/dashboard/home/new" variant="secondary">
+              List the first Hush Home
+            </ButtonLink>
+          }
+        >
+          Every listing, live or draft, appears in this table as soon as a
+          seller starts one.
+        </EmptyState>
+      ) : (
       <div className="mt-4 overflow-x-auto rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
@@ -96,7 +117,7 @@ export default async function AdminDealsPage() {
               <th className="px-5 py-3 font-semibold" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-hairline">
+          <tbody className="divide-y divide-hairline [&>tr]:transition-colors [&>tr:hover]:bg-soft/60">
             {homes.map((h) => (
               <tr key={h.id}>
                 <td className="px-5 py-3 font-medium">
@@ -116,9 +137,19 @@ export default async function AdminDealsPage() {
                   {(h.status === "live" || h.status === "under-offer") && (
                     <form action={adminRecordWithdrawal}>
                       <input type="hidden" name="homeId" value={h.id} />
-                      <button className="cursor-pointer text-xs font-semibold text-red-deep underline">
+                      {/* Writes ledger entries and invoices, and there is no
+                          undo — so it arms before it commits, and it is a
+                          button now rather than a 16px underlined text run at
+                          the end of a scrolling table row. */}
+                      <ConfirmSubmit
+                        variant="secondary"
+                        size="sm"
+                        className="text-red-deep ring-red-deep/40 hover:bg-red-tint hover:ring-red-deep"
+                        confirmLabel="Yes, record it"
+                        pendingLabel="Recording…"
+                      >
                         Record withdrawal
-                      </button>
+                      </ConfirmSubmit>
                     </form>
                   )}
                 </td>
@@ -127,6 +158,7 @@ export default async function AdminDealsPage() {
           </tbody>
         </table>
       </div>
+      )}
     </>
   );
 }

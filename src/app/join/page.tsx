@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Heart, Home, Lock } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { register } from "@/lib/actions";
 import { getBriefByPublicRef } from "@/lib/db";
 import { findMowattSeeker, toBriefLike } from "@/lib/mowatt-bridge";
@@ -38,7 +38,7 @@ export default async function JoinPage({
 
         {seekerBrief && (seekerBrief.contract || sheetSeeker) && (
           <div className="mt-6 rounded-2xl bg-blue-tint p-5 ring-1 ring-blue-deep/20">
-            <p className="text-sm font-bold text-blue-deep">
+            <p className="text-sm font-bold text-blue-text">
               You&apos;re one step from reaching {seekerBrief.publicRef}
             </p>
             <p className="mt-1.5 text-sm leading-relaxed text-charcoal-soft">
@@ -137,7 +137,7 @@ export default async function JoinPage({
               id="name"
               name="name"
               required
-              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
+              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base focus:border-orange-deep"
             />
           </div>
           <div>
@@ -150,7 +150,7 @@ export default async function JoinPage({
               type="email"
               autoComplete="email"
               required
-              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
+              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base focus:border-orange-deep"
             />
           </div>
           <div>
@@ -164,22 +164,22 @@ export default async function JoinPage({
               autoComplete="new-password"
               required
               minLength={10}
-              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep"
+              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base focus:border-orange-deep"
             />
             <p className="mt-1 text-xs text-charcoal-soft">
               At least 10 characters. A short phrase you&apos;ll remember beats
               a complicated word.
             </p>
           </div>
-          <Button type="submit" className="w-full">
+          <SubmitButton className="w-full" pendingLabel="Creating your account…">
             {intent === "seller"
               ? "Create account & start my listing"
               : "Create account & build my brief"}
-          </Button>
+          </SubmitButton>
           <p className="text-center text-xs text-charcoal-soft">
             Free to join. Contracts are signed later, at listing or briefing.
             Nothing is owed today. Already registered?{" "}
-            <Link href="/login" className="text-blue-deep underline">
+            <Link href="/login" className="text-blue-text underline">
               Sign in
             </Link>
           </p>

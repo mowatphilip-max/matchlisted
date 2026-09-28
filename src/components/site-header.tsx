@@ -5,6 +5,8 @@ import { notificationsForUser } from "@/lib/db";
 import { signOut } from "@/lib/actions";
 import { LogoHorizontal, LogoMark } from "./logo";
 import { ButtonLink } from "./ui/button";
+import { SubmitButton } from "./ui/submit-button";
+import { SiteNav } from "./site-nav";
 
 // IA per BUILD-BRIEF.md Phase 1: audience-first labels. "For sellers" and
 // "For buyers" are the pitch pages; "Who's looking" is the live seeker list.
@@ -34,17 +36,7 @@ export async function SiteHeader() {
           <LogoHorizontal className="hidden h-8 min-[420px]:block sm:h-10" />
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium text-charcoal-soft md:flex">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="nav-link transition-colors hover:text-charcoal"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <SiteNav items={nav} />
 
         <div className="flex items-center gap-2">
           {user ? (
@@ -70,16 +62,21 @@ export async function SiteHeader() {
                 Dashboard
               </ButtonLink>
               <form action={signOut}>
-                <button className="hidden cursor-pointer px-2 text-sm font-medium text-charcoal-soft hover:text-charcoal sm:block">
+                <SubmitButton
+                  variant="ghost"
+                  size="sm"
+                  className="hidden min-h-0 px-2 text-sm font-medium text-charcoal-soft hover:bg-transparent hover:text-charcoal sm:inline-flex"
+                  pendingLabel="Signing out…"
+                >
                   Sign out
-                </button>
+                </SubmitButton>
               </form>
             </>
           ) : (
             <>
               <Link
                 href="/login"
-                className="whitespace-nowrap px-2 text-sm font-medium text-blue-deep hover:underline"
+                className="whitespace-nowrap px-2 text-sm font-medium text-blue-text hover:underline"
               >
                 Sign in
               </Link>
@@ -94,7 +91,7 @@ export async function SiteHeader() {
               <Menu className="h-5 w-5" />
               <span className="sr-only">Menu</span>
             </summary>
-            <div className="absolute right-0 top-11 z-50 w-52 rounded-2xl border border-hairline bg-white p-2 shadow-[var(--shadow-card)]">
+            <div className="popover-in popover-in-right absolute right-0 top-11 z-50 w-52 rounded-2xl border border-hairline bg-white p-2 shadow-[var(--shadow-card)]">
               {nav.map((item) => (
                 <Link
                   key={item.href}
@@ -106,9 +103,14 @@ export async function SiteHeader() {
               ))}
               {user && (
                 <form action={signOut}>
-                  <button className="block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-sm font-medium text-charcoal hover:bg-soft">
+                  <SubmitButton
+                    variant="ghost"
+                    size="sm"
+                    className="w-full min-h-0 justify-start rounded-lg px-3 py-2 text-left text-sm font-medium text-charcoal hover:bg-soft"
+                    pendingLabel="Signing out…"
+                  >
                     Sign out
-                  </button>
+                  </SubmitButton>
                 </form>
               )}
             </div>

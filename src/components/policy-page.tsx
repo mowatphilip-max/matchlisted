@@ -18,7 +18,10 @@ export function PolicyPage({
 }) {
   return (
     <Container className="py-16">
-      <div className="mx-auto max-w-2xl">
+      {/* 68ch, not a Tailwind width: the measure is the point. max-w-2xl (672px)
+          ran the text-sm body copy to ~96 characters a line, well past the
+          45–75 band. */}
+      <div className="mx-auto max-w-[68ch]">
         <h1 className="text-3xl">{title}</h1>
         <p className="mt-3 text-charcoal-soft">{intro}</p>
         <div className="mt-8 space-y-6 text-sm leading-relaxed text-charcoal">
@@ -29,7 +32,7 @@ export function PolicyPage({
           Questions in the meantime:{" "}
           <a
             href="mailto:hello@matchlisted.com"
-            className="text-blue-deep underline"
+            className="text-blue-text underline"
           >
             hello@matchlisted.com
           </a>

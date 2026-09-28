@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { CheckCircle2, Mail, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { MatchRing } from "@/components/match-ring";
 import { Scribble } from "@/components/scribble";
 import {
@@ -158,7 +159,7 @@ export default async function MatchReportPage({
                     <figcaption className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-charcoal-soft">
                       <span>{report.snippet.positionLabel}</span>
                       <span aria-hidden="true">·</span>
-                      <span className="font-semibold text-blue-deep">
+                      <span className="font-semibold text-blue-text">
                         {report.snippet.pct}% match with your home
                       </span>
                     </figcaption>
@@ -235,12 +236,15 @@ export default async function MatchReportPage({
                           required
                           autoComplete="email"
                           placeholder="you@example.com"
-                          className="min-h-12 w-full bg-transparent text-sm outline-none placeholder:text-muted"
+                          className="min-h-12 w-full bg-transparent text-base placeholder:text-muted"
                         />
                       </div>
-                      <Button type="submit" className="sm:shrink-0">
+                      <SubmitButton
+                        className="sm:shrink-0"
+                        pendingLabel="Adding you to the queue…"
+                      >
                         Keep me posted
-                      </Button>
+                      </SubmitButton>
                     </div>
                     {params.error === "email" && (
                       <p className="mt-2 text-sm font-medium text-red-deep">

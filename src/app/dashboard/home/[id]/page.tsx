@@ -10,9 +10,13 @@ import {
   ImagePlus,
   PenLine,
   Trash2,
+  UserRound,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { PropertyImage } from "@/components/property-image";
 import { SeekerMatchCard } from "@/components/seeker-match-card";
 import { currentUser } from "@/lib/session";
@@ -40,6 +44,7 @@ import {
   HOME_REPORT_SUPPLIERS,
   homeReportQuote,
 } from "@/lib/site";
+import { SELLER_HOME_MESSAGES, messageFor } from "@/lib/page-messages";
 
 export const metadata: Metadata = { title: "My Hush Home" };
 
@@ -86,14 +91,29 @@ function Step({
 
 export default async function SellerHomePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{
+    error?: string;
+    uploaded?: string;
+    ordered?: string;
+  }>;
 }) {
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
+  const { error, uploaded, ordered } = await searchParams;
   const home = await getHomeUnscoped(id);
   if (!home || home.sellerId !== user.id) notFound();
+
+  // These arrive as `?error=report-size`, `?uploaded=1`, `?ordered=1` from the
+  // server actions. The error is value-keyed; the two successes are flags, so
+  // they resolve by param name. At most one shows — errors first.
+  const message =
+    messageFor(SELLER_HOME_MESSAGES, error) ??
+    (uploaded ? SELLER_HOME_MESSAGES.uploaded : null) ??
+    (ordered ? SELLER_HOME_MESSAGES.ordered : null);
 
   const report = home.homeReport;
   const contractSigned = home.contract !== null;
@@ -130,6 +150,12 @@ export default async function SellerHomePage({
           <PenLine className="h-4 w-4" /> Edit profile
         </ButtonLink>
       </div>
+
+      {message && (
+        <Alert tone={message.tone} title={message.title} className="mt-8">
+          {message.body}
+        </Alert>
+      )}
 
       {/* Go-live checklist */}
       <div className="mt-8 rounded-[var(--radius-lg)] bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline">
@@ -231,11 +257,13 @@ export default async function SellerHomePage({
                     required
                     defaultValue={user.phone ?? ""}
                     placeholder="07700 900123"
-                    className="mt-1.5 min-h-11 w-full max-w-xs rounded-xl border border-hairline bg-white px-4 text-sm outline-none focus:border-blue-deep"
+                    className="mt-1.5 min-h-11 w-full max-w-xs rounded-xl border border-hairline bg-white px-4 text-base focus:border-blue-deep"
                   />
                 </div>
                 <div className="sm:col-span-3">
-                  <Button type="submit">Book & pay for my Home Report</Button>
+                  <SubmitButton pendingLabel="Booking your Home Report…">
+                    Book & pay for my Home Report
+                  </SubmitButton>
                 </div>
               </form>
             ) : (
@@ -243,7 +271,7 @@ export default async function SellerHomePage({
                 <strong>Homes estimated over £1,500,000 are quoted by
                 negotiation.</strong>{" "}
                 We&apos;ll arrange your Home Report personally. Email{" "}
-                <a href="mailto:office@matchlisted.com" className="font-semibold text-blue-deep underline">
+                <a href="mailto:office@matchlisted.com" className="font-semibold text-blue-text underline">
                   office@matchlisted.com
                 </a>{" "}
                 and we&apos;ll come back with a fixed quote.
@@ -289,9 +317,13 @@ export default async function SellerHomePage({
                 required
                 className="text-sm file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-charcoal file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
               />
-              <Button type="submit" variant="seller" className="min-h-9 px-4 py-1.5">
+              <SubmitButton
+                variant="seller"
+                className="min-h-9 px-4 py-1.5"
+                pendingLabel="Uploading your report…"
+              >
                 <FileUp className="h-4 w-4" /> Upload report
-              </Button>
+              </SubmitButton>
             </form>
           </div>
         )}
@@ -373,9 +405,13 @@ export default async function SellerHomePage({
                 required
                 className="text-sm file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-charcoal file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
               />
-              <Button type="submit" variant="seller" className="min-h-9 px-4 py-1.5">
+              <SubmitButton
+                variant="seller"
+                className="min-h-9 px-4 py-1.5"
+                pendingLabel="Uploading your photos…"
+              >
                 <ImagePlus className="h-4 w-4" /> Upload photos
-              </Button>
+              </SubmitButton>
               <span className="text-xs text-charcoal-soft">
                 Up to 8 photos · JPG/PNG/HEIC · we resize them for you
               </span>
@@ -397,9 +433,20 @@ export default async function SellerHomePage({
             ))}
           </div>
         ) : (
-          <p className="mt-4 rounded-2xl bg-soft p-6 text-sm text-charcoal-soft">
-            No matching briefs yet. New Quiet Seekers register all the time.
-          </p>
+          <EmptyState
+            className="mt-4"
+            icon={UserRound}
+            title="No matching briefs yet"
+            action={
+              <ButtonLink href="/seekers" variant="seeker">
+                Browse every Quiet Seeker
+              </ButtonLink>
+            }
+          >
+            New Quiet Seekers register all the time. Look through everyone
+            searching in Scotland and raise your hand to anyone this home
+            could suit.
+          </EmptyState>
         )}
       </section>
 
@@ -453,7 +500,7 @@ export default async function SellerHomePage({
                   type="date"
                   name="date"
                   required
-                  className="mt-1 min-h-10 rounded-xl border border-hairline px-3 text-sm"
+                  className="mt-1 min-h-10 rounded-xl border border-hairline px-3 text-base"
                 />
               </div>
               <div>
@@ -465,12 +512,16 @@ export default async function SellerHomePage({
                   type="time"
                   name="time"
                   required
-                  className="mt-1 min-h-10 rounded-xl border border-hairline px-3 text-sm"
+                  className="mt-1 min-h-10 rounded-xl border border-hairline px-3 text-base"
                 />
               </div>
-              <Button type="submit" variant="seller" className="min-h-10 px-4 py-1.5">
+              <SubmitButton
+                variant="seller"
+                className="min-h-10 px-4 py-1.5"
+                pendingLabel="Adding your slot…"
+              >
                 <CalendarPlus className="h-4 w-4" /> Add 30-min slot
-              </Button>
+              </SubmitButton>
             </form>
           </div>
 
@@ -519,10 +570,20 @@ export default async function SellerHomePage({
       <section className="mt-10">
         <h2 className="text-2xl">Offers</h2>
         {offers.length === 0 ? (
-          <p className="mt-4 rounded-2xl bg-soft p-6 text-sm text-charcoal-soft">
-            No offers yet. Offers arrive here the moment a seeker submits one,
-            and you can accept, decline or counter.
-          </p>
+          <EmptyState
+            className="mt-4"
+            icon={FileCheck2}
+            title="No offers yet"
+            action={
+              <ButtonLink href="#viewings" variant="seller">
+                Add viewing times
+              </ButtonLink>
+            }
+          >
+            Offers arrive here the moment a seeker submits one, and you can
+            accept, decline or counter. Offers follow viewings, so keep your
+            diary stocked.
+          </EmptyState>
         ) : (
           <ul className="mt-6 space-y-4">
             {offers.map((o) => {
@@ -561,20 +622,23 @@ export default async function SellerHomePage({
                       <form action={respondToOffer}>
                         <input type="hidden" name="offerId" value={o.id} />
                         <input type="hidden" name="action" value="accept" />
-                        <Button type="submit" className="min-h-9 px-4 py-1.5">
+                        <SubmitButton
+                          className="min-h-9 px-4 py-1.5"
+                          pendingLabel="Accepting…"
+                        >
                           Accept
-                        </Button>
+                        </SubmitButton>
                       </form>
                       <form action={respondToOffer}>
                         <input type="hidden" name="offerId" value={o.id} />
                         <input type="hidden" name="action" value="decline" />
-                        <Button
-                          type="submit"
+                        <SubmitButton
                           variant="secondary"
                           className="min-h-9 px-4 py-1.5"
+                          pendingLabel="Declining…"
                         >
                           Decline
-                        </Button>
+                        </SubmitButton>
                       </form>
                       <form
                         action={respondToOffer}
@@ -588,15 +652,15 @@ export default async function SellerHomePage({
                           placeholder="Counter (£)"
                           min={0}
                           step={1000}
-                          className="min-h-9 w-36 rounded-full border border-hairline px-4 text-sm"
+                          className="min-h-9 w-36 rounded-full border border-hairline px-4 text-base"
                         />
-                        <Button
-                          type="submit"
+                        <SubmitButton
                           variant="seller"
                           className="min-h-9 px-4 py-1.5"
+                          pendingLabel="Countering…"
                         >
                           Counter
-                        </Button>
+                        </SubmitButton>
                       </form>
                     </div>
                   )}

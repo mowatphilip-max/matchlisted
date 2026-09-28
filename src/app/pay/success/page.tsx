@@ -7,6 +7,7 @@ import { getInvoice } from "@/lib/db";
 import { currentUser } from "@/lib/session";
 import { stripe, stripeConfigured } from "@/lib/stripe";
 import { formatMoney } from "@/lib/format";
+import { PaymentPoller } from "./payment-poller";
 
 export const metadata: Metadata = { title: "Payment received" };
 export const dynamic = "force-dynamic";
@@ -44,11 +45,13 @@ export default async function PaymentSuccessPage({
       <div className="mx-auto max-w-lg text-center">
         {paid ? (
           <>
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-tint text-green-deep">
+            {/* Once per customer, and they have just handed over money — this
+                is the one screen in the product that has earned a moment. */}
+            <span className="celebrate-pop mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-tint text-green-deep">
               <CheckCircle2 className="h-7 w-7" />
             </span>
-            <h1 className="mt-5 text-3xl">Payment received</h1>
-            <p className="mt-3 text-charcoal-soft">
+            <h1 className="celebrate-in mt-5 text-3xl">Payment received</h1>
+            <p className="celebrate-in mt-3 text-charcoal-soft">
               Thank you. {formatMoney(total)} paid. Your surveyor has been
               instructed and will contact you directly to arrange the visit.
               A receipt is on its way to {user.email}.
@@ -63,9 +66,9 @@ export default async function PaymentSuccessPage({
             <p className="mt-3 text-charcoal-soft">
               Your card has been accepted and we&apos;re just confirming it.
               This usually takes a few seconds. Your money is safe and nothing
-              is lost if you close this page; refresh in a moment, or check
-              your dashboard shortly.
+              is lost if you close this page.
             </p>
+            <PaymentPoller />
           </>
         )}
 

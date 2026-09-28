@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { currentUser } from "@/lib/session";
 import { getHomeUnscoped, getViewing } from "@/lib/db";
 import { submitViewingFeedback } from "@/lib/actions";
@@ -27,7 +27,7 @@ export default async function ViewingFeedbackPage({
   return (
     <Container className="py-12">
       <div className="mx-auto max-w-xl">
-        <p className="text-sm font-bold uppercase tracking-wider text-blue-deep">
+        <p className="text-sm font-bold uppercase tracking-wider text-blue-text">
           {home.headline} · {areaShortLabel(home.areaId)}
         </p>
         <h1 className="mt-2 text-3xl">How was your viewing?</h1>
@@ -47,7 +47,7 @@ export default async function ViewingFeedbackPage({
               name="feedback"
               rows={4}
               placeholder="What worked, what didn't. Honest is helpful."
-              className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-sm outline-none focus:border-blue-deep"
+              className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-base focus:border-blue-deep"
             />
           </div>
 
@@ -84,9 +84,9 @@ export default async function ViewingFeedbackPage({
             </div>
           </div>
 
-          <Button type="submit" variant="seeker">
+          <SubmitButton variant="seeker" pendingLabel="Sending feedback…">
             Send feedback
-          </Button>
+          </SubmitButton>
         </form>
       </div>
     </Container>

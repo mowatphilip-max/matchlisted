@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { ConfirmSubmit } from "@/components/ui/confirm-submit";
 import { allLawyers } from "@/lib/db";
 import { adminRemoveLawyer, adminSaveLawyer } from "@/lib/actions";
 import { formatPrice } from "@/lib/format";
@@ -38,9 +39,17 @@ export default async function AdminLawyersPage() {
             <p className="mt-2 text-sm text-charcoal-soft">{l.blurb}</p>
             <form action={adminRemoveLawyer} className="mt-3">
               <input type="hidden" name="lawyerId" value={l.id} />
-              <button className="cursor-pointer text-xs font-semibold text-red-deep underline">
+              {/* Removing a firm from the panel is not reversible from this
+                  screen, so it arms before it commits. */}
+              <ConfirmSubmit
+                variant="secondary"
+                size="sm"
+                className="text-red-deep ring-red-deep/40 hover:bg-red-tint hover:ring-red-deep"
+                confirmLabel="Yes, remove them"
+                pendingLabel="Removing…"
+              >
                 Remove from panel
-              </button>
+              </ConfirmSubmit>
             </form>
           </li>
         ))}
@@ -53,28 +62,30 @@ export default async function AdminLawyersPage() {
       >
         <div>
           <label htmlFor="firm" className="block text-sm font-semibold">Firm</label>
-          <input id="firm" name="firm" required className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm" />
+          <input id="firm" name="firm" required className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base" />
         </div>
         <div>
           <label htmlFor="contactName" className="block text-sm font-semibold">Contact</label>
-          <input id="contactName" name="contactName" required className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm" />
+          <input id="contactName" name="contactName" required className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base" />
         </div>
         <div>
           <label htmlFor="location" className="block text-sm font-semibold">Location</label>
-          <input id="location" name="location" required className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm" />
+          <input id="location" name="location" required className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base" />
         </div>
         <div>
           <label htmlFor="feeEstimate" className="block text-sm font-semibold">
             Typical fee (£ net)
           </label>
-          <input id="feeEstimate" name="feeEstimate" type="number" required min={0} className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm" />
+          <input id="feeEstimate" name="feeEstimate" type="number" required min={0} className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base" />
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="blurb" className="block text-sm font-semibold">One-line blurb</label>
-          <input id="blurb" name="blurb" required className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm" />
+          <input id="blurb" name="blurb" required className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base" />
         </div>
         <div className="sm:col-span-2">
-          <Button type="submit" variant="seller">Add to panel</Button>
+          <SubmitButton variant="seller" pendingLabel="Adding to panel…">
+            Add to panel
+          </SubmitButton>
         </div>
       </form>
     </>

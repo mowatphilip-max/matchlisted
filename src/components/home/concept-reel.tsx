@@ -44,7 +44,7 @@ function SeekerMiniCard({ className, style }: { className?: string; style?: Reac
         className,
       )}
     >
-      <p className="flex items-center gap-2 text-xs font-bold text-blue-deep">
+      <p className="flex items-center gap-2 text-xs font-bold text-blue-text">
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-tint">
           <UserRound className="h-4 w-4" />
         </span>

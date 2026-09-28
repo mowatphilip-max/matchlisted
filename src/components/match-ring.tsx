@@ -4,10 +4,15 @@
 import { matchBand } from "@/lib/match";
 import { cn } from "@/lib/utils";
 
+// Rings are non-text UI, so they need 3:1. The previous warm/cool values were
+// off-palette one-offs measuring 2.92:1 and 2.61:1 on white — both under that
+// bar. These are the palette tokens, which clear it. The warm *label* uses
+// blue-text rather than blue-deep because at 11–20px it is small text and
+// needs 4.5:1.
 const bandColors = {
-  hot: { ring: "#E8693A", text: "text-orange-deep" },
-  warm: { ring: "#2FA2CE", text: "text-blue-deep" },
-  cool: { ring: "#9AA1A9", text: "text-charcoal-soft" },
+  hot: { ring: "var(--color-orange)", text: "text-orange-deep" },
+  warm: { ring: "var(--color-blue-deep)", text: "text-blue-text" },
+  cool: { ring: "var(--color-charcoal-soft)", text: "text-charcoal-soft" },
 } as const;
 
 const sizes = {
@@ -50,7 +55,7 @@ export function MatchRing({
           cy={box / 2}
           r={r}
           fill="white"
-          stroke="#E4E7EA"
+          stroke="var(--color-hairline)"
           strokeWidth={stroke}
         />
         <circle

@@ -37,7 +37,7 @@ export function SeekerCard({
   return (
     <article
       className={cn(
-        "group card-lift relative overflow-hidden rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline",
+        "group card-lift relative overflow-hidden rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-orange-deep",
         className,
       )}
     >
@@ -47,10 +47,10 @@ export function SeekerCard({
       >
         {/* Anonymous "photo" slot — same aspect as a home photo, no face. */}
         <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-t-[var(--radius-lg)] bg-gradient-to-br from-blue-tint via-soft to-blue-tint">
-          <span className="flex h-24 w-24 items-center justify-center rounded-full bg-white/80 text-blue-deep shadow-sm ring-1 ring-hairline transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none">
+          <span className="flex h-24 w-24 items-center justify-center rounded-full bg-white/80 text-blue-deep shadow-sm ring-1 ring-hairline transition-transform duration-[var(--duration-menu)] ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100">
             <UserRound className="h-12 w-12" />
           </span>
-          <span className="absolute left-3 top-3 rounded-full bg-blue-deep px-3 py-1 text-xs font-semibold text-white">
+          <span className="absolute left-3 top-3 rounded-full bg-blue-text px-3 py-1 text-xs font-semibold text-white">
             Quiet Seeker · {brief.publicRef}
           </span>
           <span className="absolute bottom-3 right-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-charcoal shadow-sm">

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Check, Heart, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SubmitButton } from "@/components/ui/submit-button";
 import {
   allIntroductions,
   getBrief,
@@ -12,6 +15,7 @@ import { adminOfferIntroduction } from "@/lib/actions";
 import { areaLabel } from "@/lib/areas";
 import { formatDate, formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { ADMIN_INTRO_MESSAGES, messageFor } from "@/lib/page-messages";
 
 export const metadata: Metadata = { title: "Admin · Introductions" };
 
@@ -36,7 +40,14 @@ function Gate({ ok, label }: { ok: boolean; label: string }) {
   );
 }
 
-export default async function AdminIntroductionsPage() {
+export default async function AdminIntroductionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  // `?error=gate` / `?error=prelive` — the introduction was refused, nothing sent.
+  const { error } = await searchParams;
+  const message = messageFor(ADMIN_INTRO_MESSAGES, error);
   const intros = await allIntroductions();
   // Resolve each row's related records before rendering — a server
   // component can't await inside the list below.
@@ -67,10 +78,26 @@ export default async function AdminIntroductionsPage() {
         says yes.
       </p>
 
+      {message && (
+        <Alert tone={message.tone} title={message.title} className="mt-6">
+          {message.body}
+        </Alert>
+      )}
+
       {intros.length === 0 ? (
-        <p className="mt-8 rounded-2xl bg-paper p-6 text-sm text-charcoal-soft ring-1 ring-hairline">
-          No introduction requests yet.
-        </p>
+        <EmptyState
+          className="mt-8"
+          icon={Heart}
+          title="No introduction requests yet"
+          action={
+            <ButtonLink href="/seekers" variant="secondary">
+              See the live Quiet Seekers
+            </ButtonLink>
+          }
+        >
+          A request lands here the moment a Hush Home owner raises their hand
+          for a Quiet Seeker.
+        </EmptyState>
       ) : (
         <ul className="mt-8 space-y-4">
           {rows.map(({ intro, seeker, seekerUser, seller, home }) => {
@@ -126,7 +153,7 @@ export default async function AdminIntroductionsPage() {
                         intro.status === "accepted" &&
                           "bg-green-tint text-green-deep",
                         intro.status === "declined" && "bg-soft text-charcoal-soft",
-                        intro.status === "offered" && "bg-blue-tint text-blue-deep",
+                        intro.status === "offered" && "bg-blue-tint text-blue-text",
                         intro.status === "new" && "bg-orange-tint text-orange-deep",
                       )}
                     >
@@ -138,9 +165,12 @@ export default async function AdminIntroductionsPage() {
                         {home && (
                           <input type="hidden" name="homeId" value={home.id} />
                         )}
-                        <Button type="submit" disabled={!gateMet}>
+                        <SubmitButton
+                          disabled={!gateMet}
+                          pendingLabel="Offering…"
+                        >
                           Offer to seeker
-                        </Button>
+                        </SubmitButton>
                         {!gateMet && (
                           <p className="mt-1.5 max-w-45 text-xs text-charcoal-soft">
                             {hasProfile && hasContract && !homeLive

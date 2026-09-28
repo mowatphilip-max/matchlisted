@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { Alert } from "@/components/ui/alert";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { currentUser } from "@/lib/session";
 import { getBrief, getHomeFor, getOffer } from "@/lib/db";
 import { acceptCounter, submitOffer } from "@/lib/actions";
 import { areaShortLabel } from "@/lib/areas";
 import { formatPrice } from "@/lib/format";
 import { CONFIG } from "@/lib/site";
+import { OFFER_MESSAGES, messageFor } from "@/lib/page-messages";
 
 export const metadata: Metadata = { title: "Make an offer" };
 
@@ -16,12 +18,14 @@ export default async function OfferPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ counter?: string }>;
+  searchParams: Promise<{ counter?: string; deposit?: string }>;
 }) {
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
-  const { counter } = await searchParams;
+  // `?deposit=paid` comes back from the conveyancing-deposit checkout.
+  const { counter, deposit } = await searchParams;
+  const message = messageFor(OFFER_MESSAGES, deposit);
   // §3 scope: an offer page for a home the viewer may not see is a leak.
   const home = await getHomeFor(id, user);
   if (!home) notFound();
@@ -41,6 +45,12 @@ export default async function OfferPage({
           {counterOffer ? "The seller has countered" : "Make your offer"}
         </h1>
 
+        {message && (
+          <Alert tone={message.tone} title={message.title} className="mt-6">
+            {message.body}
+          </Alert>
+        )}
+
         {/* Counter response */}
         {counterOffer &&
           counterOffer.seekerId === user.id &&
@@ -57,10 +67,10 @@ export default async function OfferPage({
               </p>
               <form action={acceptCounter} className="mt-4">
                 <input type="hidden" name="offerId" value={counterOffer.id} />
-                <Button type="submit">
+                <SubmitButton pendingLabel="Accepting the counter…">
                   Accept counter of{" "}
                   {formatPrice(counterOffer.counterAmount ?? 0)}
-                </Button>
+                </SubmitButton>
               </form>
               <p className="mt-3 text-xs text-charcoal-soft">
                 Or submit a fresh offer below. It replaces this negotiation.
@@ -87,7 +97,7 @@ export default async function OfferPage({
             min={50000}
             step={500}
             defaultValue={counterOffer?.counterAmount ?? home.price}
-            className="mt-1.5 min-h-12 w-full rounded-xl border border-hairline px-4 font-display text-xl font-bold outline-none focus:border-orange-deep"
+            className="mt-1.5 min-h-12 w-full rounded-xl border border-hairline px-4 font-display text-xl font-bold focus:border-orange-deep"
           />
           <label htmlFor="note" className="mt-4 block text-sm font-semibold">
             A note for the seller{" "}
@@ -98,7 +108,7 @@ export default async function OfferPage({
             name="note"
             rows={3}
             placeholder="Entry dates, conditions, or just why you love it."
-            className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-sm outline-none focus:border-orange-deep"
+            className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-base focus:border-orange-deep"
           />
           <p className="mt-4 rounded-xl bg-soft p-4 text-xs text-charcoal-soft">
             You don&apos;t need a solicitor to make an offer, and nothing is
@@ -111,9 +121,9 @@ export default async function OfferPage({
             missives the fixed {formatPrice(CONFIG.fees.buyerFeeGross)} buyer
             fee applies (including VAT), whatever the price.
           </p>
-          <Button type="submit" className="mt-4 w-full">
+          <SubmitButton className="mt-4 w-full" pendingLabel="Sending your offer…">
             Send my offer to the seller
-          </Button>
+          </SubmitButton>
         </form>
       </div>
     </Container>

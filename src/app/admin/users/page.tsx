@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { Users } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { allUsers, getBrief, homesBySeller, invoicesForUser } from "@/lib/db";
 import { areaShortLabel } from "@/lib/areas";
 import { formatBudget, formatDate } from "@/lib/format";
@@ -26,6 +29,20 @@ export default async function AdminUsersPage() {
         Every account, both sides of it. Sellers see seekers anonymised; you
         don&apos;t.
       </p>
+      {rows.length === 0 ? (
+        <EmptyState
+          className="mt-8"
+          icon={Users}
+          title="No accounts yet"
+          action={
+            <ButtonLink href="/join" variant="secondary">
+              Open the sign-up page
+            </ButtonLink>
+          }
+        >
+          Every registration lands here, seeker and seller side together.
+        </EmptyState>
+      ) : (
       <div className="mt-8 overflow-x-auto rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline">
         <table className="w-full min-w-[820px] text-left text-sm">
           <thead>
@@ -38,7 +55,7 @@ export default async function AdminUsersPage() {
               <th className="px-5 py-3 font-semibold">Fees due</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-hairline">
+          <tbody className="divide-y divide-hairline [&>tr]:transition-colors [&>tr:hover]:bg-soft/60">
             {rows.map(({ user: u, brief, homes, due }) => {
               return (
                 <tr key={u.id}>
@@ -99,6 +116,7 @@ export default async function AdminUsersPage() {
           </tbody>
         </table>
       </div>
+      )}
     </>
   );
 }

@@ -14,7 +14,7 @@ import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 
 const inputClass =
-  "mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-orange-deep";
+  "mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base focus:border-orange-deep";
 
 export default function SetPasswordPage() {
   const [ready, setReady] = useState(false);

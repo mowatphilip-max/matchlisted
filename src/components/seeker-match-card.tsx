@@ -9,7 +9,10 @@ import { MatchRing } from "./match-ring";
 
 export function SeekerMatchCard({ match }: { match: SeekerMatch }) {
   return (
-    <article className="rounded-[var(--radius-lg)] bg-paper p-5 shadow-[var(--shadow-card)] ring-1 ring-hairline">
+    // card-lift to match every sibling card. Without it this was the one card
+    // that stayed dead on hover, and it renders in the same dashboard scroll as
+    // a grid of HomeCards that do lift (dashboard/page.tsx:262 then :309).
+    <article className="card-lift rounded-[var(--radius-lg)] bg-paper p-5 shadow-[var(--shadow-card)] ring-1 ring-hairline">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="rounded-full bg-blue-tint p-2.5 text-blue-deep">

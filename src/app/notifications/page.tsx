@@ -3,7 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Bell, Heart, CalendarClock, FileText, Info } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { currentUser } from "@/lib/session";
 import { notificationsForUser } from "@/lib/db";
 import { markAllNotificationsRead } from "@/lib/actions";
@@ -33,18 +35,27 @@ export default async function NotificationsPage() {
           </h1>
           {items.some((n) => !n.readAt) && (
             <form action={markAllNotificationsRead}>
-              <Button variant="secondary" className="min-h-9 px-4 py-1.5">
+              <SubmitButton
+                variant="secondary"
+                className="min-h-9 px-4 py-1.5"
+                pendingLabel="Marking all read…"
+              >
                 Mark all read
-              </Button>
+              </SubmitButton>
             </form>
           )}
         </div>
 
         {items.length === 0 ? (
-          <p className="mt-8 rounded-2xl bg-soft p-6 text-sm text-charcoal-soft">
-            Nothing yet. When the Matchlist finds something, you&apos;ll hear
-            about it here first.
-          </p>
+          <EmptyState
+            className="mt-8"
+            icon={Bell}
+            title="Nothing yet"
+            action={<ButtonLink href="/hush-homes">Browse Hush Homes</ButtonLink>}
+          >
+            When the Matchlist finds something, you&apos;ll hear about it here
+            first. In the meantime, the quiet market is already open.
+          </EmptyState>
         ) : (
           <ul className="mt-8 space-y-3">
             {items.map((n) => {

@@ -145,7 +145,7 @@ export default async function HomePage() {
                   Matchlist scores every pairing across all of Scotland, and
                   when the numbers spark, we make the Introduction.
                 </p>
-                <p className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-blue-deep">
+                <p className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-blue-text">
                   No boards. No portals. Just Introductions.
                 </p>
                 <div className="mt-9 flex flex-wrap gap-3">
@@ -189,7 +189,7 @@ export default async function HomePage() {
             serious: sellers with a verified Home Report, buyers with a signed
             brief.
           </p>
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
+          <div className="stagger-in mt-14 grid gap-6 md:grid-cols-3">
             {[
               {
                 icon: Heart,
@@ -284,7 +284,7 @@ export default async function HomePage() {
               See your matches
             </ButtonLink>
           </div>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="stagger-in mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {teasers.map((home) => (
               <HomeCard key={home.id} home={home} href="/join" />
             ))}
@@ -311,7 +311,7 @@ export default async function HomePage() {
               Meet the Seekers
             </ButtonLink>
           </div>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="stagger-in mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {seekerTeasers.map((seeker) => (
               <MowattSeekerCard key={seeker.ref} seeker={seeker} />
             ))}
@@ -465,7 +465,7 @@ export default async function HomePage() {
               Become a Quiet Seeker
             </ButtonLink>
           </div>
-          <p className="mt-6 text-xs text-white/40">
+          <p className="mt-6 text-xs text-white/70">
             Already matched?{" "}
             <Link href="/login" className="underline hover:text-white">
               Sign in

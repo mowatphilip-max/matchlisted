@@ -19,7 +19,7 @@ import {
   PROPERTY_TYPES,
   type SeekerBrief,
 } from "@/lib/types";
-import { Button } from "./ui/button";
+import { SubmitButton } from "./ui/submit-button";
 import { cn } from "@/lib/utils";
 
 // The picker offers the ten concrete types — "any" is the implicit
@@ -97,7 +97,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
                 <button
                   type="button"
                   onClick={() => setAreas((prev) => prev.filter((a) => a !== id))}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-blue-tint px-3.5 py-1.5 text-sm font-medium text-blue-deep hover:bg-blue-deep hover:text-white"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-blue-tint px-3.5 py-1.5 text-sm font-medium text-blue-text hover:bg-blue-text hover:text-white"
                 >
                   <MapPin className="h-3.5 w-3.5" />
                   {areaLabel(id)}
@@ -115,10 +115,10 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search a town or area, e.g. Largs, Stockbridge, Melrose"
-            className="min-h-11 w-full rounded-full border border-hairline bg-white pl-11 pr-4 text-sm outline-none focus:border-blue-deep"
+            className="min-h-11 w-full rounded-full border border-hairline bg-white pl-11 pr-4 text-base focus:border-blue-deep"
           />
           {results.length > 0 && (
-            <ul className="absolute z-20 mt-2 max-h-64 w-full overflow-auto rounded-2xl border border-hairline bg-white p-1.5 shadow-[var(--shadow-card-hover)]">
+            <ul className="popover-in absolute z-20 mt-2 max-h-64 w-full overflow-auto rounded-2xl border border-hairline bg-white p-1.5 shadow-[var(--shadow-card-hover)]">
               {results.map((a) => (
                 <li key={a.id}>
                   <button
@@ -184,7 +184,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
                             className={cn(
                               "cursor-pointer rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors",
                               active
-                                ? "bg-blue-deep text-white ring-blue-deep"
+                                ? "bg-blue-text text-white ring-blue-text"
                                 : "bg-white ring-hairline hover:ring-blue-deep",
                             )}
                           >
@@ -221,7 +221,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
                 aria-pressed={on}
                 onClick={() => togglePickedType(t.key)}
                 className={cn(
-                  "relative min-h-11 cursor-pointer rounded-xl border-[1.5px] p-3 pb-2.5 text-center transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-orange/50",
+                  "relative min-h-11 cursor-pointer rounded-xl border-[1.5px] p-3 pb-2.5 text-center transition-[background-color,border-color,box-shadow,transform] duration-[var(--duration-press)] ease-out active:scale-[0.97] motion-reduce:active:scale-100 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-orange/50",
                   on
                     ? "border-orange-deep bg-orange-tint shadow-[0_0_0_3px_rgb(243_124_36/0.14)]"
                     : "border-hairline bg-white hover:border-charcoal/30 hover:bg-soft/60",
@@ -320,7 +320,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
             id="minBeds"
             name="minBeds"
             defaultValue={brief?.minBeds ?? 2}
-            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-sm"
+            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-base"
           >
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <option key={n} value={n}>
@@ -337,7 +337,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
             id="minBaths"
             name="minBaths"
             defaultValue={brief?.minBaths ?? 1}
-            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-sm"
+            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-base"
           >
             {[1, 2, 3, 4].map((n) => (
               <option key={n} value={n}>
@@ -380,7 +380,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
             id="position"
             name="position"
             defaultValue={brief?.position ?? "cash-nothing-to-sell"}
-            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-sm"
+            className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline bg-white px-4 text-base"
           >
             {BUYING_POSITIONS.map((p) => (
               <option key={p.value} value={p.value}>
@@ -403,7 +403,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
           {PROPERTY_TYPES.map((t) => (
             <label
               key={t.value}
-              className="cursor-pointer rounded-full px-4 py-2 text-sm font-medium ring-1 ring-inset ring-hairline transition-colors has-[:checked]:bg-charcoal has-[:checked]:text-white has-[:checked]:ring-charcoal"
+              className="inline-flex min-h-8 cursor-pointer items-center rounded-full px-4 py-2 text-sm font-medium ring-1 ring-inset ring-hairline transition-[background-color,box-shadow,transform] duration-[var(--duration-press)] ease-out active:scale-[0.97] pointer-coarse:min-h-11 motion-reduce:active:scale-100 has-[:checked]:bg-charcoal has-[:checked]:text-white has-[:checked]:ring-charcoal"
             >
               <input
                 type="checkbox"
@@ -423,7 +423,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
           {FEATURE_TAGS.map((f) => (
             <label
               key={f.value}
-              className="cursor-pointer rounded-full px-4 py-2 text-sm font-medium ring-1 ring-inset ring-hairline transition-colors has-[:checked]:bg-orange-tint has-[:checked]:text-orange-deep has-[:checked]:ring-orange"
+              className="inline-flex min-h-8 cursor-pointer items-center rounded-full px-4 py-2 text-sm font-medium ring-1 ring-inset ring-hairline transition-[background-color,box-shadow,transform] duration-[var(--duration-press)] ease-out active:scale-[0.97] pointer-coarse:min-h-11 motion-reduce:active:scale-100 has-[:checked]:bg-orange-tint has-[:checked]:text-orange-deep has-[:checked]:ring-orange"
             >
               <input
                 type="checkbox"
@@ -448,7 +448,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
           rows={3}
           defaultValue={brief?.notes}
           placeholder="South-facing garden, near a good primary school, room for the kayaks…"
-          className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-sm outline-none focus:border-blue-deep"
+          className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-base focus:border-blue-deep"
         />
       </section>
 
@@ -468,7 +468,7 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
           maxLength={60}
           defaultValue={brief?.headline}
           placeholder="e.g. Golf-mad family chasing the coast"
-          className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-sm outline-none focus:border-blue-deep"
+          className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 text-base focus:border-blue-deep"
         />
         <label htmlFor="story" className="mt-4 block text-sm font-semibold">
           Your story
@@ -480,14 +480,17 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
           maxLength={500}
           defaultValue={brief?.story}
           placeholder="Who you are (no names needed), why you're moving, and how ready you are. Sellers read these."
-          className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-sm outline-none focus:border-blue-deep"
+          className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-base focus:border-blue-deep"
         />
       </section>
 
       <div className="flex flex-wrap items-center gap-4 border-t border-hairline pt-6">
-        <Button type="submit" disabled={areas.length === 0}>
+        <SubmitButton
+          disabled={areas.length === 0}
+          pendingLabel="Saving your brief…"
+        >
           {brief?.contract ? "Save my brief" : "Save & continue to agreement"}
-        </Button>
+        </SubmitButton>
         {areas.length === 0 && (
           <p className="text-sm text-charcoal-soft">
             Pick at least one area to continue.

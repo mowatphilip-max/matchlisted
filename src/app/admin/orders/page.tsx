@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { adminUpdatePurchaseOrder } from "@/lib/actions";
 import { allPurchaseOrders, homesById, usersById } from "@/lib/db";
 import { areaLabel } from "@/lib/areas";
@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = { title: "Admin · Purchase orders" };
 
 const STATUS = {
-  instructed: { label: "Instructed · awaiting their invoice", cls: "bg-blue-tint text-blue-deep" },
+  instructed: { label: "Instructed · awaiting their invoice", cls: "bg-blue-tint text-blue-text" },
   billed: { label: "Their invoice received", cls: "bg-orange-tint text-orange-deep" },
   settled: { label: "Settled · surveyor paid", cls: "bg-green-tint text-green-deep" },
 } as const;
@@ -84,11 +84,15 @@ export default async function AdminOrdersPage() {
                           name="action"
                           value={po.status === "instructed" ? "billed" : "settled"}
                         />
-                        <Button type="submit" variant="secondary" className="min-h-9 px-4 py-1.5">
+                        <SubmitButton
+                          variant="secondary"
+                          className="min-h-9 px-4 py-1.5"
+                          pendingLabel="Recording…"
+                        >
                           {po.status === "instructed"
                             ? "Their invoice arrived"
                             : `Mark paid (${formatMoney(po.base + po.vat)})`}
-                        </Button>
+                        </SubmitButton>
                       </form>
                     )}
                   </div>

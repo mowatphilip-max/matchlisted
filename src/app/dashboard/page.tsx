@@ -12,13 +12,16 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
+import { Alert } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button";
 import { HomeCard } from "@/components/home-card";
 import { HeartButton } from "@/components/heart-button";
 import { SeekerMatchCard } from "@/components/seeker-match-card";
 import { MatchRing } from "@/components/match-ring";
+import { EmptyState } from "@/components/ui/empty-state";
 import { currentUser } from "@/lib/session";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { ConfirmSubmit } from "@/components/ui/confirm-submit";
 import { respondToIntroduction, saveAlertPref } from "@/lib/actions";
 import { DEFAULT_ALERT_PCT } from "@/lib/alerts";
 import {
@@ -41,6 +44,7 @@ import { areaLabel, areaShortLabel } from "@/lib/areas";
 import { formatBudget, formatDateTime, formatMoney, formatPrice } from "@/lib/format";
 import { matchLine } from "@/lib/match";
 import { BUYING_POSITIONS, PROPERTY_TYPES } from "@/lib/types";
+import { DASHBOARD_MESSAGES, messageFor } from "@/lib/page-messages";
 
 export const metadata: Metadata = { title: "Your dashboard" };
 
@@ -48,7 +52,7 @@ const statusLabels: Record<string, { label: string; cls: string }> = {
   draft: { label: "Draft · not yet live", cls: "bg-soft text-charcoal-soft" },
   "pending-approval": {
     label: "Home Report under review",
-    cls: "bg-blue-tint text-blue-deep",
+    cls: "bg-blue-tint text-blue-text",
   },
   live: { label: "Live on the Matchlist", cls: "bg-green-tint text-green-deep" },
   "under-offer": { label: "Under offer", cls: "bg-orange-tint text-orange-deep" },
@@ -56,9 +60,25 @@ const statusLabels: Record<string, { label: string; cls: string }> = {
   withdrawn: { label: "Withdrawn", cls: "bg-red-tint text-red-deep" },
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    saved?: string;
+    signed?: string;
+    offer?: string;
+  }>;
+}) {
   const user = await currentUser();
   if (!user) redirect("/login");
+
+  // `?saved=brief`, `?saved=alerts`, `?signed=seeker`, `?offer=agreed` — all
+  // value-keyed, all landing here from a server action redirect.
+  const { saved: savedParam, signed, offer } = await searchParams;
+  const message =
+    messageFor(DASHBOARD_MESSAGES, savedParam) ??
+    messageFor(DASHBOARD_MESSAGES, signed) ??
+    messageFor(DASHBOARD_MESSAGES, offer);
 
   const brief = await getBrief(user.id);
   const myHomes = await homesBySeller(user.id);
@@ -127,12 +147,49 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {message && (
+        <Alert tone={message.tone} title={message.title} className="mt-8">
+          {message.body}
+        </Alert>
+      )}
+
       {/* It's a match — fresh ≥90% pairings */}
       {(fresh.asSeeker.length > 0 || fresh.asSeller.length > 0) && (
-        <div className="mt-8 rounded-[var(--radius-xl)] bg-orange-tint p-6 ring-1 ring-orange/30">
-          <p className="flex items-center gap-2 font-display text-2xl font-bold text-orange-deep">
-            <Sparkles className="h-6 w-6" /> It&apos;s a match!
-          </p>
+        // This panel is the rarest, highest-emotion moment in the product, and
+        // collectFreshHotMatches() records every pairing as seen — so it is shown
+        // once, ever, per match. That is exactly the budget a celebration is
+        // allowed. The shapes are the one-shot twins of the Concept Reel's
+        // reel-banner / reel-heart / reel-sparkle, so the homepage promise and
+        // this delivery now speak the same language.
+        <div className="celebrate-in mt-8 rounded-[var(--radius-xl)] bg-orange-tint p-6 ring-1 ring-orange/30">
+          <h2 className="flex items-center gap-2 font-display text-2xl font-bold text-orange-deep">
+            <span className="relative inline-flex">
+              <Sparkles className="celebrate-pop h-6 w-6" />
+              {/* Six particles out of the sparkle, each with its own vector. */}
+              {[
+                { dx: "-18px", dy: "-22px" },
+                { dx: "16px", dy: "-24px" },
+                { dx: "-24px", dy: "4px" },
+                { dx: "24px", dy: "2px" },
+                { dx: "-10px", dy: "20px" },
+                { dx: "12px", dy: "18px" },
+              ].map((p, i) => (
+                <span
+                  key={i}
+                  aria-hidden
+                  className="celebrate-spark absolute left-1/2 top-1/2 h-1.5 w-1.5 rounded-full bg-orange"
+                  style={
+                    {
+                      "--dx": p.dx,
+                      "--dy": p.dy,
+                      animationDelay: `${160 + i * 22}ms`,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+            </span>{" "}
+            It&apos;s a match!
+          </h2>
           <ul className="mt-3 space-y-2">
             {fresh.asSeeker.map((m) => (
               <li key={m.home.id} className="flex flex-wrap items-center gap-3">
@@ -175,7 +232,7 @@ export default async function DashboardPage() {
             key={intro.id}
             className="mt-8 rounded-[var(--radius-xl)] bg-blue-tint p-6 ring-1 ring-blue-deep/20"
           >
-            <p className="flex items-center gap-2 font-display text-xl font-bold text-blue-deep">
+            <p className="flex items-center gap-2 font-display text-xl font-bold text-blue-text">
               <Heart className="h-5 w-5 fill-blue-deep" /> A home owner spotted
               your profile
             </p>
@@ -193,14 +250,22 @@ export default async function DashboardPage() {
               <form action={respondToIntroduction}>
                 <input type="hidden" name="introId" value={intro.id} />
                 <input type="hidden" name="answer" value="yes" />
-                <Button type="submit">Yes, show me the home</Button>
+                <SubmitButton pendingLabel="Accepting the introduction…">
+                  Yes, show me the home
+                </SubmitButton>
               </form>
               <form action={respondToIntroduction}>
                 <input type="hidden" name="introId" value={intro.id} />
                 <input type="hidden" name="answer" value="no" />
-                <Button type="submit" variant="secondary">
+                {/* Declining an introduction is permanent from the seeker's
+                    side, so it arms before it commits. */}
+                <ConfirmSubmit
+                  variant="secondary"
+                  confirmLabel="Yes, decline"
+                  pendingLabel="Declining…"
+                >
                   No thanks
-                </Button>
+                </ConfirmSubmit>
               </form>
             </div>
           </div>
@@ -274,10 +339,20 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <p className="mt-4 rounded-2xl bg-soft p-6 text-sm text-charcoal-soft">
+            <EmptyState
+              className="mt-4"
+              icon={Home}
+              title="No matches yet"
+              action={
+                <ButtonLink href="/dashboard/brief" variant="seeker">
+                  Adjust my brief
+                </ButtonLink>
+              }
+            >
               No live Hush Homes match your brief yet. The moment one lists,
-              you&apos;ll be the first to know.
-            </p>
+              you&apos;ll be the first to know — or widen the brief and see
+              more today.
+            </EmptyState>
           )
         ) : (
           <div className="mt-4 rounded-2xl bg-soft p-6">
@@ -312,9 +387,19 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <p className="mt-4 rounded-2xl bg-soft p-6 text-sm text-charcoal-soft">
-              No registered Quiet Seekers match this home yet.
-            </p>
+            <EmptyState
+              className="mt-4"
+              icon={Heart}
+              title="No matching seekers yet"
+              action={
+                <ButtonLink href="/seekers" variant="seeker">
+                  See the live Quiet Seekers
+                </ButtonLink>
+              }
+            >
+              No registered Quiet Seekers match this home yet. Browse everyone
+              searching in Scotland — you can raise your hand to any of them.
+            </EmptyState>
           )}
         </section>
       ))}
@@ -385,7 +470,7 @@ export default async function DashboardPage() {
             {brief && (
               <Link
                 href="/dashboard/brief"
-                className="text-sm font-semibold text-blue-deep hover:underline"
+                className="text-sm font-semibold text-blue-text hover:underline"
               >
                 Edit
               </Link>
@@ -486,7 +571,7 @@ export default async function DashboardPage() {
               id="matchAlertPct"
               name="matchAlertPct"
               defaultValue={user.matchAlertPct ?? DEFAULT_ALERT_PCT}
-              className="min-h-11 cursor-pointer rounded-xl border border-hairline bg-white px-4 text-sm font-semibold outline-none focus:border-orange-deep"
+              className="min-h-11 cursor-pointer rounded-xl border border-hairline bg-white px-4 text-base font-semibold focus:border-orange-deep"
             >
               <option value={95}>95%+: only the near-perfect</option>
               <option value={90}>90%+: “It&apos;s a match” level</option>
@@ -495,9 +580,9 @@ export default async function DashboardPage() {
               <option value={50}>50%+: anything worth a look</option>
               <option value={0}>Off: no alerts</option>
             </select>
-            <Button type="submit" className="min-h-11 px-5">
+            <SubmitButton className="min-h-11 px-5" pendingLabel="Saving…">
               Save
-            </Button>
+            </SubmitButton>
           </div>
         </form>
       </section>
@@ -555,7 +640,7 @@ export default async function DashboardPage() {
                           ? "font-semibold text-green-deep"
                           : intro.status === "declined"
                             ? "font-semibold text-charcoal-soft"
-                            : "font-semibold text-blue-deep"
+                            : "font-semibold text-blue-text"
                       }
                     >
                       {label}
@@ -621,7 +706,7 @@ export default async function DashboardPage() {
                     ) : (
                       <Link
                         href={`/homes/${o.homeId}`}
-                        className="font-semibold text-blue-deep underline"
+                        className="font-semibold text-blue-text underline"
                       >
                         View
                       </Link>

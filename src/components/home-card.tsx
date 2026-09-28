@@ -35,7 +35,7 @@ export function HomeCard({
             src={home.photos[0] ?? null}
             alt={home.headline}
             placeholderKey={home.id}
-            className="aspect-[4/3] w-full transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className="aspect-[4/3] w-full transition-transform duration-[var(--duration-menu)] ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
         </div>
         {pct !== undefined && (
@@ -84,10 +84,14 @@ export function HomeCard({
   return (
     <article
       className={cn(
-        "group card-lift relative overflow-hidden rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline",
+        "group card-lift relative overflow-hidden rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-orange-deep",
         className,
       )}
     >
+      {/* The link suppresses its own outline on purpose: the <article> above is
+          overflow-hidden, so a ring drawn on this inner element gets clipped.
+          The article wears it instead via has-[a:focus-visible]. Do not remove
+          one without the other, or the card becomes unreachable by keyboard. */}
       {href ? (
         <Link href={href} className="block focus-visible:outline-none">
           {body}

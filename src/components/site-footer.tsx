@@ -37,7 +37,7 @@ export function SiteFooter() {
           </p>
         </div>
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-white/50">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white/70">
             Sellers
           </h3>
           <ul className="mt-4 space-y-2 text-sm text-white/80">
@@ -47,7 +47,7 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-white/50">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white/70">
             Buyers
           </h3>
           <ul className="mt-4 space-y-2 text-sm text-white/80">
@@ -58,7 +58,7 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-white/50">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white/70">
             Matchlisted
           </h3>
           <ul className="mt-4 space-y-2 text-sm text-white/80">
@@ -68,7 +68,7 @@ export function SiteFooter() {
         </div>
       </Container>
       <div className="border-t border-white/10">
-        <Container className="space-y-3 py-6 text-xs text-white/50">
+        <Container className="space-y-3 py-6 text-xs text-white/70">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 Matchlisted.com · all prices include VAT.</p>
             <nav className="flex flex-wrap gap-x-4 gap-y-1" aria-label="Legal">
@@ -79,7 +79,7 @@ export function SiteFooter() {
               ))}
             </nav>
           </div>
-          <p className="max-w-4xl leading-relaxed text-white/35">
+          <p className="max-w-2xl leading-relaxed text-white/70">
             {legalSentence}
           </p>
         </Container>

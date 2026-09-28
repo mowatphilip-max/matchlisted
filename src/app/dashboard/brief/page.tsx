@@ -15,7 +15,7 @@ export default async function BriefPage() {
   return (
     <Container className="py-10">
       <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-bold uppercase tracking-wider text-blue-deep">
+        <p className="text-sm font-bold uppercase tracking-wider text-blue-text">
           Quiet Seeker
         </p>
         <h1 className="mt-2 text-3xl">

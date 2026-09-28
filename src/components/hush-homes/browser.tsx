@@ -89,7 +89,7 @@ export function HushHomesBrowser({
   });
 
   const selectCls =
-    "min-h-11 cursor-pointer rounded-xl border border-hairline bg-white px-3 text-sm font-medium outline-none focus:border-orange-deep";
+    "min-h-11 cursor-pointer rounded-xl border border-hairline bg-white px-3 text-base font-medium focus:border-orange-deep";
 
   return (
     <div>
@@ -102,7 +102,7 @@ export function HushHomesBrowser({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search area or town…"
             aria-label="Search homes by area"
-            className="min-h-11 w-full bg-transparent text-sm outline-none placeholder:text-muted"
+            className="min-h-11 w-full bg-transparent text-base placeholder:text-muted"
           />
         </div>
         <select aria-label="Region" value={region} onChange={(e) => setRegion(e.target.value)} className={selectCls}>
@@ -165,14 +165,14 @@ function typeLabel(t: PropertyType): string {
 function FullCard({ home }: { home: BrowserHome }) {
   const area = getArea(home.areaId);
   return (
-    <article className="group card-lift relative overflow-hidden rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline">
+    <article className="group card-lift relative overflow-hidden rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-orange-deep">
       <Link href={`/homes/${home.id}`} className="block focus-visible:outline-none">
         <div className="relative overflow-hidden rounded-t-[var(--radius-lg)]">
           <PropertyImage
             src={home.photo}
             alt={home.headline ?? "Hush Home"}
             placeholderKey={home.id}
-            className="aspect-[4/3] w-full transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
+            className="aspect-[4/3] w-full transition-transform duration-[var(--duration-menu)] ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
           {home.status === "under-offer" && (
             <span className="absolute left-3 top-3 rounded-full bg-charcoal/85 px-3 py-1 text-xs font-semibold text-white">
@@ -224,7 +224,7 @@ function FullCard({ home }: { home: BrowserHome }) {
 function LockedCard({ home }: { home: BrowserHome }) {
   const area = getArea(home.areaId);
   return (
-    <article className="group card-lift relative overflow-hidden rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline">
+    <article className="group card-lift relative overflow-hidden rounded-[var(--radius-lg)] bg-paper shadow-[var(--shadow-card)] ring-1 ring-hairline has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-orange-deep">
       <Link href="/join" className="block focus-visible:outline-none">
         <div className="relative overflow-hidden rounded-t-[var(--radius-lg)]">
           {/* Blur whatever is behind — a real photo or the placeholder art. */}
@@ -265,7 +265,7 @@ function LockedCard({ home }: { home: BrowserHome }) {
             <span className="inline-flex items-center gap-1">
               <BedDouble className="h-3.5 w-3.5" /> {home.beds} beds
             </span>
-            <span className="inline-flex items-center gap-1 font-semibold text-blue-deep">
+            <span className="inline-flex items-center gap-1 font-semibold text-blue-text">
               <Lock className="h-3 w-3" /> Full details for registered Quiet
               Seekers
             </span>

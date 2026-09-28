@@ -8,8 +8,27 @@ import { cn } from "@/lib/utils";
 //   secondary / ghost — quiet chrome
 type Variant = "primary" | "seller" | "seeker" | "secondary" | "ghost" | "onDark";
 
+// Sizes by the room the control is in, not by how important it looks:
+//   sm — dense rows: admin tables, inline record actions
+//   md — the default everywhere a person is making a decision
+//   lg — the one CTA a page is actually asking for
+type Size = "sm" | "md" | "lg";
+
 const base =
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold tracking-wide transition-all duration-200 min-h-11 px-6 py-3 cursor-pointer select-none active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:pointer-events-none motion-reduce:active:scale-100";
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold tracking-wide " +
+  "transition-[background-color,box-shadow,transform,opacity,outline-color] " +
+  "duration-[var(--duration-press)] ease-out " +
+  "cursor-pointer select-none active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 " +
+  "disabled:opacity-50 disabled:pointer-events-none motion-reduce:active:scale-100";
+
+// `sm` stays visually compact under a mouse but still hands a finger a 44px
+// target — that escape hatch is what lets dense admin rows exist without
+// failing touch-target sizing.
+const sizes: Record<Size, string> = {
+  sm: "min-h-8 pointer-coarse:min-h-11 px-4 py-1.5 text-xs",
+  md: "min-h-11 px-6 py-3 text-sm",
+  lg: "min-h-12 px-7 py-3.5 text-base",
+};
 
 const variants: Record<Variant, string> = {
   primary:
@@ -29,17 +48,23 @@ const variants: Record<Variant, string> = {
 interface ButtonLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   href: string;
   variant?: Variant;
+  size?: Size;
 }
 
 export function ButtonLink({
   href,
   variant = "primary",
+  size = "md",
   className,
   children,
   ...props
 }: ButtonLinkProps) {
   return (
-    <Link href={href} className={cn(base, variants[variant], className)} {...props}>
+    <Link
+      href={href}
+      className={cn(base, sizes[size], variants[variant], className)}
+      {...props}
+    >
       {children}
     </Link>
   );
@@ -47,16 +72,18 @@ export function ButtonLink({
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
+  size?: Size;
 }
 
 export function Button({
   variant = "primary",
+  size = "md",
   className,
   children,
   ...props
 }: ButtonProps) {
   return (
-    <button className={cn(base, variants[variant], className)} {...props}>
+    <button className={cn(base, sizes[size], variants[variant], className)} {...props}>
       {children}
     </button>
   );

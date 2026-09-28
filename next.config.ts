@@ -16,8 +16,15 @@ const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  // OpenStreetMap tiles power the Scotland area picker; Supabase Storage
-  // serves uploaded listing photos and Home Reports.
+  // Supabase Storage serves uploaded listing photos and Home Reports.
+  //
+  // The OpenStreetMap allowance below is currently unused: `leaflet` and
+  // `@types/leaflet` are in package.json but have zero imports anywhere in
+  // src/, and the Scotland area picker (components/home/area-finder.tsx) is a
+  // text search over lib/areas.ts, not a map. The allowance and the dependency
+  // are both left in place because CLAUDE.md still lists Leaflet maps as part
+  // of the intended stack — if the map picker is not coming, drop
+  // `leaflet`/`@types/leaflet` and this tile origin together.
   `img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org${supabaseHost ? ` https://${supabaseHost}` : ""}`,
   "font-src 'self' data:",
   `connect-src 'self'${supabaseHost ? ` https://${supabaseHost}` : ""}`,

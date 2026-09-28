@@ -16,7 +16,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { SeekerCard, positionLabel } from "@/components/seeker-card";
 import { expressInterestInSeeker } from "@/lib/actions";
 import { areaLabel } from "@/lib/areas";
@@ -155,7 +156,7 @@ export default async function SeekerProfilePage({
                   <UserRound className="h-7 w-7" />
                 </span>
                 <div>
-                  <p className="text-sm font-bold text-blue-deep">
+                  <p className="text-sm font-bold text-blue-text">
                     Quiet Seeker · {brief.publicRef}
                   </p>
                   <p className="flex items-center gap-1.5 text-xs font-medium text-charcoal-soft">
@@ -183,7 +184,7 @@ export default async function SeekerProfilePage({
                 {brief.areas.map((a) => (
                   <li
                     key={a}
-                    className="rounded-full bg-blue-tint px-3 py-1 text-xs font-medium text-blue-deep"
+                    className="rounded-full bg-blue-tint px-3 py-1 text-xs font-medium text-blue-text"
                   >
                     {areaLabel(a)}
                   </li>
@@ -215,7 +216,7 @@ export default async function SeekerProfilePage({
 
             <aside>
               <div className="rounded-[var(--radius-lg)] bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-blue-deep">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-blue-text">
                   The brief at a glance
                 </h2>
                 <dl className="mt-4 space-y-3">
@@ -317,9 +318,12 @@ export default async function SeekerProfilePage({
                           name="seekerRef"
                           value={brief.publicRef}
                         />
-                        <Button type="submit" className="w-full">
+                        <SubmitButton
+                          className="w-full"
+                          pendingLabel="Raising your hand…"
+                        >
                           They might want my home
-                        </Button>
+                        </SubmitButton>
                       </form>
                     ) : (
                       <ButtonLink

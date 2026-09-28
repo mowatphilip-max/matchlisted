@@ -7,7 +7,7 @@
 // can be bookmarked or sent to a seller, and result-count changes are
 // announced to screen readers. On mobile the bar collapses into a sheet.
 
-import { useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, Search, X } from "lucide-react";
@@ -31,6 +31,16 @@ const BAND_DEFS = [
 
 const PICKABLE_TYPES = SEEKER_PROPERTY_TYPES.filter((t) => t.key !== "any");
 
+// These chips are the densest, most-tapped controls in the product. They keep
+// ui/button.tsx's press feedback and its `sm` touch-target escape hatch: ~32px
+// under a mouse, a full 44px under a finger. The transition list is explicit
+// because `transition-colors` and `transition-transform` would fight over
+// transition-property.
+const CHIP =
+  "inline-flex items-center min-h-8 pointer-coarse:min-h-11 cursor-pointer rounded-full " +
+  "transition-[background-color,box-shadow,transform] duration-[var(--duration-press)] " +
+  "ease-out active:scale-[0.97] motion-reduce:active:scale-100";
+
 function parseList(value: string | null): string[] {
   return value ? value.split(",").map(decodeURIComponent).filter(Boolean) : [];
 }
@@ -41,6 +51,46 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
   const params = useSearchParams();
   const uid = useId();
   const [sheetOpen, setSheetOpen] = useState(false);
+  // `closing` keeps the sheet mounted for one exit animation. Without it the
+  // panel and its scrim vanish in a single frame, which reads as a glitch
+  // rather than a dismissal.
+  const [closing, setClosing] = useState(false);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const openerRef = useRef<HTMLButtonElement | null>(null);
+
+  const closeSheet = useCallback(() => {
+    setClosing(true);
+    setTimeout(() => {
+      setClosing(false);
+      setSheetOpen(false);
+      // Send focus back where it came from, not to the top of the document.
+      openerRef.current?.focus();
+    }, 300); // matches --duration-sheet
+  }, []);
+
+  useEffect(() => {
+    if (!sheetOpen) return;
+
+    // The previous Escape handler sat on a non-focusable <div>, so it only
+    // fired once the user had already tabbed into the sheet — i.e. never, in
+    // practice. Listening on the document makes it work from the moment the
+    // sheet opens.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSheet();
+    };
+    document.addEventListener("keydown", onKey);
+
+    // Stop the page behind the sheet from scrolling under the finger.
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    sheetRef.current?.focus();
+
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [sheetOpen, closeSheet]);
   const [townQuery, setTownQuery] = useState("");
 
   // URL is the single source of truth for filter state.
@@ -134,7 +184,7 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
       key={label}
       type="button"
       onClick={onRemove}
-      className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-charcoal px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-charcoal-deep"
+      className={`${CHIP} gap-1 bg-charcoal px-3 py-1 text-xs font-semibold text-white hover:bg-charcoal-deep`}
     >
       {label} <X className="h-3 w-3" aria-hidden="true" />
       <span className="sr-only">, remove filter</span>
@@ -158,7 +208,7 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
             value={townQuery}
             onChange={(e) => setTownQuery(e.target.value)}
             placeholder="Type a town or area…"
-            className="min-h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted"
+            className="min-h-10 w-full bg-transparent text-base placeholder:text-muted"
           />
         </div>
         <div
@@ -178,8 +228,8 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
                 onClick={() => toggle("town", selTowns, t)}
                 className={
                   on
-                    ? "cursor-pointer rounded-full bg-orange-deep px-3 py-1.5 text-xs font-semibold text-white"
-                    : "cursor-pointer rounded-full bg-white px-3 py-1.5 text-xs font-medium text-charcoal ring-1 ring-hairline transition-colors hover:ring-charcoal/40"
+                    ? `${CHIP} bg-orange-deep px-3 py-1.5 text-xs font-semibold text-white`
+                    : `${CHIP} bg-white px-3 py-1.5 text-xs font-medium text-charcoal ring-1 ring-hairline hover:ring-charcoal/40`
                 }
               >
                 {t}
@@ -211,7 +261,9 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
                 aria-pressed={on}
                 onClick={() => toggle("type", selTypes, t.key)}
                 className={
-                  "flex cursor-pointer flex-col items-center gap-1 rounded-xl border p-2 text-center transition-colors " +
+                  "flex cursor-pointer flex-col items-center gap-1 rounded-xl border p-2 text-center " +
+                  "min-h-8 pointer-coarse:min-h-11 transition-[background-color,border-color,box-shadow,transform] " +
+                  "duration-[var(--duration-press)] ease-out active:scale-[0.97] motion-reduce:active:scale-100 " +
                   (on
                     ? "border-orange-deep bg-orange-tint text-charcoal ring-1 ring-orange-deep"
                     : "border-hairline bg-white text-charcoal hover:border-charcoal/30")
@@ -244,8 +296,8 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
                   onClick={() => toggle("budget", selBands, b.key)}
                   className={
                     on
-                      ? "cursor-pointer rounded-full bg-orange-deep px-3 py-1.5 text-xs font-semibold text-white"
-                      : "cursor-pointer rounded-full bg-white px-3 py-1.5 text-xs font-medium text-charcoal ring-1 ring-hairline transition-colors hover:ring-charcoal/40"
+                      ? `${CHIP} bg-orange-deep px-3 py-1.5 text-xs font-semibold text-white`
+                      : `${CHIP} bg-white px-3 py-1.5 text-xs font-medium text-charcoal ring-1 ring-hairline hover:ring-charcoal/40`
                   }
                 >
                   {b.label}
@@ -271,8 +323,8 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
                   onClick={() => toggle("ready", selReady, r)}
                   className={
                     on
-                      ? "cursor-pointer rounded-full bg-charcoal px-3 py-1.5 text-xs font-semibold text-white"
-                      : "cursor-pointer rounded-full bg-white px-3 py-1.5 text-xs font-medium text-charcoal ring-1 ring-hairline transition-colors hover:ring-charcoal/40"
+                      ? `${CHIP} bg-charcoal px-3 py-1.5 text-xs font-semibold text-white`
+                      : `${CHIP} bg-white px-3 py-1.5 text-xs font-medium text-charcoal ring-1 ring-hairline hover:ring-charcoal/40`
                   }
                 >
                   {READINESS_LABELS[r]}
@@ -291,7 +343,10 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
       <div className="md:hidden">
         <button
           type="button"
+          ref={openerRef}
           onClick={() => setSheetOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={sheetOpen}
           className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-charcoal shadow-[var(--shadow-card)] ring-1 ring-hairline"
         >
           <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
@@ -303,26 +358,31 @@ export function SeekersBrowser({ seekers }: { seekers: MowattSeeker[] }) {
           )}
         </button>
         {sheetOpen && (
-          <div
-            className="fixed inset-0 z-50"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Filter Quiet Seekers"
-            onKeyDown={(e) => e.key === "Escape" && setSheetOpen(false)}
-          >
+          <div className="fixed inset-0 z-50">
             <button
               type="button"
               aria-label="Close filters"
-              className="absolute inset-0 bg-charcoal/40"
-              onClick={() => setSheetOpen(false)}
+              className={`absolute inset-0 bg-charcoal/40 ${closing ? "scrim-out" : "scrim-in"}`}
+              onClick={closeSheet}
             />
-            <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-soft p-5 pb-8 shadow-2xl">
+            {/* dvh, not vh: 85vh is 85% of the LARGE viewport, so with the iOS
+                URL bar showing the sheet was taller than the visible area. */}
+            <div
+              ref={sheetRef}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Filter Quiet Seekers"
+              className={`absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto overscroll-contain rounded-t-2xl bg-soft p-5 pb-8 shadow-2xl outline-none ${
+                closing ? "sheet-out" : "sheet-in"
+              }`}
+            >
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-base font-bold">Filters</p>
                 <button
                   type="button"
-                  onClick={() => setSheetOpen(false)}
-                  className="cursor-pointer rounded-full bg-orange-deep px-5 py-2 text-sm font-semibold text-white"
+                  onClick={closeSheet}
+                  className="min-h-11 cursor-pointer rounded-full bg-orange-deep px-5 py-2 text-sm font-semibold text-white transition-[background-color,transform] duration-[var(--duration-press)] ease-out active:scale-[0.97] motion-reduce:active:scale-100"
                 >
                   Done
                 </button>

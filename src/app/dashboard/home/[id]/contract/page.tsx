@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { currentUser } from "@/lib/session";
 import { getHomeUnscoped } from "@/lib/db";
 import { signSellerContract } from "@/lib/actions";
@@ -97,7 +97,7 @@ export default async function SellerContractPage({
               name="typedName"
               required
               placeholder={user.name}
-              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 font-display text-lg font-semibold outline-none focus:border-orange-deep"
+              className="mt-1.5 min-h-11 w-full rounded-xl border border-hairline px-4 font-display text-lg font-semibold focus:border-orange-deep"
             />
           </div>
           <label className="flex cursor-pointer items-start gap-3 text-sm">
@@ -113,9 +113,9 @@ export default async function SellerContractPage({
               Home Report is the only cost I will ever bear.
             </span>
           </label>
-          <Button type="submit" variant="seller">
+          <SubmitButton variant="seller" pendingLabel="Signing…">
             Sign the seller agreement
-          </Button>
+          </SubmitButton>
         </form>
       </div>
     </Container>
