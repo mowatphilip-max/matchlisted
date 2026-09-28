@@ -47,7 +47,7 @@ export default async function SeekerContractPage({
           <ol className="mt-4 list-decimal space-y-3 pl-5">
             <li>
               <strong>Registration is free.</strong> No charge to register as
-              a Quiet Seeker, build a brief, receive matches, download Home
+              a Quiet Seeker, build a Quiet Seeker Profile, receive matches, download Home
               Reports or book viewings.
             </li>
             <li>

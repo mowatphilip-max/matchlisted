@@ -128,7 +128,7 @@ export default async function MatchReportPage({
                     </p>
                     <p className="mt-1 text-sm text-charcoal-soft">
                       registered buyer{report.count === 1 ? "" : "s"} whose
-                      brief your home fits
+                      Quiet Seeker Profile your home fits
                     </p>
                   </div>
                   <div className="rounded-[var(--radius-lg)] bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline">
@@ -169,8 +169,8 @@ export default async function MatchReportPage({
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <ButtonLink href="/join?as=seller">
                     {report.count === 1
-                      ? "Create your free account to read the full brief"
-                      : `Create your free account to read all ${report.count} briefs`}
+                      ? "Create your free account to read the full profile"
+                      : `Create your free account to read all ${report.count} profiles`}
                   </ButtonLink>
                   <ButtonLink href="/hush-homes" variant="secondary">
                     How listing works

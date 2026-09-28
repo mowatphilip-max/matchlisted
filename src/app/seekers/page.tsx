@@ -9,7 +9,7 @@ import { fetchMowattSeekers } from "@/lib/mowatt-seekers";
 export const metadata: Metadata = {
   title: "Live Quiet Seekers: real buyers, quietly looking",
   description:
-    "Browse every live Quiet Seeker on the Matchlist: real registered buyers with real budgets and briefs, anonymised until there's a match.",
+    "Browse every live Quiet Seeker on the Matchlist: real registered buyers with real budgets and profiles, anonymised until there's a match.",
 };
 
 // Live data from the shared Mowatt sheets — always render fresh.
@@ -32,7 +32,7 @@ export default async function SeekersDirectoryPage() {
           <p className="mt-5 max-w-2xl text-lg text-charcoal-soft">
             Every profile below is a real, registered buyer: anonymised, but
             genuinely in the market across East Lothian and Edinburgh.
-            Recognise your home in one of these briefs? They can&apos;t be
+            Recognise your home in one of these profiles? They can&apos;t be
             contacted directly, but they can be <strong>matched</strong>: list
             your home as a Hush Home and we&apos;ll handle the introduction.
           </p>

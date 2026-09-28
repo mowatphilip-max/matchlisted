@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <p>
         The full privacy notice is being prepared for launch. It will set
         out: what we collect when you create an account, list a home or
-        register a brief; the identity checks the law requires us to run and
+        register a Quiet Seeker Profile; the identity checks the law requires us to run and
         who runs them; how long we keep what; who we share it with (surveyors
         instructed on your behalf, the solicitors you appoint, our payment
         provider); and how to exercise your rights, including erasure.

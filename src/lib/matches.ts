@@ -109,7 +109,7 @@ export async function collectFreshHotMatches(userId: string): Promise<{
             userId: match.seekerId,
             kind: "match",
             title: `It's a match: ${match.result.pct}%`,
-            body: "A Hush Home matches your brief. This could be the one.",
+            body: "A Hush Home matches your Quiet Seeker Profile. This could be the one.",
             href: "/matches",
           });
         }

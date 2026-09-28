@@ -487,9 +487,9 @@ export function BriefForm({ brief }: { brief: SeekerBrief | null }) {
       <div className="flex flex-wrap items-center gap-4 border-t border-hairline pt-6">
         <SubmitButton
           disabled={areas.length === 0}
-          pendingLabel="Saving your brief…"
+          pendingLabel="Saving your profile…"
         >
-          {brief?.contract ? "Save my brief" : "Save & continue to agreement"}
+          {brief?.contract ? "Save my profile" : "Save & continue to agreement"}
         </SubmitButton>
         {areas.length === 0 && (
           <p className="text-sm text-charcoal-soft">

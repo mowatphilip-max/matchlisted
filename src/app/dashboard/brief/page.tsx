@@ -5,7 +5,7 @@ import { BriefForm } from "@/components/brief-form";
 import { currentUser } from "@/lib/session";
 import { getBrief } from "@/lib/db";
 
-export const metadata: Metadata = { title: "My Quiet Seeker brief" };
+export const metadata: Metadata = { title: "My Quiet Seeker Profile" };
 
 export default async function BriefPage() {
   const user = await currentUser();
@@ -19,10 +19,10 @@ export default async function BriefPage() {
           Quiet Seeker
         </p>
         <h1 className="mt-2 text-3xl">
-          {brief ? "Edit your brief" : "Tell the Matchlist what you're after"}
+          {brief ? "Edit your Quiet Seeker Profile" : "Tell the Matchlist what you're after"}
         </h1>
         <p className="mt-2 text-charcoal-soft">
-          Every live Hush Home in Scotland is scored against this brief.
+          Every live Hush Home in Scotland is scored against this profile.
           The more honest it is, the better your matches.
         </p>
         <div className="mt-10">

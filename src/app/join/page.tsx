@@ -32,8 +32,8 @@ export default async function JoinPage({
       <div className="mx-auto max-w-lg">
         <h1 className="text-3xl">Create your free account</h1>
         <p className="mt-2 text-charcoal-soft">
-          Every account can hold both sides: a Hush Home and a Quiet Seeker
-          brief. Start with whichever fits today.
+          Every account can hold both sides: a Hush Home Listing and a Quiet
+          Seeker Profile. Start with whichever fits today.
         </p>
 
         {seekerBrief && (seekerBrief.contract || sheetSeeker) && (
@@ -174,7 +174,7 @@ export default async function JoinPage({
           <SubmitButton className="w-full" pendingLabel="Creating your account…">
             {intent === "seller"
               ? "Create account & start my listing"
-              : "Create account & build my brief"}
+              : "Create account & build my profile"}
           </SubmitButton>
           <p className="text-center text-xs text-charcoal-soft">
             Free to join. Contracts are signed later, at listing or briefing.

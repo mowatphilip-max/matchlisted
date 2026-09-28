@@ -141,7 +141,7 @@ export default async function HomePage() {
                   <Scribble>Hush Homes</Scribble>.
                 </h1>
                 <p className="mt-6 max-w-xl text-lg leading-relaxed text-charcoal-soft">
-                  Every home gets a profile. Every buyer gets a brief. The
+                  Every home gets a listing. Every buyer gets a profile. The
                   Matchlist scores every pairing across all of Scotland, and
                   when the numbers spark, we make the Introduction.
                 </p>
@@ -187,7 +187,7 @@ export default async function HomePage() {
           <p className="mt-4 max-w-2xl text-lg text-charcoal-soft">
             Like any good matchmaker, we only introduce people who are
             serious: sellers with a verified Home Report, buyers with a signed
-            brief.
+            Quiet Seeker Profile.
           </p>
           <div className="stagger-in mt-14 grid gap-6 md:grid-cols-3">
             {[
@@ -195,13 +195,13 @@ export default async function HomePage() {
                 icon: Heart,
                 n: "01",
                 title: "Make a profile",
-                body: "Sellers build their Hush Home's profile, free. Buyers register as Quiet Seekers with a structured brief: areas anywhere in Scotland, budget range, beds, garden, the lot.",
+                body: "Sellers build their Hush Home Listing, free. Buyers register as Quiet Seekers with a structured Quiet Seeker Profile: areas anywhere in Scotland, budget range, beds, garden, the lot.",
               },
               {
                 icon: Sparkles,
                 n: "02",
                 title: "The Matchlist scores every pairing",
-                body: "Every Hush Home is rated against every Quiet Seeker brief as a Match %. Location weighs heaviest, then price, bedrooms, type and the rest. At 90%+, both sides get the “It's a match” moment.",
+                body: "Every Hush Home is rated against every Quiet Seeker Profile as a Match %. Location weighs heaviest, then price, bedrooms, type and the rest. At 90%+, both sides get the “It's a match” moment.",
               },
               {
                 icon: CalendarCheck,

@@ -436,7 +436,7 @@ export default async function SellerHomePage({
           <EmptyState
             className="mt-4"
             icon={UserRound}
-            title="No matching briefs yet"
+            title="No matching Quiet Seekers yet"
             action={
               <ButtonLink href="/seekers" variant="seeker">
                 Browse every Quiet Seeker

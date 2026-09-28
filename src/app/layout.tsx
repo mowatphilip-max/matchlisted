@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Matchlisted | Where Quiet Seekers meet Hush Homes",
     description:
-      "Every home gets a profile. Every buyer gets a brief. The Matchlist does the rest, across all of Scotland.",
+      "Every home gets a listing. Every buyer gets a profile. The Matchlist does the rest, across all of Scotland.",
     type: "website",
   },
 };

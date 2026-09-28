@@ -83,7 +83,7 @@ export const SELLER_HOME_MESSAGES: Record<string, PageMessage> = {
 export const DASHBOARD_MESSAGES: Record<string, PageMessage> = {
   brief: {
     tone: "success",
-    title: "Brief saved",
+    title: "Quiet Seeker Profile saved",
     body: "The Matchlist is scoring it against every live Hush Home now.",
   },
   seeker: {

@@ -349,12 +349,12 @@ export default async function DashboardPage({
               title="No matches yet"
               action={
                 <ButtonLink href="/dashboard/brief" variant="seeker">
-                  Adjust my brief
+                  Adjust my profile
                 </ButtonLink>
               }
             >
-              No live Hush Homes match your brief yet. The moment one lists,
-              you&apos;ll be the first to know — or widen the brief and see
+              No live Hush Homes match your Quiet Seeker Profile yet. The moment one lists,
+              you&apos;ll be the first to know — or widen your profile and see
               more today.
             </EmptyState>
           )
@@ -362,14 +362,14 @@ export default async function DashboardPage({
           <div className="mt-4 rounded-2xl bg-soft p-6">
             <p className="text-sm text-charcoal-soft">
               {brief
-                ? "Your brief is saved but unsigned. Sign the Quiet Seeker agreement to activate matching."
-                : "Build your Quiet Seeker brief and the Matchlist will rate every Hush Home in Scotland against it."}
+                ? "Your Quiet Seeker Profile is saved but unsigned. Sign the Quiet Seeker agreement to activate matching."
+                : "Build your Quiet Seeker Profile and the Matchlist will rate every Hush Home in Scotland against it."}
             </p>
             <ButtonLink
               href={brief ? "/dashboard/brief/contract" : "/dashboard/brief"}
               className="mt-4"
             >
-              {brief ? "Sign & activate" : "Build my brief"}
+              {brief ? "Sign & activate" : "Build my profile"}
             </ButtonLink>
           </div>
         )}
@@ -469,7 +469,7 @@ export default async function DashboardPage({
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-xl">
               <Heart className="h-5 w-5 fill-blue-deep text-blue-deep" /> My
-              Quiet Seeker brief
+              Quiet Seeker Profile
             </h2>
             {brief && (
               <Link
@@ -483,11 +483,11 @@ export default async function DashboardPage({
           {!brief ? (
             <div className="mt-4">
               <p className="text-sm text-charcoal-soft">
-                No brief yet. Tell the Matchlist what you&apos;re looking for,
+                No Quiet Seeker Profile yet. Tell the Matchlist what you&apos;re looking for,
                 anywhere in Scotland.
               </p>
               <ButtonLink href="/dashboard/brief" variant="seeker" className="mt-4">
-                Build my brief
+                Build my profile
               </ButtonLink>
             </div>
           ) : (
@@ -562,7 +562,7 @@ export default async function DashboardPage({
             </h2>
             <p className="mt-1 max-w-xl text-sm text-charcoal-soft">
               When a <strong>new</strong> Hush Home or Quiet Seeker lands on
-              the Matchlist and scores this against your brief or your home,
+              the Matchlist and scores this against your Quiet Seeker Profile or your home,
               you get a notification here and a{" "}
               <em>&ldquo;You have a possible match&rdquo;</em> email.
             </p>
@@ -655,7 +655,7 @@ export default async function DashboardPage({
             </ul>
             {myHomes.length === 0 && (
               <ButtonLink href="/dashboard/home/new" variant="seller" className="mt-4">
-                Finish my Hush Home profile
+                Finish my Hush Home Listing
               </ButtonLink>
             )}
           </div>

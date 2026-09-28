@@ -8,7 +8,7 @@ import { CONFIG } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Become a Quiet Seeker: homes that match, before the market",
   description:
-    "Register free, build your brief, and get a Match % on every Hush Home in Scotland. Pay only a fixed £360 buyer fee (including VAT) when you actually buy.",
+    "Register free, build your Quiet Seeker Profile, and get a Match % on every Hush Home in Scotland. Pay only a fixed £360 buyer fee (including VAT) when you actually buy.",
 };
 
 export default function QuietSeekersPage() {
@@ -25,10 +25,10 @@ export default function QuietSeekersPage() {
           <p className="mt-5 max-w-2xl text-lg text-charcoal-soft">
             Tell us where in Scotland, what budget, how many bedrooms and what
             actually matters. The Matchlist rates every Hush Home against
-            your brief and tells you when it finds the one.
+            your Quiet Seeker Profile and tells you when it finds the one.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/join">Build your brief, free</ButtonLink>
+            <ButtonLink href="/join">Build your profile, free</ButtonLink>
             <ButtonLink href="/seekers" variant="seeker">
               See the live Quiet Seekers
             </ButtonLink>
@@ -43,13 +43,13 @@ export default function QuietSeekersPage() {
             {[
               {
                 icon: MapPinned,
-                title: "A brief, not a search box",
+                title: "A profile, not a search box",
                 body: "Pick your areas anywhere in Scotland, set a budget range from £50,000 to £5 million on one slider, and state your position: cash, sold, or still to sell.",
               },
               {
                 icon: Percent,
                 title: "A Match % on every home",
-                body: "Every live Hush Home is scored against your brief. 90%+ and you'll hear about it the moment it happens. “It's a match” works both ways.",
+                body: "Every live Hush Home is scored against your Quiet Seeker Profile. 90%+ and you'll hear about it the moment it happens. “It's a match” works both ways.",
               },
               {
                 icon: FileText,

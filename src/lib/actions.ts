@@ -860,7 +860,7 @@ export async function adminOfferIntroduction(formData: FormData) {
     userId: intro.seekerId,
     kind: "match",
     title: "A home owner spotted your profile",
-    body: "Someone thinks their home fits your brief. Want to see it? It's entirely your choice. Say yes and we'll show you the Hush Home.",
+    body: "Someone thinks their home fits your Quiet Seeker Profile. Want to see it? It's entirely your choice. Say yes and we'll show you the Hush Home.",
     href: "/dashboard",
   });
   refresh();
@@ -900,7 +900,7 @@ async function offerQueuedIntroductions(home: HushHome): Promise<void> {
       userId: intro.seekerId,
       kind: "match",
       title: "A home owner spotted your profile",
-      body: "Someone thinks their home fits your brief. Want to see it? It's entirely your choice. Say yes and we'll show you the Hush Home.",
+      body: "Someone thinks their home fits your Quiet Seeker Profile. Want to see it? It's entirely your choice. Say yes and we'll show you the Hush Home.",
       href: "/dashboard",
     });
   }

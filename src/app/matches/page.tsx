@@ -37,7 +37,7 @@ export default async function MatchesPage({
     <Container className="py-10">
       <h1 className="text-3xl">Your matches</h1>
       <p className="mt-1 text-charcoal-soft">
-        Every live Hush Home in Scotland, scored against your brief. Tap the
+        Every live Hush Home in Scotland, scored against your Quiet Seeker Profile. Tap the
         heart to shortlist.
       </p>
 
@@ -76,7 +76,7 @@ export default async function MatchesPage({
             title="Nothing live matches yet"
             action={
               <ButtonLink href="/dashboard/brief" variant="seeker">
-                Widen my brief
+                Widen my profile
               </ButtonLink>
             }
           >

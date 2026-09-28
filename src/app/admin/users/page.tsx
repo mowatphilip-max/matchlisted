@@ -50,7 +50,7 @@ export default async function AdminUsersPage() {
               <th className="px-5 py-3 font-semibold">Name</th>
               <th className="px-5 py-3 font-semibold">Email</th>
               <th className="px-5 py-3 font-semibold">Joined</th>
-              <th className="px-5 py-3 font-semibold">Seeker brief</th>
+              <th className="px-5 py-3 font-semibold">Quiet Seeker Profile</th>
               <th className="px-5 py-3 font-semibold">Hush Homes</th>
               <th className="px-5 py-3 font-semibold">Fees due</th>
             </tr>

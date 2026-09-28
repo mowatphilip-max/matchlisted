@@ -217,7 +217,7 @@ export default async function SeekerProfilePage({
             <aside>
               <div className="rounded-[var(--radius-lg)] bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-blue-text">
-                  The brief at a glance
+                  The profile at a glance
                 </h2>
                 <dl className="mt-4 space-y-3">
                   {criteria.map((c) => (
@@ -262,7 +262,7 @@ export default async function SeekerProfilePage({
                     </h2>
                     <p className="mt-2 text-sm leading-relaxed text-white/70">
                       This is exactly what sellers see: your story and your
-                      brief, never your name. Edit it any time from your
+                      Quiet Seeker Profile, never your name. Edit it any time from your
                       dashboard.
                     </p>
                     <ButtonLink
@@ -270,7 +270,7 @@ export default async function SeekerProfilePage({
                       className="mt-5 w-full"
                       variant="onDark"
                     >
-                      Edit my brief
+                      Edit my profile
                     </ButtonLink>
                   </>
                 ) : interested || existing ? (
@@ -290,11 +290,11 @@ export default async function SeekerProfilePage({
                         ? "This seeker accepted the introduction to your home. Watch your notifications for viewings and next steps."
                         : existing?.status === "declined"
                           ? "This seeker decided your home wasn't quite the one. Your details were never shared. The Matchlist keeps scoring your home against every other live seeker."
-                          : "Once your Hush Home profile is complete and its Home Report is verified, we'll offer this seeker the introduction. It's their choice, and neither side's identity is shared until you're both ready."}
+                          : "Once your Hush Home Listing is complete and its Home Report is verified, we'll offer this seeker the introduction. It's their choice, and neither side's identity is shared until you're both ready."}
                     </p>
                     {!hasHome && existing?.status === "new" && (
                       <ButtonLink href="/dashboard/home/new" className="mt-5 w-full">
-                        Finish my Hush Home profile
+                        Finish my Hush Home Listing
                       </ButtonLink>
                     )}
                   </>

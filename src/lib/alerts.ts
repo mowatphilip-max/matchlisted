@@ -78,7 +78,7 @@ export async function alertSeekersAboutHome(home: HushHome): Promise<number> {
     if (await hasAlerted(user.id, key)) continue;
     await recordAlert(user.id, key);
     deliver(user, pct, `/homes/${home.id}`, [
-      `A new Hush Home has just gone live in ${areaShortLabel(home.areaId)}, and it scores ${pct}% against your brief.`,
+      `A new Hush Home has just gone live in ${areaShortLabel(home.areaId)}, and it scores ${pct}% against your Quiet Seeker Profile.`,
       `${home.beds} beds · ${home.baths} baths · ${formatPrice(home.price)}.`,
     ]);
     sent += 1;
