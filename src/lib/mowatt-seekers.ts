@@ -234,6 +234,12 @@ export async function fetchMowattSeekers(): Promise<{
   skipped: number;
   failedRegions: string[];
 }> {
+  // Demo recordings (docs/DEMO-VIDEO.md rule 3): no real Quiet Seeker may
+  // appear on screen or be counted, so the Mowatt sheets are never read.
+  if (process.env.MATCHLISTED_DEMO === "1") {
+    return { seekers: [], skipped: 0, failedRegions: [] };
+  }
+
   const seekers: MowattSeeker[] = [];
   let skipped = 0;
   const failedRegions: string[] = [];
