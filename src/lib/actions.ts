@@ -559,10 +559,6 @@ export async function payInvoice(formData: FormData) {
   invoice.paidAt = new Date().toISOString();
   await upsertInvoice(invoice);
 
-  if (invoice.kind === "conveyancing-deposit" && invoice.homeId) {
-    refresh();
-    redirect(`/homes/${invoice.homeId}/offer?deposit=paid`);
-  }
   refresh();
   redirect("/dashboard");
 }

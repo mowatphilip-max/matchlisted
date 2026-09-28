@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { Alert } from "@/components/ui/alert";
 import { Container } from "@/components/ui/container";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { currentUser } from "@/lib/session";
@@ -9,23 +8,20 @@ import { acceptCounter, submitOffer } from "@/lib/actions";
 import { areaShortLabel } from "@/lib/areas";
 import { formatPrice } from "@/lib/format";
 import { CONFIG } from "@/lib/site";
-import { OFFER_MESSAGES, messageFor } from "@/lib/page-messages";
 
-export const metadata: Metadata = { title: "Make an offer" };
+export const metadata: Metadata = { title: "Make a Note of Offer" };
 
 export default async function OfferPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ counter?: string; deposit?: string }>;
+  searchParams: Promise<{ counter?: string }>;
 }) {
   const user = await currentUser();
   if (!user) redirect("/login");
   const { id } = await params;
-  // `?deposit=paid` comes back from the conveyancing-deposit checkout.
-  const { counter, deposit } = await searchParams;
-  const message = messageFor(OFFER_MESSAGES, deposit);
+  const { counter } = await searchParams;
   // §3 scope: an offer page for a home the viewer may not see is a leak.
   const home = await getHomeFor(id, user);
   if (!home) notFound();
@@ -42,14 +38,8 @@ export default async function OfferPage({
           {formatPrice(home.price)}
         </p>
         <h1 className="mt-2 text-3xl">
-          {counterOffer ? "The seller has countered" : "Make your offer"}
+          {counterOffer ? "The seller has countered" : "Make a Note of Offer"}
         </h1>
-
-        {message && (
-          <Alert tone={message.tone} title={message.title} className="mt-6">
-            {message.body}
-          </Alert>
-        )}
 
         {/* Counter response */}
         {counterOffer &&
@@ -111,6 +101,11 @@ export default async function OfferPage({
             className="mt-1.5 w-full rounded-xl border border-hairline px-4 py-3 text-base focus:border-orange-deep"
           />
           <p className="mt-4 rounded-xl bg-soft p-4 text-xs text-charcoal-soft">
+            <strong>This is a Note of Offer. It is not binding on you or the
+            seller.</strong> A binding contract exists only once solicitors
+            conclude missives.
+          </p>
+          <p className="mt-3 rounded-xl bg-soft p-4 text-xs text-charcoal-soft">
             You don&apos;t need a solicitor to make an offer, and nothing is
             payable to submit one. If your offer is accepted, you appoint a
             solicitor then, your own or one from our panel, to conclude the

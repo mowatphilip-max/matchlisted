@@ -345,8 +345,8 @@ export default async function HomePage() {
               },
               {
                 icon: Scale,
-                title: "Lawyer appointed before any offer",
-                body: "Choose from our curated conveyancing panel, so an accepted offer moves straight to missives.",
+                title: "Offer freely, appoint a solicitor after",
+                body: "Make a Note of Offer with no solicitor and nothing to pay. Once it's accepted, use your own solicitor or one from our panel.",
               },
               {
                 icon: ShieldCheck,

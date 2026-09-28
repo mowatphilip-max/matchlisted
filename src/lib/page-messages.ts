@@ -126,14 +126,6 @@ export const ADMIN_INTRO_MESSAGES: Record<string, PageMessage> = {
   },
 };
 
-/** `/homes/[id]/offer` */
-export const OFFER_MESSAGES: Record<string, PageMessage> = {
-  paid: {
-    tone: "success",
-    title: "Deposit received",
-    body: "Your offer can go ahead. A receipt is on its way to you by email.",
-  },
-};
 
 /** Resolve a param against a map, tolerating undefined and unknown values. */
 export function messageFor(

@@ -258,8 +258,8 @@ export default async function HomeProfilePage({
               {canOffer ? (
                 <>
                   <p className="mt-2 text-sm text-charcoal-soft">
-                    You&apos;ve viewed and you&apos;re still interested, so
-                    appoint your lawyer and make it official.
+                    You&apos;ve viewed and you&apos;re still interested. Send the
+                    seller a Note of Offer. No solicitor needed, nothing to pay.
                   </p>
                   <ButtonLink href={`/homes/${home.id}/offer`} className="mt-3 w-full">
                     Make an offer

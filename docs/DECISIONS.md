@@ -24,7 +24,7 @@ defend it — live in `docs/PITCH.md`, not here.
 
 ---
 
-## 0.5 OUTSTANDING DEFECT — fix before the Track B rework
+## 0.5 RESOLVED — the buyer offer condition (was an outstanding defect)
 
 **The offer flow conditions a buyer's ability to make an offer on appointing and paying for
 a lawyer through the platform** (`src/app/homes/[id]/offer/page.tsx`, echoed on the
@@ -45,6 +45,15 @@ is not defensible at all, on any terms, ever.
 paid. Appointing a solicitor comes after acceptance, and the £100 deposit tied to it should
 be removed rather than re-labelled — do not spend effort making it VAT-inclusive until its
 fate is decided.
+
+**Resolved 28 September 2026.** The lawyer and deposit gate was removed in `de34eb7`: the offer
+page and `submitOffer` take an offer with no solicitor and nothing paid, and `offers.lawyer_id` is
+nullable (migration `0009`). The follow-up on the `demo-video` branch adds the statement that a Note of
+Offer is not binding, retires the "Make your offer" heading, removes the post-deposit redirect and
+"Deposit received" message, stops legacy deposit invoices being shown to buyers as payable, and
+rewrites the lawyer-before-offer copy on the homepage, the listing page, the Quiet Seekers page and
+the admin panel page. The `conveyancing-deposit` invoice type stays only so historical rows still
+read. See §7 item 9 for the one question this leaves open.
 
 ---
 
@@ -298,6 +307,11 @@ before the seller commits.
    Annabelle personally (§4b). *(Raised 28 September 2026.)*
 8. **SEIS Advance Assurance** — two named prospective investors, and the accountant's review,
    before the target submission date of 19 October 2026.
+9. **Is requiring a signed Quiet Seeker agreement before a buyer can make an offer a condition on
+   the buyer?** `submitOffer` still requires one, and it commits the buyer to the £360 buyer fee
+   (§2) at settlement. Does that fall within the Estate Agents (Undesirable Practices) (No. 2)
+   Order 1991, given §6 says never condition anything on the buyer? *(New solicitor question,
+   raised 28 September 2026.)*
 
 ---
 

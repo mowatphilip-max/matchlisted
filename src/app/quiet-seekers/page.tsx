@@ -54,7 +54,7 @@ export default function QuietSeekersPage() {
               {
                 icon: FileText,
                 title: "The keys to the quiet market",
-                body: "Only registered Quiet Seekers can download Home Reports, book viewings from the seller's diary, and make offers with a lawyer already appointed.",
+                body: "Only registered Quiet Seekers can download Home Reports, book viewings from the seller's diary, and make offers. No solicitor needed to offer, nothing to pay.",
               },
             ].map(({ icon: Icon, title, body }) => (
               <div

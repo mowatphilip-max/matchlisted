@@ -14,8 +14,8 @@ export default async function AdminLawyersPage() {
     <>
       <h1 className="text-3xl">The conveyancing panel</h1>
       <p className="mt-2 text-charcoal-soft">
-        Seekers choose from this list when appointing a lawyer before an
-        offer.
+        Buyers may choose from this list after their offer is accepted.
+        It is never a condition of making one (DECISIONS.md §0.5).
       </p>
 
       <ul className="mt-8 grid gap-4 md:grid-cols-2">

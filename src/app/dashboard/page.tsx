@@ -105,7 +105,11 @@ export default async function DashboardPage({
     (v) => v.status === "booked" && new Date(v.end) >= new Date(),
   );
   const offers = await offersForSeeker(user.id);
-  const dueInvoices = (await invoicesForUser(user.id)).filter((i) => i.status === "due");
+  // A legacy conveyancing deposit is never asked of a buyer (DECISIONS.md
+  // §0.5); any still marked due are voided in admin, not paid here.
+  const dueInvoices = (await invoicesForUser(user.id)).filter(
+    (i) => i.status === "due" && i.kind !== "conveyancing-deposit",
+  );
 
   // Introductions: offers waiting on me as a seeker, and the status of any
   // "they might want my home" clicks I've made as an owner.
@@ -305,7 +309,7 @@ export default async function DashboardPage({
                   {inv.description}
                 </span>
               </p>
-              {inv.kind === "home-report" || inv.kind === "conveyancing-deposit" ? (
+              {inv.kind === "home-report" ? (
                 <ButtonLink href={`/pay/${inv.id}`} className="min-h-9 px-4 py-1.5">
                   Pay now
                 </ButtonLink>
