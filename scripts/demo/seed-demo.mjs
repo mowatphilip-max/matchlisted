@@ -1,7 +1,8 @@
 // Demonstration data for the product video (docs/DEMO-VIDEO.md §3 step 2).
 //
-//   node scripts/demo/seed-demo.mjs            remove any demo data, then insert it
-//   node scripts/demo/seed-demo.mjs --clean    remove the demo data only (teardown)
+//   node scripts/demo/seed-demo.mjs --stage before   scenes 1-3 (see below)
+//   node scripts/demo/seed-demo.mjs --stage after    scenes 4-6 (the default)
+//   node scripts/demo/seed-demo.mjs --clean          remove the demo data only (teardown)
 //   node scripts/demo/seed-demo.mjs --status   count what is there
 //
 // LOCAL DATABASE ONLY. Reads .env.demo (never .env.local) and refuses to run
@@ -14,12 +15,26 @@
 // runs with MATCHLISTED_DEMO=1, which stops the sheets being read).
 //
 // Idempotent: each run tears down the previous demo data first.
+//
+// Two stages, because the storyboard has Eilidh and Graham build their own
+// profile and listing on camera (scenes 1 and 3) and then needs both to exist
+// for scenes 4-6:
+//
+//   before  Eilidh and Graham are accounts only. Everyone else is seeded.
+//   after   Eilidh's Quiet Seeker Profile is signed, with her scene 1 answers.
+//           Graham's home is complete with its Home Report UPLOADED and
+//           awaiting verification. Sign in as admin@example.com and verify it
+//           in /admin/reports: the app itself makes the home live, alerts
+//           Eilidh ("You have a possible match") and tells Graham the report is
+//           verified. No notification is ever written by this script
+//           (DEMO-VIDEO.md rule 1: no fake notification for the camera).
 
 import crypto from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import pg from "pg";
 import { fromBrief, fromHome, fromUser } from "../../src/lib/db-mappers.ts";
+import { DEMO_HOMES, DEMO_SEEKERS } from "../../src/lib/demo-data.ts";
 import { getArea } from "../../src/lib/areas.ts";
 import { CONTRACT_VERSIONS } from "../../src/lib/site.ts";
 
@@ -49,6 +64,13 @@ if (!SERVICE_KEY || !PASSWORD) {
 }
 console.log(`Demo database: ${SUPABASE_URL}`);
 
+const stageArg = process.argv[process.argv.indexOf("--stage") + 1];
+const STAGE = process.argv.includes("--stage") ? stageArg : "after";
+if (!["before", "after"].includes(STAGE)) {
+  console.error(`Unknown --stage "${stageArg}". Use before or after.`);
+  process.exit(1);
+}
+
 const mode = process.argv.includes("--clean")
   ? "clean"
   : process.argv.includes("--status")
@@ -72,31 +94,31 @@ const sign = (typedName, version, signedAt = days(-20)) => ({
   version,
 });
 
-// Eilidh builds her own Quiet Seeker Profile on camera (scene 1), so she
-// gets an account and nothing else. Graham's home is seeded live for
-// scenes 4-6.
 const EILIDH = { key: "eilidh", email: `eilidh@${DOMAIN}`, name: "Eilidh" };
 const GRAHAM = { key: "graham", email: `graham@${DOMAIN}`, name: "Graham" };
+// Verifies Graham's Home Report in the after stage. Admin screens are never
+// filmed.
+const ADMIN = { key: "admin", email: `admin@${DOMAIN}`, name: "Demo admin", isAdmin: true };
 
-// Supporting Quiet Seekers, so the Match Report for a four-bed detached
-// home in North Berwick at £400k-£600k shows a believable count, and the
-// wider East Lothian figure is larger still. Anonymised at source: only
-// the headline is ever shown publicly.
+// What Eilidh enters on camera in scene 1 (DEMO-VIDEO.md §2), so the after
+// stage continues from exactly where scene 1 left off.
+const EILIDH_PROFILE = {
+  publicRef: "QS-9001",
+  headline: "A family home within walking distance of the beach",
+  areas: ["east-lothian/north-berwick", "east-lothian/gullane"],
+  budgetMin: 400000,
+  budgetMax: 525000,
+  minBeds: 3,
+  position: "mortgage-sold",
+  notes: "South-facing garden, walk to the beach.",
+};
+
+// Supporting Quiet Seekers and the additional live homes now live in
+// src/lib/demo-data.ts, so the "Who's looking" directory (lib/mowatt-seekers.ts)
+// serves exactly the buyers seeded here. The first twelve are the original
+// cast: the Match Report for Graham's four-bed detached North Berwick home at
+// £400k-£600k counts on them, so their order and figures must not change.
 const EL = (place) => `east-lothian/${place}`;
-const SUPPORTING = [
-  { areas: ["north-berwick", "gullane"], min: 450000, max: 600000, beds: 4, types: ["detached"], position: "cash-nothing-to-sell", headline: "Family of five heading for the coast" },
-  { areas: ["north-berwick"], min: 400000, max: 550000, beds: 3, types: ["detached", "semi-detached"], position: "mortgage-sold", headline: "Already sold, ready to move by spring" },
-  { areas: ["north-berwick", "aberlady"], min: 500000, max: 700000, beds: 4, types: ["detached", "cottage"], position: "cash-after-sale", headline: "Downsizing from the farm, not too far" },
-  { areas: ["gullane", "north-berwick", "longniddry"], min: 420000, max: 575000, beds: 3, types: [], position: "mortgage-to-sell", headline: "Two teachers after a garden and a view" },
-  { areas: ["north-berwick"], min: 480000, max: 650000, beds: 4, types: ["detached"], position: "cash-nothing-to-sell", headline: "Returning to Scotland after twenty years away" },
-  { areas: ["dunbar", "north-berwick"], min: 380000, max: 520000, beds: 3, types: ["detached", "bungalow"], position: "mortgage-sold", headline: "Room for the dog, and the dog's friends" },
-  { areas: ["north-berwick", "gullane"], min: 550000, max: 800000, beds: 4, types: ["detached"], position: "cash-nothing-to-sell", headline: "Golfers who never want to drive to the course" },
-  { areas: ["aberlady", "gullane"], min: 400000, max: 600000, beds: 3, types: ["detached", "cottage"], position: "first-time-buyer", headline: "Working from home, want to hear the sea" },
-  { areas: ["north-berwick"], min: 350000, max: 480000, beds: 3, types: ["semi-detached", "terraced"], position: "mortgage-to-sell", headline: "Near the school, near the high street" },
-  { areas: ["haddington", "east-linton"], min: 300000, max: 420000, beds: 3, types: ["cottage", "terraced"], position: "mortgage-to-sell", headline: "Market-town life with a proper butcher" },
-  { areas: ["musselburgh", "prestonpans"], min: 220000, max: 320000, beds: 2, types: ["flat", "terraced"], position: "first-time-buyer", headline: "First home, close to the train" },
-  { areas: ["dunbar"], min: 260000, max: 360000, beds: 3, types: ["semi-detached"], position: "mortgage-sold", headline: "Swapping the city flat for a back garden" },
-];
 
 // ---- Supabase Auth admin API ---------------------------------------------------
 
@@ -163,64 +185,135 @@ async function clean() {
   return accounts.length;
 }
 
-async function addProfile(id, { email, name }) {
-  await insert("profiles", { ...fromUser({ id, email, name, createdAt: days(-30) }), created_at: days(-30) });
+async function addProfile(id, { email, name, isAdmin = false }) {
+  await insert("profiles", { ...fromUser({ id, email, name, isAdmin, createdAt: days(-30) }), created_at: days(-30) });
 }
 
 async function seed() {
-  for (const s of SUPPORTING) {
-    for (const a of s.areas) if (!getArea(EL(a))) throw new Error(`Unknown area ${EL(a)}`);
+  // Fail before writing anything if any demo row points at an unknown area.
+  for (const s of DEMO_SEEKERS) {
+    for (const a of s.areas) if (!getArea(a)) throw new Error(`Unknown area ${a}`);
+  }
+  for (const h of DEMO_HOMES) {
+    if (!getArea(h.areaId)) throw new Error(`Unknown area ${h.areaId}`);
   }
 
-  // Eilidh: an account and a profile, nothing more.
-  const eilidhId = await createAccount(EILIDH);
-  await addProfile(eilidhId, EILIDH);
+  for (const person of [EILIDH, GRAHAM, ADMIN]) {
+    person.id = await createAccount(person);
+    await addProfile(person.id, person);
+  }
+  const eilidhId = EILIDH.id;
+  const grahamId = GRAHAM.id;
 
-  // Graham and his home, live, Home Report verified, with viewing slots.
-  const grahamId = await createAccount(GRAHAM);
-  await addProfile(grahamId, GRAHAM);
-  const homeId = crypto.randomUUID();
-  await insert("hush_homes", {
-    ...fromHome({
-      id: homeId,
-      sellerId: grahamId,
-      headline: "Four-bed family home, five minutes from the beach",
-      areaId: EL("north-berwick"),
-      addressLine: "1 Demonstration Road, North Berwick",
-      price: 495000,
-      beds: 4,
-      baths: 2,
-      type: "detached",
-      garden: true,
-      features: ["parking", "home-office"],
-      description:
-        "A detached family home with a south-facing garden, a short walk from the beach and the high street. Demonstration listing.",
-      photos: [],
-      floorPlan: null,
-      homeReport: { status: "verified", orderedAt: days(-25), uploadedAt: days(-18), verifiedAt: days(-17) },
-      contract: sign(GRAHAM.name, CONTRACT_VERSIONS.seller, days(-26)),
-      status: "live",
-      ownerEstimate: 510000,
-      goLiveAt: days(-14),
-      expiresAt: days(351),
-      approvalStatus: "approved",
-      createdAt: days(-27),
-    }),
-    created_at: days(-27),
-  });
-  for (const [d, h] of [[3, 10], [3, 14], [5, 11], [6, 16]]) {
-    await insert("viewing_slots", {
-      id: crypto.randomUUID(),
-      home_id: homeId,
-      starts_at: at(d, h),
-      ends_at: at(d, h + 1),
-      booked_by: null,
+  const homeId = STAGE === "after" ? crypto.randomUUID() : null;
+  if (STAGE === "after") {
+    // Eilidh's signed Quiet Seeker Profile, as she built it in scene 1.
+    await insert("seeker_briefs", {
+      ...fromBrief({
+        userId: eilidhId,
+        publicRef: EILIDH_PROFILE.publicRef,
+        headline: EILIDH_PROFILE.headline,
+        story: "",
+        areas: EILIDH_PROFILE.areas,
+        budgetMin: EILIDH_PROFILE.budgetMin,
+        budgetMax: EILIDH_PROFILE.budgetMax,
+        minBeds: EILIDH_PROFILE.minBeds,
+        minBaths: 1,
+        garden: "must-have",
+        types: [],
+        features: [],
+        position: EILIDH_PROFILE.position,
+        notes: EILIDH_PROFILE.notes,
+        contract: sign(EILIDH.name, CONTRACT_VERSIONS.seeker, days(-2)),
+        createdAt: days(-2),
+        updatedAt: days(-2),
+      }),
+      created_at: days(-2),
     });
+
+    // Graham's home as he built it in scene 3, Home Report uploaded and
+    // awaiting verification. Going live is left to the app (see header).
+    await insert("hush_homes", {
+      ...fromHome({
+        id: homeId,
+        sellerId: grahamId,
+        headline: "Four-bed family home, five minutes from the beach",
+        areaId: EL("north-berwick"),
+        addressLine: "1 Demonstration Road, North Berwick",
+        price: 495000,
+        beds: 4,
+        baths: 2,
+        type: "detached",
+        garden: true,
+        features: ["parking", "home-office"],
+        description:
+          "A detached family home with a south-facing garden, a short walk from the beach and the high street. Demonstration listing.",
+        photos: [],
+        floorPlan: null,
+        homeReport: { status: "uploaded", orderedAt: days(-9), fileName: "home-report-demonstration.pdf", uploadedAt: days(-1) },
+        contract: sign(GRAHAM.name, CONTRACT_VERSIONS.seller, days(-10)),
+        status: "pending-approval",
+        ownerEstimate: 510000,
+        approvalStatus: "approved",
+        createdAt: days(-10),
+      }),
+      created_at: days(-10),
+    });
+    for (const [d, h] of [[3, 10], [3, 14], [5, 11], [6, 16]]) {
+      await insert("viewing_slots", {
+        id: crypto.randomUUID(),
+        home_id: homeId,
+        starts_at: at(d, h),
+        ends_at: at(d, h + 1),
+        booked_by: null,
+      });
+    }
+  }
+
+  // Additional live homes, so the site has more than one listing to browse.
+  // Each gets its own fictional seller account and is seeded exactly like
+  // Graham's: signed, Home Report verified, approved and live. No photos, so
+  // no real listing image can appear on screen (DEMO-VIDEO.md rule 3).
+  let homeCount = 0;
+  for (const [i, h] of DEMO_HOMES.entries()) {
+    const person = { email: `${h.seller}@${DOMAIN}`, name: h.sellerName };
+    const sellerId = await createAccount(person);
+    await addProfile(sellerId, person);
+    // Stagger ages so the listings don't all read as created the same day.
+    const age = -60 + i * 4;
+    await insert("hush_homes", {
+      ...fromHome({
+        id: crypto.randomUUID(),
+        sellerId,
+        headline: h.headline,
+        areaId: h.areaId,
+        addressLine: h.addressLine,
+        price: h.price,
+        beds: h.beds,
+        baths: h.baths,
+        type: h.type,
+        garden: h.garden,
+        features: h.features,
+        description: h.description,
+        photos: [],
+        floorPlan: null,
+        homeReport: { status: "verified", orderedAt: days(age + 2), uploadedAt: days(age + 7), verifiedAt: days(age + 8) },
+        contract: sign(person.name, CONTRACT_VERSIONS.seller, days(age + 1)),
+        status: "live",
+        ownerEstimate: h.price,
+        goLiveAt: days(age + 10),
+        expiresAt: days(age + 375),
+        approvalStatus: "approved",
+        createdAt: days(age),
+      }),
+      created_at: days(age),
+    });
+    homeCount += 1;
   }
 
   // Supporting Quiet Seekers, each a signed, active profile.
   let n = 0;
-  for (const s of SUPPORTING) {
+  for (const s of DEMO_SEEKERS) {
     n += 1;
     const person = { email: `seeker${String(n).padStart(2, "0")}@${DOMAIN}`, name: `Demo seeker ${n}` };
     const id = await createAccount(person);
@@ -230,8 +323,9 @@ async function seed() {
         userId: id,
         publicRef: `QS-9${String(100 + n)}`,
         headline: s.headline,
-        story: "",
-        areas: s.areas.map(EL),
+        // Was "", which left every seeker profile page with an empty story.
+        story: s.story,
+        areas: s.areas,
         budgetMin: s.min,
         budgetMax: s.max,
         minBeds: s.beds,
@@ -248,7 +342,7 @@ async function seed() {
     });
   }
 
-  return { homeId, seekers: SUPPORTING.length };
+  return { homeId, homes: homeCount, seekers: DEMO_SEEKERS.length };
 }
 
 // ---- Run --------------------------------------------------------------------------
@@ -266,8 +360,14 @@ try {
     if (removed) console.log(`Removed ${removed} demo account(s).`);
     if (mode === "seed") {
       const made = await seed();
-      console.log(`Seeded Eilidh, Graham (home ${made.homeId}, live, 4 viewing slots) and ${made.seekers} supporting Quiet Seekers.`);
-      console.log(`Sign in as eilidh@${DOMAIN} or graham@${DOMAIN} with DEMO_PASSWORD from .env.demo.`);
+      console.log(`Stage "${STAGE}": ${made.homes} other live homes and ${made.seekers} supporting Quiet Seekers.`);
+      if (STAGE === "before") {
+        console.log("Eilidh and Graham are accounts only, ready to build their profile and listing on camera (scenes 1 and 3).");
+      } else {
+        console.log(`Eilidh's profile is signed. Graham's home (${made.homeId}) is waiting for its Home Report to be verified.`);
+        console.log(`Next: sign in as admin@${DOMAIN}, open /admin/reports and verify it. The app makes it live and sends the match alerts.`);
+      }
+      console.log(`Sign in as eilidh@, graham@ or admin@${DOMAIN} with DEMO_PASSWORD from .env.demo.`);
     } else {
       console.log("Demo data removed.");
     }

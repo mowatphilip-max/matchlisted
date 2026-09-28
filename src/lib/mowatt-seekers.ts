@@ -1,3 +1,11 @@
+import { getArea } from "./areas";
+import {
+  DEMO_SEEKERS,
+  type DemoBriefType,
+  type DemoPosition,
+  type DemoSeeker,
+} from "./demo-data";
+
 // Live Quiet Seekers from the shared Mowatt Google Sheets.
 //
 // The mowatt.uk Quiet Seeker pages are rendered from two public Google
@@ -224,6 +232,67 @@ function toSeeker(
   };
 }
 
+// ---- demo seekers ----------------------------------------------------------
+//
+// Maps the fictional buyers in lib/demo-data.ts into the directory's public
+// shape. Only ever reached when MATCHLISTED_DEMO=1.
+
+const DEMO_TYPE: Record<DemoBriefType, SeekerPropertyType> = {
+  detached: "detached",
+  "semi-detached": "semi_detached",
+  terraced: "terraced",
+  bungalow: "bungalow",
+  flat: "tenement_flat",
+  cottage: "cottage",
+};
+
+const DEMO_READINESS: Record<DemoPosition, SeekerReadiness[]> = {
+  "cash-nothing-to-sell": ["cash_buyer", "chain_free"],
+  "cash-after-sale": ["cash_buyer"],
+  "mortgage-sold": ["mortgage_aip", "chain_free"],
+  "mortgage-to-sell": ["mortgage_aip"],
+  "first-time-buyer": ["mortgage_aip", "deposit_ready", "chain_free"],
+};
+
+const thousands = (n: number) => `£${Math.round(n / 1000)}K`;
+
+function toDemoMowattSeeker(s: DemoSeeker, i: number): MowattSeeker {
+  const places = s.areas.map((id) => getArea(id)?.place ?? id);
+  const types: SeekerPropertyType[] = s.types.length
+    ? s.types.map((t) => DEMO_TYPE[t])
+    : ["any"];
+
+  return {
+    // The same numbering scripts/demo/seed-demo.mjs uses for
+    // seeker_briefs.publicRef, so /seekers/QS-9101 resolves to the seeded
+    // brief and the directory card and the matching engine are one buyer.
+    ref: `QS-9${100 + i + 1}`,
+    region: s.areas[0].startsWith("edinburgh/") ? "Edinburgh" : "East Lothian",
+    title: s.headline,
+    areasLabel: places.join(", "),
+    towns: places,
+    beds: `${s.beds}+`,
+    bedsMin: s.beds,
+    baths: "1+",
+    // Left blank on purpose: the card renders these only when truthy, so an
+    // empty string simply omits the line rather than printing an empty label.
+    kitchen: "",
+    living: "",
+    parking: "",
+    garden: s.garden,
+    copy: s.story,
+    budgetLabel: `${thousands(s.min)} – ${thousands(s.max)}`,
+    budget: Math.round((s.min + s.max) / 2),
+    budgetRangeMin: s.min,
+    budgetRangeMax: s.max,
+    active: true,
+    propertyType: types[0],
+    propertyTypes: types,
+    readiness: DEMO_READINESS[s.position],
+    vetted: false,
+  };
+}
+
 /**
  * All Quiet Seekers from both regional sheets, active first (each group in
  * sheet order, which is the team's curation order). Cached ~5 minutes.
@@ -234,10 +303,13 @@ export async function fetchMowattSeekers(): Promise<{
   skipped: number;
   failedRegions: string[];
 }> {
-  // Demo recordings (docs/DEMO-VIDEO.md rule 3): no real Quiet Seeker may
-  // appear on screen or be counted, so the Mowatt sheets are never read.
+  // Demo runs (docs/DEMO-VIDEO.md rule 3): no REAL Quiet Seeker may appear on
+  // screen or be counted, so the Mowatt sheets are never read. Fictional ones
+  // are served instead — the same people the demo seed writes as seeker_briefs,
+  // so the directory and the matching tell one story. Returning an empty list
+  // here used to leave "Who's looking" reading "0 Quiet Seekers" mid-demo.
   if (process.env.MATCHLISTED_DEMO === "1") {
-    return { seekers: [], skipped: 0, failedRegions: [] };
+    return { seekers: DEMO_SEEKERS.map(toDemoMowattSeeker), skipped: 0, failedRegions: [] };
   }
 
   const seekers: MowattSeeker[] = [];
