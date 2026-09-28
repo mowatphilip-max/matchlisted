@@ -2,6 +2,7 @@
 //
 //   node scripts/demo/seed-demo.mjs --stage before   scenes 1-3 (see below)
 //   node scripts/demo/seed-demo.mjs --stage after    scenes 4-6 (the default)
+//   node scripts/demo/seed-demo.mjs --stage live     showing the site, not filming
 //   node scripts/demo/seed-demo.mjs --clean          remove the demo data only (teardown)
 //   node scripts/demo/seed-demo.mjs --status   count what is there
 //
@@ -28,6 +29,10 @@
 //           Eilidh ("You have a possible match") and tells Graham the report is
 //           verified. No notification is ever written by this script
 //           (DEMO-VIDEO.md rule 1: no fake notification for the camera).
+//   live    As after, but Graham's home is already live with its report
+//           verified, so it shows on /hush-homes straight away. Because no
+//           app action made it live, nobody has been sent a match alert:
+//           use it to show the site in person, never to film scene 4.
 
 import crypto from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -66,8 +71,8 @@ console.log(`Demo database: ${SUPABASE_URL}`);
 
 const stageArg = process.argv[process.argv.indexOf("--stage") + 1];
 const STAGE = process.argv.includes("--stage") ? stageArg : "after";
-if (!["before", "after"].includes(STAGE)) {
-  console.error(`Unknown --stage "${stageArg}". Use before or after.`);
+if (!["before", "after", "live"].includes(STAGE)) {
+  console.error(`Unknown --stage "${stageArg}". Use before, after or live.`);
   process.exit(1);
 }
 
@@ -205,8 +210,9 @@ async function seed() {
   const eilidhId = EILIDH.id;
   const grahamId = GRAHAM.id;
 
-  const homeId = STAGE === "after" ? crypto.randomUUID() : null;
-  if (STAGE === "after") {
+  const homeId = STAGE === "before" ? null : crypto.randomUUID();
+  const live = STAGE === "live";
+  if (STAGE !== "before") {
     // Eilidh's signed Quiet Seeker Profile, as she built it in scene 1.
     await insert("seeker_briefs", {
       ...fromBrief({
@@ -250,10 +256,17 @@ async function seed() {
           "A detached family home with a south-facing garden, a short walk from the beach and the high street. Demonstration listing.",
         photos: [],
         floorPlan: null,
-        homeReport: { status: "uploaded", orderedAt: days(-9), fileName: "home-report-demonstration.pdf", uploadedAt: days(-1) },
+        homeReport: {
+          status: live ? "verified" : "uploaded",
+          orderedAt: days(-9),
+          fileName: "home-report-demonstration.pdf",
+          uploadedAt: days(-1),
+          ...(live ? { verifiedAt: days(-1) } : {}),
+        },
         contract: sign(GRAHAM.name, CONTRACT_VERSIONS.seller, days(-10)),
-        status: "pending-approval",
+        status: live ? "live" : "pending-approval",
         ownerEstimate: 510000,
+        ...(live ? { goLiveAt: days(-1), expiresAt: days(364) } : {}),
         approvalStatus: "approved",
         createdAt: days(-10),
       }),
@@ -363,6 +376,8 @@ try {
       console.log(`Stage "${STAGE}": ${made.homes} other live homes and ${made.seekers} supporting Quiet Seekers.`);
       if (STAGE === "before") {
         console.log("Eilidh and Graham are accounts only, ready to build their profile and listing on camera (scenes 1 and 3).");
+      } else if (STAGE === "live") {
+        console.log(`Eilidh's profile is signed. Graham's home (${made.homeId}) is live. No match alerts have been sent: do not film scene 4 from this stage.`);
       } else {
         console.log(`Eilidh's profile is signed. Graham's home (${made.homeId}) is waiting for its Home Report to be verified.`);
         console.log(`Next: sign in as admin@${DOMAIN}, open /admin/reports and verify it. The app makes it live and sends the match alerts.`);
