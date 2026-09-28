@@ -10,6 +10,7 @@
 // the database are on 127.0.0.1.
 
 import { execSync, spawn } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -47,7 +48,10 @@ function assertLocal(env) {
 
 function write() {
   const s = localStatus();
+  // One sign-in password for every demo account, kept across rewrites.
+  const previous = existsSync(ENV_FILE) ? parseEnv(readFileSync(ENV_FILE, "utf8")) : {};
   const env = {
+    DEMO_PASSWORD: previous.DEMO_PASSWORD || randomBytes(12).toString("base64url"),
     MATCHLISTED_DEMO: "1",
     NEXT_PUBLIC_SUPABASE_URL: s.API_URL,
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: s.PUBLISHABLE_KEY || s.ANON_KEY,

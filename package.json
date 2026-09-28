@@ -13,7 +13,9 @@
     "demo:db:stop": "supabase stop",
     "demo:db:reset": "supabase db reset && node scripts/demo/demo-env.mjs write",
     "demo:build": "node scripts/demo/demo-env.mjs run -- next build",
-    "demo:start": "node scripts/demo/demo-env.mjs run -- next start -p 3000"
+    "demo:start": "node scripts/demo/demo-env.mjs run -- next start -p 3000",
+    "demo:seed": "node scripts/demo/seed-demo.mjs",
+    "demo:teardown": "node scripts/demo/seed-demo.mjs --clean"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
