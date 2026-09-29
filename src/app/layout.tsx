@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s | Matchlisted",
   },
   description:
-    "The dating site for homes, across all of Scotland. No listing fees, registered Quiet Seekers, a Match % for every pairing. No boards. No portals. Just Introductions.",
+    "The dating site for homes, across all of Scotland. No listing fees, registered Quiet Seekers, a Match % for every pairing. Private by default. Just Introductions.",
   openGraph: {
     title: "Matchlisted | Where Quiet Seekers meet Hush Homes",
     description:
@@ -58,6 +58,13 @@ export default function RootLayout({
           {children}
         </main>
         <SiteFooter />
+        {/* Demo runs only (MATCHLISTED_DEMO=1): every person and home on
+            screen is fictional, and the page says so (DEMO-VIDEO.md rule 3). */}
+        {process.env.MATCHLISTED_DEMO === "1" && (
+          <div className="pointer-events-none fixed bottom-3 left-3 z-50 rounded-full bg-charcoal/85 px-3 py-1 text-[11px] font-semibold tracking-wide text-white shadow-sm">
+            Demonstration data
+          </div>
+        )}
       </body>
     </html>
   );

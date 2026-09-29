@@ -193,7 +193,7 @@ export function ConceptReel() {
       <p className="sr-only">
         How Matchlisted works: a Quiet Seeker registers a brief, a Hush Home
         lists quietly, and the Matchlist scores the pairing. At 97% it&apos;s a
-        match, and we arrange a private introduction. No boards, no portals.
+        match, and we arrange a private introduction.
       </p>
 
       {/* Animated stage (hidden under prefers-reduced-motion). Fixed 28rem
@@ -245,7 +245,7 @@ export function ConceptReel() {
           className="reel-run absolute inset-x-0 bottom-0 text-center font-display text-sm font-bold tracking-wide text-charcoal"
           style={run("reel-caption")}
         >
-          A private introduction. No boards, no portals.
+          A private introduction. Private by default.
         </p>
       </div>
 
@@ -260,7 +260,7 @@ export function ConceptReel() {
           />
           <MatchBanner className="absolute inset-x-6 top-[18.5rem] z-10" />
           <p className="absolute inset-x-0 bottom-0 text-center font-display text-sm font-bold tracking-wide text-charcoal">
-            A private introduction. No boards, no portals.
+            A private introduction. Private by default.
           </p>
         </div>
       </div>

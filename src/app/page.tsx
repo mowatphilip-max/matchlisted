@@ -146,7 +146,7 @@ export default async function HomePage() {
                   when the numbers spark, we make the Introduction.
                 </p>
                 <p className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-blue-text">
-                  No boards. No portals. Just Introductions.
+                  Private by default. Just Introductions.
                 </p>
                 <div className="mt-9 flex flex-wrap gap-3">
                   <ButtonLink href="/join" className="px-7 text-base">
@@ -172,7 +172,7 @@ export default async function HomePage() {
           <div className="fade-up-late">
             <ConceptReel />
             <p className="mt-4 text-center text-xs text-charcoal-soft">
-              A real pairing from the Matchlist, anonymised.
+              How a match works: an illustration, not a live listing.
             </p>
           </div>
         </Container>

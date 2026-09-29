@@ -64,7 +64,7 @@ export default async function SeekersDirectoryPage() {
               One of them is looking for your home.
             </h2>
             <p className="mt-2 max-w-xl text-white/70">
-              No listing fee, no commission, and fully private: no boards, no portals. Your home
+              No listing fee, no commission, and private by default. Your home
               is only ever shown to seekers who fit, and only when you say so.
             </p>
           </div>

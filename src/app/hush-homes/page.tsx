@@ -62,8 +62,8 @@ export default async function HushHomesPage() {
             Your home&apos;s perfect match is already looking.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-charcoal-soft">
-            A Hush Home sells without boards, portals or open viewings. You
-            build the profile, we score it against every registered Quiet
+            A Hush Home is private by default: no board, portal or open viewing
+            unless you choose one. You build the listing, we score it against every registered Quiet
             Seeker in Scotland, and you meet only the buyers who genuinely fit.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">

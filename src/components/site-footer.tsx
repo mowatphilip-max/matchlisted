@@ -32,7 +32,7 @@ export function SiteFooter() {
             <Wordmark className="h-6" />
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
-            Where Quiet Seekers meet Hush Homes. No boards. No portals. Just
+            Where Quiet Seekers meet Hush Homes. Private by default. Just
             Introductions, across all of Scotland.
           </p>
         </div>
