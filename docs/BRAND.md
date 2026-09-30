@@ -77,6 +77,19 @@ On the website the logo is drawn live by `src/components/logo.tsx`
 (`<Logo />` for the full logo, `<LogoMark />` for the mark) from the same
 numbers, via the generated `src/components/logo-paths.ts`.
 
+## On the website
+
+- Colours come from the tokens in `src/app/globals.css`. No hard-coded hex
+  values in components.
+- Any heart on the site is the brand heart: `<BrandHeart />`
+  (`src/components/brand-heart.tsx`), an open line drawing that takes a text
+  colour and never a fill. The one exception is the save button on a listing,
+  which fills when saved so its state is obvious.
+- Links shared on social media and in messages show the strapline logo on
+  Ground (`public/brand/png/matchlisted-social-card.png`).
+- Browser tab and phone home-screen icons are the app icon
+  (`src/app/icon.png`, `src/app/apple-icon.png`).
+
 ## Colours
 
 | Name | Role | Hex | RGB | Pantone (coated) | CMYK start point |

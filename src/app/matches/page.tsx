@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Heart } from "lucide-react";
+import {  } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { HomeCard } from "@/components/home-card";
@@ -34,7 +35,7 @@ export default async function MatchesPage() {
       {shortlist.length > 0 && (
         <section className="mt-8">
           <h2 className="flex items-center gap-2 text-xl">
-            <Heart className="h-5 w-5 fill-orange text-orange" /> My Matchlist
+            <BrandHeart className="h-5 w-5 text-orange" /> My Matchlist
           </h2>
           <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {shortlist.map((m) => (

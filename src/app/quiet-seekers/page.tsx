@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { FileText, Heart, MapPinned, Percent } from "lucide-react";
+import { FileText, MapPinned, Percent } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
@@ -95,7 +96,7 @@ export default function QuietSeekersPage() {
       <section className="bg-charcoal-deep py-16 text-white">
         <Container className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <h2 className="flex items-center gap-3 text-2xl text-white">
-            <Heart className="h-6 w-6 fill-orange text-orange" />
+            <BrandHeart className="h-6 w-6 text-orange" />
             87% match. This could be the one.
           </h2>
           <ButtonLink href="/join">Become a Quiet Seeker</ButtonLink>

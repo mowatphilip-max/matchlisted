@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { FileCheck2, Heart, PenLine, ShieldCheck } from "lucide-react";
+import { FileCheck2, PenLine, ShieldCheck } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import {
@@ -143,7 +144,7 @@ export default async function HushHomesPage() {
         <Container className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <div>
             <h2 className="flex items-center gap-3 text-2xl text-white">
-              <Heart className="h-6 w-6 fill-orange text-orange" />
+              <BrandHeart className="h-6 w-6 text-orange" />
               See who&apos;s matching before you commit.
             </h2>
             <p className="mt-2 max-w-xl text-white/70">

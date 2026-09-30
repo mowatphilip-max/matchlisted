@@ -1,12 +1,12 @@
 import Link from "next/link";
 import {
-  Heart,
   FileCheck2,
   CalendarCheck,
   Scale,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { LogoMark } from "@/components/logo";
@@ -103,7 +103,7 @@ export default async function HomePage() {
             {hero ? (
               <>
                 <p className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-orange-deep">
-                  <Heart className="h-5 w-5 fill-current" />
+                  <BrandHeart className="h-5 w-5" />
                   The Matchlist has news for you
                 </p>
                 <h1 className="display-xl mt-7">{hero.headline}</h1>
@@ -133,7 +133,7 @@ export default async function HomePage() {
             ) : (
               <>
                 <p className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-orange-deep">
-                  <Heart className="h-5 w-5 fill-current" />
+                  <BrandHeart className="h-5 w-5" />
                   The dating site for homes
                 </p>
                 <h1 className="display-xl mt-7">
@@ -192,7 +192,7 @@ export default async function HomePage() {
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {[
               {
-                icon: Heart,
+                icon: BrandHeart,
                 n: "01",
                 title: "Make a profile",
                 body: "Sellers build their Hush Home's profile, free. Buyers register as Quiet Seekers with a structured brief: areas anywhere in Scotland, budget range, beds, garden, the lot.",

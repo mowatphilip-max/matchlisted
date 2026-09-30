@@ -11,7 +11,6 @@ import {
   Banknote,
   Bath,
   BedDouble,
-  Heart,
   Home,
   MapPin,
   Pause,
@@ -20,6 +19,7 @@ import {
   Trees,
   UserRound,
 } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { cn } from "@/lib/utils";
 
 // Ring geometry, same math as MatchRing (box 96 / stroke 7).
@@ -117,13 +117,13 @@ function RingBadge({
       )}
     >
       <svg width={BOX} height={BOX} viewBox={`0 0 ${BOX} ${BOX}`} className="-rotate-90">
-        <circle cx={BOX / 2} cy={BOX / 2} r={R} fill="white" stroke="#E4E7EA" strokeWidth={STROKE} />
+        <circle cx={BOX / 2} cy={BOX / 2} r={R} fill="white" stroke="var(--color-hairline)" strokeWidth={STROKE} />
         <circle
           cx={BOX / 2}
           cy={BOX / 2}
           r={R}
           fill="none"
-          stroke="#E8693A"
+          stroke="var(--color-orange)"
           strokeWidth={STROKE}
           strokeLinecap="round"
           strokeDasharray={C}
@@ -221,7 +221,7 @@ export function ConceptReel() {
               }
             >
               {s.heart ? (
-                <Heart className="h-3.5 w-3.5 fill-orange text-orange" />
+                <BrandHeart className="h-3.5 w-3.5 text-orange" />
               ) : (
                 <span className="block h-2 w-2 rounded-full bg-orange" />
               )}
@@ -235,7 +235,7 @@ export function ConceptReel() {
               className="reel-run absolute -top-3 left-1/2 z-10 -translate-x-1/2"
               style={run("reel-heart")}
             >
-              <Heart className="h-7 w-7 fill-orange text-orange drop-shadow" />
+              <BrandHeart className="h-7 w-7 text-orange drop-shadow" />
             </span>
             <MatchBanner />
           </div>

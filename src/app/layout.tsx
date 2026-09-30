@@ -32,6 +32,18 @@ export const metadata: Metadata = {
     description:
       "Every home gets a profile. Every buyer gets a brief. The Matchlist does the rest, across all of Scotland.",
     type: "website",
+    images: [
+      {
+        url: "/brand/png/matchlisted-social-card.png",
+        width: 1200,
+        height: 630,
+        alt: "Matchlisted. Where Quiet Seekers meet Hush Homes",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/brand/png/matchlisted-social-card.png"],
   },
 };
 

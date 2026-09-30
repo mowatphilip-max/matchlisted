@@ -6,11 +6,11 @@ import {
   BellRing,
   CalendarClock,
   FileText,
-  Heart,
   Home,
   Receipt,
   Sparkles,
 } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { HomeCard } from "@/components/home-card";
@@ -176,7 +176,7 @@ export default async function DashboardPage() {
             className="mt-8 rounded-[var(--radius-xl)] bg-blue-tint p-6 ring-1 ring-blue-deep/20"
           >
             <p className="flex items-center gap-2 font-display text-xl font-bold text-blue-deep">
-              <Heart className="h-5 w-5 fill-blue-deep" /> A home owner spotted
+              <BrandHeart className="h-5 w-5 text-blue-deep" /> A home owner spotted
               your profile
             </p>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-charcoal">
@@ -379,7 +379,7 @@ export default async function DashboardPage() {
         <div className="rounded-[var(--radius-lg)] bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-xl">
-              <Heart className="h-5 w-5 fill-blue-deep text-blue-deep" /> My
+              <BrandHeart className="h-5 w-5 text-blue-deep" /> My
               Quiet Seeker brief
             </h2>
             {brief && (
@@ -507,7 +507,7 @@ export default async function DashboardPage() {
         <section className="mt-10">
           <div className="rounded-[var(--radius-lg)] bg-paper p-6 shadow-[var(--shadow-card)] ring-1 ring-hairline">
             <h2 className="flex items-center gap-2 text-xl">
-              <Heart className="h-5 w-5 fill-orange text-orange" /> Seekers
+              <BrandHeart className="h-5 w-5 text-orange" /> Seekers
               I&apos;ve raised my hand for
             </h2>
             <p className="mt-1 text-sm text-charcoal-soft">

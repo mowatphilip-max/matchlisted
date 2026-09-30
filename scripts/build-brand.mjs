@@ -123,6 +123,14 @@ const appIcon = svg(
   "Matchlisted",
 );
 
+// Social share card (1200 x 630): the strapline logo centred on Ground.
+const CARD_SCALE = 980 / BLOCK_W;
+const socialCard = svg(
+  "0 0 1200 630",
+  `<rect width="1200" height="630" fill="#F8F8F6"/><g transform="translate(110 ${((630 - (BOTTOM - TOP) * CARD_SCALE) / 2 - TOP * CARD_SCALE).toFixed(1)}) scale(${CARD_SCALE.toFixed(4)})">${mark(themes.colour, MARK_TAIL)}${block(themes.colour)}</g>`,
+  "Matchlisted. Where Quiet Seekers meet Hush Homes",
+);
+
 // ---- Write everything ------------------------------------------------
 mkdirSync(join(out, "png"), { recursive: true });
 const files = {};
@@ -153,6 +161,8 @@ await Promise.all([
   png("matchlisted-logo-colour.svg", 2400, join(out, "logo-horizontal.png"), WHITE),
   png("matchlisted-mark-colour.svg", 1024, join(out, "icon.png"), WHITE),
   png("matchlisted-app-icon.svg", 512, join(root, "src", "app", "icon.png")),
+  png("matchlisted-app-icon.svg", 180, join(root, "src", "app", "apple-icon.png"), WHITE),
+  sharp(Buffer.from(socialCard), { density: 144 }).resize({ width: 1200 }).png().toFile(join(out, "png", "matchlisted-social-card.png")),
 ]);
 
 // The site draws the logo as live SVG from the same numbers.
@@ -166,6 +176,7 @@ export const LOGO = ${JSON.stringify(
       heart: HEART,
       markTail: MARK_TAIL,
       markViewBox: `0 ${TOP} ${MARK_W} ${BOTTOM - TOP}`,
+      smallHeart: SMALL_HEART,
       name: { viewBox: NAME_VIEWBOX, ...NAME },
     },
     null,

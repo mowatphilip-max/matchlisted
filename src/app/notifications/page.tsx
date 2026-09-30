@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, Heart, CalendarClock, FileText, Info } from "lucide-react";
+import { Bell, CalendarClock, FileText, Info } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { currentUser } from "@/lib/session";
@@ -13,7 +14,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = { title: "Notifications" };
 
 const icons = {
-  match: Heart,
+  match: BrandHeart,
   viewing: CalendarClock,
   offer: FileText,
   system: Info,

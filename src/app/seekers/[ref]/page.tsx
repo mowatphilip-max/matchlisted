@@ -7,7 +7,6 @@ import {
   Bath,
   BedDouble,
   Check,
-  Heart,
   Home,
   Lock,
   MapPin,
@@ -15,6 +14,7 @@ import {
   UserRound,
   Wallet,
 } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { Container } from "@/components/ui/container";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { SeekerCard, positionLabel } from "@/components/seeker-card";
@@ -299,7 +299,7 @@ export default async function SeekerProfilePage({
                   </>
                 ) : (
                   <>
-                    <Heart className="h-6 w-6 fill-orange text-orange" />
+                    <BrandHeart className="h-6 w-6 text-orange" />
                     <h2 className="mt-3 text-xl text-white">
                       Could your home be the one?
                     </h2>

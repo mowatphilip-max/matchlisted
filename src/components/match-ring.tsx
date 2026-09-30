@@ -5,9 +5,9 @@ import { matchBand } from "@/lib/match";
 import { cn } from "@/lib/utils";
 
 const bandColors = {
-  hot: { ring: "#E8693A", text: "text-orange-deep" },
-  warm: { ring: "#2FA2CE", text: "text-blue-deep" },
-  cool: { ring: "#9AA1A9", text: "text-charcoal-soft" },
+  hot: { ring: "var(--color-orange)", text: "text-orange-deep" },
+  warm: { ring: "var(--color-blue-deep)", text: "text-blue-deep" },
+  cool: { ring: "var(--color-charcoal-soft)", text: "text-charcoal-soft" },
 } as const;
 
 const sizes = {
@@ -50,7 +50,7 @@ export function MatchRing({
           cy={box / 2}
           r={r}
           fill="white"
-          stroke="#E4E7EA"
+          stroke="var(--color-hairline)"
           strokeWidth={stroke}
         />
         <circle

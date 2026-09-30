@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Check, Heart, X } from "lucide-react";
+import { Check, X } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { Button } from "@/components/ui/button";
 import {
   allIntroductions,
@@ -90,7 +91,7 @@ export default async function AdminIntroductionsPage() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="flex items-center gap-2 font-bold">
-                      <Heart className="h-4 w-4 fill-orange text-orange" />
+                      <BrandHeart className="h-4 w-4 text-orange" />
                       {seller?.name ?? "Unknown seller"} →{" "}
                       {seeker?.publicRef ??
                         intro.seekerId.replace("mowatt:", "#")}{" "}

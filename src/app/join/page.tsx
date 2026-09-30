@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Heart, Home, Lock } from "lucide-react";
+import { Home, Lock } from "lucide-react";
+import { BrandHeart } from "@/components/brand-heart";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { register } from "@/lib/actions";
@@ -84,10 +85,10 @@ export default async function JoinPage({
                 : "border-hairline bg-paper hover:bg-soft",
             )}
           >
-            <Heart
+            <BrandHeart
               className={cn(
                 "mx-auto h-6 w-6",
-                intent === "seeker" ? "fill-blue-deep text-blue-deep" : "text-charcoal-soft",
+                intent === "seeker" ? "text-blue-deep" : "text-charcoal-soft",
               )}
             />
             <span className="mt-2 block text-sm font-bold">
