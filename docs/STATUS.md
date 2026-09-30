@@ -212,6 +212,8 @@ once `companyName` changes, or the sentence simplifies further).
 10. **Panel solicitor firms and commission terms.** *Blocks:* Phase 5 panel screen.
 11. **Re-export the brand PNGs** (`public/brand/icon.png`, `logo-horizontal.png`) in
     the new palette. *Blocks:* item 3c closing fully.
+    **Done 30 Sep 2026:** the logo was redrawn and locked, and every brand file is
+    now generated in the current palette by `npm run build-brand`. See `docs/BRAND.md`.
 12. **Decisions the brief says not to guess**: does the £300 withdrawal fee stand
     alongside the 12-month longstop; and preferred replacement wording for the two
     ambiguous "free" lines (`page.tsx:205,472`) — the area-finder button

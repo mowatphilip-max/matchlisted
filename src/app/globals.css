@@ -116,18 +116,22 @@
 /* in one stroke and gives a single heartbeat.                         */
 /* ------------------------------------------------------------------ */
 .logo-mark .lm-house,
-.logo-mark .lm-heart {
+.logo-mark .lm-heart,
+.logo-mark .lm-swoosh {
   fill: none;
+  stroke-width: 14;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .logo-mark .lm-house {
   stroke: currentColor;
-  stroke-width: 13;
 }
-.logo-mark .lm-heart {
+.logo-mark .lm-heart,
+.logo-mark .lm-swoosh {
   stroke: var(--color-orange);
-  stroke-width: 12;
+}
+.logo-mark .lm-com {
+  fill: var(--color-orange);
 }
 
 .logo-armed .lm-house,

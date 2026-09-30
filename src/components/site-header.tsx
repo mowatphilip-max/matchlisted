@@ -3,7 +3,7 @@ import { Bell, Menu } from "lucide-react";
 import { currentUser } from "@/lib/session";
 import { notificationsForUser } from "@/lib/db";
 import { signOut } from "@/lib/actions";
-import { LogoHorizontal, LogoMark } from "./logo";
+import { Logo, LogoMark } from "./logo";
 import { ButtonLink } from "./ui/button";
 
 // IA per BUILD-BRIEF.md Phase 1: audience-first labels. "For sellers" and
@@ -30,8 +30,8 @@ export async function SiteHeader() {
           className="logo-home-link flex shrink-0 items-center gap-2 transition-opacity hover:opacity-90"
           aria-label="Matchlisted home"
         >
-          <LogoMark className="h-8 w-auto text-charcoal sm:h-9" />
-          <LogoHorizontal className="hidden h-8 min-[420px]:block sm:h-10" />
+          <LogoMark className="h-8 w-auto text-charcoal min-[420px]:hidden" />
+          <Logo className="hidden h-8 text-charcoal min-[420px]:block sm:h-9" />
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-charcoal-soft md:flex">
