@@ -9,8 +9,9 @@ are in `docs/BRAND.md`.
 
 Quick pick:
 
-- `matchlisted-logo-colour.svg`: the primary logo, for light backgrounds.
+- `matchlisted-logo-colour.svg`: the name logo (primary), for light backgrounds.
 - `matchlisted-logo-reversed.svg`: for dark backgrounds.
-- `matchlisted-mark-colour.svg`: the house-heart alone.
+- `matchlisted-mark-colour.svg`: the house and heart alone, no wording.
+- `matchlisted-strapline-block-colour.svg`: the strapline logo.
 - `png/`: PNG exports for tools that cannot take SVG.
 - `logo-horizontal.png`, `icon.png`: white-ground copies under their old names.

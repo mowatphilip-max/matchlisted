@@ -31,7 +31,7 @@ export async function SiteHeader() {
           aria-label="Matchlisted home"
         >
           <LogoMark className="h-8 w-auto text-charcoal min-[420px]:hidden" />
-          <Logo className="hidden h-8 text-charcoal min-[420px]:block sm:h-9" />
+          <Logo motion="intro" className="hidden h-11 text-charcoal min-[420px]:block sm:h-12" />
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-charcoal-soft md:flex">

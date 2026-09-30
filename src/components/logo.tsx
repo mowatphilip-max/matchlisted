@@ -5,32 +5,76 @@
 // or restyle it here: change the build script and run `npm run build-brand`.
 // Static files for everywhere else live in /public/brand (see docs/BRAND.md).
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { LOGO } from "./logo-paths";
 
 /*
- * The full horizontal logo: house-heart mark, with the swoosh running on
- * as the underline beneath "Matchlisted.com". House and name render in
- * currentColor (text-charcoal on light, text-white on dark); the heart,
- * underline and ".com" are always Signal orange.
+ * The name logo: the house, "Match" over "listed.com", the h running down
+ * into the d, the small heart as the dot, and the swoosh as the underline.
+ * House and name render in currentColor (text-charcoal on light, text-white
+ * on dark); the heart, underline and ".com" are always Signal orange.
+ *
+ * `motion` (keyframes in globals.css):
+ *   "intro"  the logo draws itself once, then settles into the pulse loop
+ *   "loop"   no intro, just the quiet pulse along the underline
+ *   omitted  completely still
+ * People who ask for reduced motion always get the still logo.
  */
-export function Logo({ className }: { className?: string }) {
+const N = LOGO.name;
+
+export function Logo({
+  className,
+  motion,
+}: {
+  className?: string;
+  motion?: "intro" | "loop";
+}) {
+  const vars = (v: Record<string, string>) => v as CSSProperties;
+  const delay = (base: number, i: number) =>
+    vars({ "--d": `${(base + i * 0.07).toFixed(2)}s` });
+  const houseTiming = [
+    vars({ "--d": "0s", "--t": ".8s" }),
+    vars({ "--d": ".15s", "--t": ".5s" }),
+    vars({ "--d": ".3s", "--t": ".5s" }),
+  ];
+
   return (
     <svg
-      viewBox={LOGO.lockupViewBox}
+      viewBox={N.viewBox}
       role="img"
       aria-label="Matchlisted.com"
-      className={cn("logo-mark h-10 w-auto", className)}
+      className={cn(
+        "ml-logo h-10 w-auto overflow-visible",
+        motion === "intro" && "ml-intro ml-loop",
+        motion === "loop" && "ml-loop",
+        className,
+      )}
     >
-      {LOGO.house.map((d) => (
-        <path key={d} className="lm-house" d={d} />
+      {N.house.map((d, i) => (
+        <path key={d} pathLength={1} className="ml-line ml-house" style={houseTiming[i]} d={d} />
       ))}
-      <path className="lm-swoosh" d={`${LOGO.heart} H${LOGO.lockupTail}`} />
-      <g transform={LOGO.wordTransform}>
-        <path fill="currentColor" d={LOGO.wordName} />
-        <path className="lm-com" d={LOGO.wordCom} />
+      <path pathLength={1} className="ml-line ml-swoosh" d={N.swoosh} />
+      {N.match.map((d, i) => (
+        <path key={d} className="ml-letter ml-drop" style={delay(0.9, i)} d={d} />
+      ))}
+      {N.listed.map((d, i) => (
+        <path key={d} className="ml-letter ml-rise" style={delay(1.3, i)} d={d} />
+      ))}
+      <rect
+        className="ml-letter ml-pillar"
+        x={N.pillar.x}
+        y={N.pillar.y}
+        width={N.pillar.w}
+        height={N.pillar.h}
+      />
+      <g transform={`translate(${N.dot.tx} ${N.dot.ty}) scale(${N.dot.k})`}>
+        <path className="ml-dot" d={N.dot.d} />
       </g>
+      {N.com.map((d, i) => (
+        <path key={d} className="ml-letter ml-com ml-rise" style={delay(2.3, i)} d={d} />
+      ))}
+      {motion && <path pathLength={1} className="ml-spark" d={N.swoosh} />}
     </svg>
   );
 }

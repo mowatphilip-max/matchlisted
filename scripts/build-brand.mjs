@@ -6,8 +6,8 @@
 // Do not redraw it anywhere else: the SVGs in public/brand, the PNG exports,
 // the favicon and src/components/logo-paths.ts are all generated from here.
 //
-// Lettering is Montserrat Bold ("Matchlisted.com"), Montserrat SemiBold (one-line
-// strapline) and Roboto Condensed Bold (three-line strapline lockup), already converted to outlines in scripts/brand-glyphs.json, so no font is
+// Lettering is Montserrat Bold (the name) and Roboto Condensed Bold (the three-line
+// strapline lockup), already converted to outlines in scripts/brand-glyphs.json, so no font is
 // needed to build or to open the files.
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -42,12 +42,14 @@ const MARK_TAIL = 200; // where the swoosh ends when the mark stands alone
 const TOP = 14; // artwork runs y 14..190
 const BOTTOM = 190;
 
-// ---- The wordmark ----------------------------------------------------
-const WORD_X = 212;
-const WORD_BASELINE = 156;
-const WORD_END = WORD_X + glyphs.word.x2;
-const LOCKUP_TAIL = Math.round(WORD_END + 6); // underline runs just past ".com"
-const LOCKUP_W = LOCKUP_TAIL + STROKE / 2 + 1;
+// ---- The name logo ---------------------------------------------------
+// "Match" over "listed.com" in Montserrat Bold beside the house. The h of Match
+// runs straight down into the d of listed, the dot of ".com" is the small open
+// heart, and the swoosh from the big heart underlines the lot. In this lockup the
+// right-hand roof is trimmed slightly so it clears the top of the l beneath it.
+const NAME = glyphs.lockup;
+const NAME_TOP = 8; // the M stands a little taller than the roof
+const NAME_VIEWBOX = `0 ${NAME_TOP} ${NAME.w} ${192 - NAME_TOP}`;
 
 const themes = {
   colour: { ink: ANCHOR, heart: SIGNAL, accent: PRECISION_DEEP },
@@ -62,26 +64,19 @@ const line = (d, colour) =>
 const mark = (t, tail) =>
   HOUSE.map((d) => line(d, t.ink)).join("") + line(`${HEART} H${tail}`, t.heart);
 
-const word = (t) =>
-  `<g transform="translate(${WORD_X} ${WORD_BASELINE})"><path d="${glyphs.word.d.name}" fill="${t.ink}"/><path d="${glyphs.word.d.com}" fill="${t.heart}"/></g>`;
-
 const svg = (viewBox, body, title = "Matchlisted.com") =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" role="img" aria-label="${title}"><title>${title}</title>${body}</svg>\n`;
 
-// Horizontal logo: the primary lockup.
+// The name logo: the primary lockup.
 const logo = (t) =>
-  svg(`0 ${TOP} ${LOCKUP_W} ${BOTTOM - TOP}`, mark(t, LOCKUP_TAIL) + word(t));
-
-// Horizontal logo with the strapline set beneath the underline.
-const STRAP_BASELINE = 218;
-const strapScale = (WORD_END - (WORD_X + glyphs.word.x1)) / (glyphs.strap.x2 - glyphs.strap.x1);
-const strap = (t) =>
-  `<g transform="translate(${(WORD_X + glyphs.word.x1 - glyphs.strap.x1 * strapScale).toFixed(2)} ${STRAP_BASELINE}) scale(${strapScale.toFixed(5)})"><path d="${glyphs.strap.d.a}" fill="${t.ink}"/><path d="${glyphs.strap.d.b}" fill="${t.accent}"/></g>`;
-const logoStrapline = (t) =>
   svg(
-    `0 ${TOP} ${LOCKUP_W} ${STRAP_BASELINE + 6 - TOP}`,
-    mark(t, LOCKUP_TAIL) + word(t) + strap(t),
-    "Matchlisted.com. Where Quiet Seekers meet Hush Homes",
+    NAME_VIEWBOX,
+    NAME.house.map((d) => line(d, t.ink)).join("") +
+      line(NAME.swoosh, t.heart) +
+      `<path d="${NAME.match.join("")}${NAME.listed.join("")}" fill="${t.ink}"/>` +
+      `<rect x="${NAME.pillar.x}" y="${NAME.pillar.y}" width="${NAME.pillar.w}" height="${NAME.pillar.h}" fill="${t.ink}"/>` +
+      `<path transform="translate(${NAME.dot.tx} ${NAME.dot.ty}) scale(${NAME.dot.k})" d="${NAME.dot.d}" fill="none" stroke="${t.heart}" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>` +
+      `<path d="${NAME.com.join("")}" fill="${t.heart}"/>`,
   );
 
 // The mark alone.
@@ -121,19 +116,6 @@ const straplineBlock = (t) =>
     "Matchlisted. Where Quiet Seekers meet Hush Homes",
   );
 
-// Stacked: mark above the name, for square spaces.
-const STACK_W = 560;
-const stacked = (t) => {
-  const s = 1.5;
-  const mx = (STACK_W - MARK_W * s) / 2;
-  const wx = (STACK_W - (glyphs.word.x2 - glyphs.word.x1)) / 2 - glyphs.word.x1;
-  return svg(
-    `0 0 ${STACK_W} 352`,
-    `<g transform="translate(${mx} ${-TOP * s}) scale(${s})">${mark(t, MARK_TAIL)}</g>` +
-      `<g transform="translate(${wx.toFixed(2)} 344)"><path d="${glyphs.word.d.name}" fill="${t.ink}"/><path d="${glyphs.word.d.com}" fill="${t.heart}"/></g>`,
-  );
-};
-
 // App icon / favicon: the mark on a white rounded square.
 const appIcon = svg(
   "0 0 256 256",
@@ -149,8 +131,6 @@ for (const [name, t] of Object.entries(themes)) {
   files[`matchlisted-mark-${name}.svg`] = markOnly(t);
 }
 for (const name of ["colour", "reversed"]) {
-  files[`matchlisted-logo-strapline-${name}.svg`] = logoStrapline(themes[name]);
-  files[`matchlisted-stacked-${name}.svg`] = stacked(themes[name]);
   files[`matchlisted-strapline-block-${name}.svg`] = straplineBlock(themes[name]);
 }
 files["matchlisted-app-icon.svg"] = appIcon;
@@ -164,10 +144,8 @@ const png = (name, width, to, flatten) => {
 await Promise.all([
   png("matchlisted-logo-colour.svg", 2400, join(out, "png", "matchlisted-logo-colour.png")),
   png("matchlisted-logo-reversed.svg", 2400, join(out, "png", "matchlisted-logo-reversed.png")),
-  png("matchlisted-logo-strapline-colour.svg", 2400, join(out, "png", "matchlisted-logo-strapline-colour.png")),
   png("matchlisted-strapline-block-colour.svg", 2400, join(out, "png", "matchlisted-strapline-block-colour.png")),
   png("matchlisted-strapline-block-reversed.svg", 2400, join(out, "png", "matchlisted-strapline-block-reversed.png")),
-  png("matchlisted-stacked-colour.svg", 1600, join(out, "png", "matchlisted-stacked-colour.png")),
   png("matchlisted-mark-colour.svg", 1024, join(out, "png", "matchlisted-mark-colour.png")),
   png("matchlisted-mark-reversed.svg", 1024, join(out, "png", "matchlisted-mark-reversed.png")),
   png("matchlisted-app-icon.svg", 1024, join(out, "png", "matchlisted-app-icon.png")),
@@ -187,12 +165,8 @@ export const LOGO = ${JSON.stringify(
       house: HOUSE,
       heart: HEART,
       markTail: MARK_TAIL,
-      lockupTail: LOCKUP_TAIL,
       markViewBox: `0 ${TOP} ${MARK_W} ${BOTTOM - TOP}`,
-      lockupViewBox: `0 ${TOP} ${LOCKUP_W} ${BOTTOM - TOP}`,
-      wordTransform: `translate(${WORD_X} ${WORD_BASELINE})`,
-      wordName: glyphs.word.d.name,
-      wordCom: glyphs.word.d.com,
+      name: { viewBox: NAME_VIEWBOX, ...NAME },
     },
     null,
     2,
@@ -200,4 +174,4 @@ export const LOGO = ${JSON.stringify(
 `,
 );
 
-console.log(`Brand files written: ${Object.keys(files).length} SVG, 12 PNG, logo-paths.ts`);
+console.log(`Brand files written: ${Object.keys(files).length} SVG, 10 PNG, logo-paths.ts`);

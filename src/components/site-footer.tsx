@@ -27,7 +27,7 @@ export function SiteFooter() {
     <footer className="border-t border-hairline bg-charcoal-deep text-white">
       <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <Logo className="h-11 text-white" />
+          <Logo motion="loop" className="h-16 text-white" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
             Where Quiet Seekers meet Hush Homes. No boards. No portals. Just
             Introductions, across all of Scotland.

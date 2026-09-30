@@ -116,8 +116,7 @@
 /* in one stroke and gives a single heartbeat.                         */
 /* ------------------------------------------------------------------ */
 .logo-mark .lm-house,
-.logo-mark .lm-heart,
-.logo-mark .lm-swoosh {
+.logo-mark .lm-heart {
   fill: none;
   stroke-width: 14;
   stroke-linecap: round;
@@ -126,12 +125,162 @@
 .logo-mark .lm-house {
   stroke: currentColor;
 }
-.logo-mark .lm-heart,
-.logo-mark .lm-swoosh {
+.logo-mark .lm-heart {
   stroke: var(--color-orange);
 }
-.logo-mark .lm-com {
+
+/* ------------------------------------------------------------------ */
+/* The name logo (<Logo /> in src/components/logo.tsx). Still by       */
+/* default. `.ml-intro` plays the opening once: the house draws, the   */
+/* heart sweeps out as the underline, the name arrives, the h reaches  */
+/* down to the d, the small heart pops. `.ml-loop` then sends a pulse  */
+/* of light from the big heart along the line every five seconds, and  */
+/* the small heart beats when it lands.                                */
+/* ------------------------------------------------------------------ */
+.ml-logo .ml-line {
+  fill: none;
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ml-logo .ml-house {
+  stroke: currentColor;
+}
+.ml-logo .ml-swoosh {
+  stroke: var(--color-orange);
+}
+.ml-logo .ml-letter {
+  fill: currentColor;
+  transform-box: fill-box;
+}
+.ml-logo .ml-com {
   fill: var(--color-orange);
+}
+.ml-logo .ml-pillar {
+  transform-origin: top;
+}
+.ml-logo .ml-dot {
+  fill: none;
+  stroke: var(--color-orange);
+  stroke-width: 28;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.ml-logo .ml-spark {
+  fill: none;
+  stroke: #ffd2b8;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 0.07 1;
+  stroke-dashoffset: 0.08;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ml-intro .ml-house {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: logo-trace var(--t) cubic-bezier(0.2, 0.8, 0.2, 1) var(--d) both;
+  }
+  .ml-intro .ml-swoosh {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation:
+      logo-trace 1.5s cubic-bezier(0.65, 0, 0.2, 1) 0.7s both,
+      ml-thump 5s ease-in-out 3.6s infinite;
+  }
+  .ml-intro .ml-drop {
+    animation: ml-drop 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) var(--d) both;
+  }
+  .ml-intro .ml-rise {
+    animation: ml-rise 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) var(--d) both;
+  }
+  .ml-intro .ml-pillar {
+    animation: ml-grow 0.35s cubic-bezier(0.3, 0, 0.2, 1) 1.95s both;
+  }
+  .ml-intro .ml-dot {
+    animation:
+      ml-pop 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) 2.15s both,
+      ml-beat 5s ease-in-out 3.6s infinite;
+  }
+  .ml-loop .ml-spark {
+    animation: ml-run 5s cubic-bezier(0.5, 0, 0.3, 1) 3.6s infinite;
+  }
+  .ml-loop:not(.ml-intro) .ml-swoosh {
+    animation: ml-thump 5s ease-in-out 3.6s infinite;
+  }
+  .ml-loop:not(.ml-intro) .ml-dot {
+    animation: ml-beat 5s ease-in-out 3.6s infinite;
+  }
+}
+@keyframes ml-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+@keyframes ml-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+@keyframes ml-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes ml-pop {
+  from {
+    opacity: 0;
+    transform: scale(0) rotate(-25deg);
+  }
+}
+@keyframes ml-thump {
+  0%,
+  9%,
+  100% {
+    stroke-width: 14;
+  }
+  3% {
+    stroke-width: 17;
+  }
+  6% {
+    stroke-width: 14.5;
+  }
+}
+@keyframes ml-run {
+  0% {
+    stroke-dashoffset: 0.08;
+    opacity: 0;
+  }
+  2%,
+  24% {
+    opacity: 1;
+  }
+  28%,
+  100% {
+    stroke-dashoffset: -1;
+    opacity: 0;
+  }
+}
+@keyframes ml-beat {
+  0%,
+  20%,
+  37%,
+  100% {
+    transform: none;
+  }
+  24% {
+    transform: scale(1.28);
+  }
+  28% {
+    transform: scale(0.96);
+  }
+  32% {
+    transform: scale(1.14);
+  }
 }
 
 .logo-armed .lm-house,
